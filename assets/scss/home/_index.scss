@@ -1,0 +1,95 @@
+.banner__container {
+  position: relative;
+  max-width: 940px;
+  margin: 0 auto;
+
+  .banner__img {
+    display: block;
+    border: 0;
+  }
+
+  .banner__news {
+    position: relative;
+    top: -4.5rem;
+    overflow: hidden;
+
+    .banner__news_list {
+      width: 48.75rem;
+      margin: 0 auto;
+      display: flex;
+
+      .banner__news_list_item {
+        position: relative;
+        display: block;
+        overflow: hidden;
+
+        &:hover {
+          .banner__news_box {
+            filter: blur(0px);
+          }
+        }
+
+        .banner__news_box {
+          position: relative;
+          width: 16.25rem;
+          height: 16rem;
+          filter: blur(5px);
+          transition: all 0.3s;
+          cursor: pointer;
+        }
+        .banner__news_box.today {
+          background: url('~assets/img/product/product6.jpeg') no-repeat center;
+          background-size: cover;
+        }
+        .banner__news_box.top {
+          background: url('~assets/img/product/product8.jpeg') no-repeat center;
+          background-size: cover;
+        }
+        .banner__news_box.new {
+          background: url('~assets/img/product/product9.jpeg') no-repeat center;
+          background-size: cover;
+        }
+        .banner_news_box_bg {
+          position: absolute;
+          width: 16.25rem;
+          height: 16rem;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          opacity: 0.8;
+        }
+        .banner_news_box_bg.today {
+          background: $yellow;
+        }
+        .banner_news_box_bg.top {
+          background: $darkGreen;
+        }
+        .banner_news_box_bg.new {
+          background: $darkGreen;
+        }
+
+        .banner_news_box_word {
+          position: absolute;
+          top: 50%;
+          left: 0;
+          transform: translate(0, -50%);
+          text-align: center;
+          z-index: 99;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          writing-mode: vertical-lr;
+          width: 100%;
+          color: #fff;
+          letter-spacing: 0.5rem;
+          font-size: $font-xl;
+          font-family: $font-title;
+        }
+        .banner_news_box_word.today {
+          color: $darkGreen;
+        }
+      }
+    }
+  }
+}
