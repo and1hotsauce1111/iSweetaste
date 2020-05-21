@@ -1,0 +1,21 @@
+.header__container {
+  max-width: 940px;
+  margin: 0 auto;
+  font-family: $font-title;
+  font-size: $font-m;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  height: 100px;
+  line-height: 100px;
+
+  #header__logo {
+    display: inline-block;
+    width: 220px;
+    height: 100%;
+    background: url('~assets/img/logo/desktop/logo-all-dark.svg') no-repeat 50%
+      50%;
+    flex: 0 0 23.5%;
+  }
+}

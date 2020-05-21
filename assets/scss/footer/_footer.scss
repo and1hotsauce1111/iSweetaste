@@ -1,0 +1,138 @@
+.footer__container {
+  width: 100%;
+
+  .footer__register {
+    background: $darkGreen;
+
+    .register__container {
+      width: 940px;
+      margin: 0 auto;
+
+      .register__content {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-wrap: wrap;
+        width: 780px;
+        margin: 0 auto;
+        padding: 1.5rem 0;
+
+        .register__content_title {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-wrap: wrap;
+
+          img {
+            margin-right: 20px;
+          }
+
+          h3 {
+            color: $limeGreen;
+            font-size: $font-xl;
+            font-family: $font-title;
+          }
+        }
+
+        .register__content__form {
+          position: relative;
+          display: flex;
+          background: $limeGreen;
+          height: 3.5rem;
+          max-width: 23.75rem;
+
+          .register__content_envlope {
+            position: absolute;
+            font-size: $font-xl;
+            top: 1rem;
+            left: 1rem;
+          }
+
+          .register__content__form_input {
+            font-size: $font-l;
+            color: $darkGrayish;
+            border: none;
+            background: none;
+            margin-left: 3rem;
+            width: 16.75rem;
+            padding: 0 20px 0 10px;
+          }
+
+          .register__content__form_submit {
+            width: 64px;
+            height: 100%;
+            background: $yellow;
+            border: none;
+            cursor: pointer;
+
+            .arrow {
+              font-size: $font-l;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .footer__contact {
+    width: 100%;
+    background: $limeGreen;
+    padding: 2rem 0 1.5rem 0;
+
+    .footer__contact_container {
+      width: 940px;
+      height: 100%;
+      margin: 0 auto;
+
+      .footer__contact_address {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .footer__contact_address_logo {
+          width: 14.3rem;
+          height: 13rem;
+
+          img {
+            display: block;
+            border: 0;
+            margin-bottom: 7rem;
+          }
+          .address {
+            font-family: $font-Neue;
+            font-size: $font-m;
+
+            li {
+              padding: 4px 0;
+            }
+          }
+        }
+
+        .footer__contact_address_slogan {
+          width: 3.75rem;
+          height: 13.6rem;
+        }
+      }
+
+      .footer__contact_socialMedia {
+        width: 100%;
+        margin-top: 1.8rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+
+        .footer__contact_socialMedia_icon {
+          .list {
+            display: flex;
+
+            li {
+              margin-right: 8px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

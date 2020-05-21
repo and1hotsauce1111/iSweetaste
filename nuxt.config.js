@@ -23,13 +23,12 @@ module.exports = {
   /*
    ** Global CSS
    */
-  css: [],
+  css: ['@/assets/scss/_reset.scss'],
   styleResources: {
     scss: [
       '@/assets/scss/_variables.scss',
       '@/assets/scss/_reboot.scss',
-      '@/assets/scss/_font.scss',
-      '@/assets/scss/_reset.scss'
+      '@/assets/scss/_font.scss'
     ]
   },
   /*
@@ -51,8 +50,32 @@ module.exports = {
     '@nuxtjs/axios',
     // Doc: https://github.com/nuxt-community/dotenv-module
     '@nuxtjs/dotenv',
-    '@nuxtjs/style-resources'
+    '@nuxtjs/style-resources',
+    [
+      'nuxt-fontawesome',
+      {
+        component: 'fa',
+        imports: [
+          //import whole set
+          {
+            set: '@fortawesome/free-solid-svg-icons',
+            icons: ['fas']
+          }
+        ]
+      }
+    ]
   ],
+  fontawesome: {
+    // icon 的標籤使用 <fa>，這邊不設定就會依照 plugin 裡的設定<font-awesome-icon>
+    component: 'fa',
+    imports: [
+      // 引入 fas 所有的icon
+      {
+        set: '@fortawesome/free-solid-svg-icons',
+        icons: ['fas']
+      }
+    ]
+  },
   /*
    ** Axios module configuration
    ** See https://axios.nuxtjs.org/options
