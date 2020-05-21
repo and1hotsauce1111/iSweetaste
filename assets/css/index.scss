@@ -1,0 +1,9 @@
+@import '_font.scss';
+@import '_reset.scss';
+@import '_variable.scss';
+
+.box {
+  height: 50px;
+  width: 50px;
+  color: $darkGreen;
+}
