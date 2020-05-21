@@ -1,0 +1,14 @@
+.container {
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  .box {
+    background: $darkGreen;
+    width: 30px;
+    height: 30px;
+  }
+}
