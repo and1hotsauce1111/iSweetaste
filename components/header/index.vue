@@ -1,7 +1,12 @@
 <template>
   <div class="header__container">
     <Geo />
-    <nuxt-link id="header__logo" to="/"></nuxt-link>
+    <div class="mobile__header_hamburger">
+      <fa :icon="['fas', 'bars']" />
+    </div>
+    <div class="header__logo_container">
+      <nuxt-link id="header__logo" to="/"></nuxt-link>
+    </div>
     <Nav />
   </div>
 </template>

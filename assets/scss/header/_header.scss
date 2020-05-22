@@ -6,17 +6,63 @@
   font-weight: 500;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  // flex-wrap: wrap;
   height: 100px;
   line-height: 100px;
 
-  #header__logo {
-    display: inline-block;
+  .mobile__header_hamburger {
+    display: none;
+    width: 80px;
+    height: 100%;
+  }
+
+  .header__logo_container {
     width: 220px;
     height: 100%;
-    background: url('~assets/img/logo/desktop/logo-all-dark.svg') no-repeat 50%
-      50%;
-    flex: 0 0 23.5%;
-    margin-right: 10px;
+
+    #header__logo {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      background: url('~assets/img/logo/desktop/logo-all-dark.svg') no-repeat
+        center center;
+      flex: 0 0 23.5%;
+      margin-right: 10px;
+    }
   }
+}
+
+// 平板轉橫
+@media screen and (max-width: 1023px) {
+}
+// pad
+@media screen and (max-width: 768px) {
+  .header__container {
+    height: 80px;
+    justify-content: space-around;
+
+    .mobile__header_hamburger {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .header__logo_container {
+      flex: 0 0 50%;
+      width: 110px;
+      height: 100%;
+      text-align: center;
+
+      #header__logo {
+        display: inline-block;
+        width: 110px;
+        background: url('~assets/img/logo/mobile/logotype-sm-dark.svg')
+          no-repeat center center;
+      }
+    }
+  }
+}
+// mobile
+@media screen and (max-width: 376px) {
 }

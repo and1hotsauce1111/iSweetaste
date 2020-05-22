@@ -5,7 +5,7 @@
     background: $darkGreen;
 
     .register__container {
-      width: 940px;
+      max-width: 940px;
       margin: 0 auto;
 
       .register__content {
@@ -13,7 +13,7 @@
         justify-content: space-around;
         align-items: center;
         flex-wrap: wrap;
-        width: 780px;
+        max-width: 780px;
         margin: 0 auto;
         padding: 1.5rem 0;
 
@@ -80,7 +80,7 @@
     padding: 2rem 0 1.5rem 0;
 
     .footer__contact_container {
-      width: 940px;
+      max-width: 940px;
       height: 100%;
       margin: 0 auto;
 
@@ -129,6 +129,93 @@
 
             li {
               margin-right: 8px;
+            }
+          }
+        }
+      }
+    }
+
+    // mobile
+    .mobile__footer_contact_container {
+      display: none;
+    }
+  }
+}
+
+// 平板轉橫
+@media screen and (max-width: 1023px) {
+}
+// pad
+@media screen and (max-width: 768px) {
+  .footer__container {
+    .footer__register {
+      .register__container {
+        .register__content {
+          flex-direction: column;
+          margin-top: 5rem;
+
+          .register__content_title {
+            margin-bottom: 2.06rem;
+          }
+        }
+      }
+    }
+    .footer__contact {
+      .footer__contact_container {
+        padding: 0 15px;
+      }
+    }
+  }
+}
+// mobile
+@media screen and (max-width: 376px) {
+  .footer__container {
+    .footer__register {
+      .register__container {
+        .register__content {
+          padding-right: 0.6rem;
+          padding-left: 0.6rem;
+
+          .register__content__form {
+            max-width: 100%;
+          }
+        }
+      }
+    }
+    .footer__contact {
+      .footer__contact_container {
+        display: none;
+      }
+
+      .mobile__footer_contact_container {
+        display: block;
+        padding: 30px;
+
+        .mobile__footer_contact_address_logo {
+          font-size: $font-m;
+          font-family: $font-Neue;
+          margin-bottom: 2.3rem;
+
+          .mobile_logo {
+            margin-bottom: 2.5rem;
+          }
+          .mobile_address {
+            line-height: 1.7;
+          }
+        }
+
+        .footer__contact_socialMedia_icon {
+          margin-bottom: 1.43rem;
+
+          ul.list {
+            display: flex;
+            li {
+              margin-right: 0.5rem;
+
+              img {
+                display: block;
+                border: 0;
+              }
             }
           }
         }

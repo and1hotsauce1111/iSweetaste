@@ -25,6 +25,12 @@ module.exports = {
         svg: 'always',
         math: 'always'
       }
+    ],
+    'vue/html-closing-bracket-newline': [
+      'error',
+      {
+        multiline: 'always'
+      }
     ]
   }
 }

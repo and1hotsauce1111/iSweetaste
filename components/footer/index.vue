@@ -87,6 +87,62 @@
           </div>
         </div>
       </div>
+      <!-- mobile footer__contact layout -->
+      <div class="mobile__footer_contact_container">
+        <div class="mobile__footer_contact_address_logo">
+          <img
+            class="mobile_logo"
+            src="~assets/img/logo/desktop/logotype-lg-dark.svg"
+            alt=""
+            width="170"
+            heigth="26"
+          />
+          <ul class="mobile_address">
+            <li>
+              <a href="tel:+0712345678">
+                07-12345678
+              </a>
+            </li>
+            <li>
+              <a href="mailto:sweetaste@email.com">
+                sweetaste@email.com
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                800 高雄市新興區幸福路 520 號
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer__contact_socialMedia_icon">
+          <ul class="list">
+            <li>
+              <a href="#">
+                <img
+                  src="~assets/img/icons/ic-line@.svg"
+                  alt=""
+                  width="32"
+                  height="32"
+                />
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <img
+                  src="~assets/img/icons/ic-facebook.svg"
+                  alt=""
+                  width="32"
+                  height="32"
+                />
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="mobile_footer__contact_socialMedia_copyRight">
+          <h3>© 2018 Sweetaste* All Rights Reserved</h3>
+        </div>
+      </div>
     </div>
   </div>
 </template>

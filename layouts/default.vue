@@ -18,11 +18,4 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-// pad
-@media screen and (max-width: 767px) {
-}
-// mobile
-@media screen and (max-width: 376px) {
-}
-</style>
+<style lang="scss" scoped></style>
