@@ -17,6 +17,7 @@
         </ul>
       </div>
     </div>
+
     <!-- story section -->
     <div class="story__section">
       <!-- story feature1 -->
@@ -83,31 +84,33 @@
     </div>
 
     <!-- product list -->
-    <div class="procut-list">
-      <div class="procut-list__container">
-        <div
-          v-for="(item, index) in productItem"
-          :key="index"
-          class="product-list-item__container"
-        >
-          <img class="product-list-item_img" :src="item.img" alt />
-          <div class="product-list-item_info">
-            <div class="info_name">
-              {{ item.name }}
+    <div class="product__section">
+      <div class="product-list">
+        <div class="product-list__container">
+          <div
+            v-for="(item, index) in productItem"
+            :key="index"
+            class="product-list-item__container"
+          >
+            <img class="product-list-item_img" :src="item.img" alt />
+            <div class="product-list-item_info">
+              <div class="info_name">
+                {{ item.name }}
+              </div>
+              <div class="info_price">
+                {{ 'NT$ ' + item.price }}
+              </div>
             </div>
-            <div class="info_price">
-              {{ 'NT$ ' + item.price }}
+            <div class="product-list-item_addCart">
+              <button class="addCart_btn">
+                加入購物車
+              </button>
             </div>
+            <span class="product-list-item_today">本日精選</span>
+            <span class="product-list-item_like">
+              <fa :icon="['far', 'heart']" />
+            </span>
           </div>
-          <div class="product-list-item_addCart">
-            <button class="addCart_btn">
-              加入購物車
-            </button>
-          </div>
-          <span class="product-list-item_today">本日精選</span>
-          <span class="product-list-item_like">
-            <fa :icon="['far', 'heart']" />
-          </span>
         </div>
       </div>
     </div>
@@ -144,6 +147,7 @@
       </div>
       <div class="mobile__story_slogan slogan3"></div>
     </div>
+
     <!-- mobile/pad product list -->
     <div class="mobile__productList_section">
       <div
@@ -216,5 +220,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/public/_product.scss';
 @import '@/assets/scss/home/_index.scss';
 </style>

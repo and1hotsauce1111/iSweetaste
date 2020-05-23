@@ -91,5 +91,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/header/_header.scss';
+@import '@/assets/scss/public/header/_header.scss';
 </style>

@@ -100,6 +100,14 @@
   }
 }
 
+// product list
+.product__section {
+  .product-list {
+    width: 100%;
+    margin-bottom: 5rem;
+  }
+}
+
 // story section
 .story_wrapper {
   background-color: $limeGreen;
@@ -180,98 +188,8 @@
   }
 }
 
-// product list
-.procut-list {
-  width: 100%;
-  margin-bottom: 5rem;
-
-  .procut-list__container {
-    max-width: 940px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .product-list-item__container {
-      position: relative;
-      max-width: 300px;
-      flex: 0 0 33.333%;
-
-      .product-list-item_img {
-        width: 100%;
-        height: 315px;
-        display: block;
-        border: 0;
-      }
-
-      .product-list-item_info {
-        width: 100%;
-        height: 3.5rem;
-        display: flex;
-        align-items: center;
-        border-left: 1px solid $limeGreen;
-        border-right: 1px solid $limeGreen;
-
-        .info_name {
-          width: 57.7%;
-          font-family: $font-title;
-          font-size: $font-l;
-          font-weight: 300;
-          padding: 14px 30px;
-          border-right: 1px solid $limeGreen;
-        }
-        .info_price {
-          width: 42.3%;
-          font-family: $font-title;
-          font-size: $font-l;
-          font-weight: 500;
-          padding: 14px 20px 14px 25px;
-        }
-      }
-
-      .product-list-item_addCart {
-        width: 100%;
-        height: 4rem;
-
-        .addCart_btn {
-          width: 100%;
-          height: 100%;
-          border: none;
-          background: $limeGreen;
-          cursor: pointer;
-          font-size: $font-xl;
-          font-weight: 500;
-          color: $darkGreen;
-        }
-      }
-
-      .product-list-item_like {
-        position: absolute;
-        top: 1.2rem;
-        right: 1.3rem;
-        font-size: $font-l;
-        cursor: pointer;
-      }
-      .product-list-item_today {
-        position: absolute;
-        top: 0;
-        left: 1.25rem;
-        display: inline-block;
-        width: 2.25rem;
-        height: 6.64rem;
-        color: $limeGreen;
-        background: $darkGreen;
-        padding: 0.6rem;
-        font-family: $font-title;
-        line-height: 1.4rem;
-      }
-    }
-  }
-}
-
 .mobile__story_section,
-.mobile__story_section,
-.mobile__productList_section {
+.mobile__story_section {
   display: none;
 }
 
@@ -294,24 +212,18 @@
       width: 100%;
       height: 10rem;
       background: #fff;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: 45%;
     }
     .mobile__story_slogan.slogan1 {
       background-image: url('~assets/img/quote/mobile/sm-橫式-為什麼選擇了做甜點.svg');
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: 45%;
     }
     .mobile__story_slogan.slogan2 {
       background-image: url('~assets/img/quote/mobile/sm-橫式-為什麼一定要吃甜點.svg');
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: 45%;
     }
     .mobile__story_slogan.slogan3 {
       background-image: url('~assets/img/quote/mobile/sm-橫式-想吃甜點是不需要理由的.svg');
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: 45%;
     }
     .mobile__story {
       background: $limeGreen;
@@ -321,18 +233,15 @@
         .mobile__story_img {
           width: 100%;
           height: 15.6rem;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-size: cover;
         }
         .mobile__story_img.img1 {
           background-image: url('~assets/img/product/product6.jpeg');
-          background-position: center center;
-          background-repeat: no-repeat;
-          background-size: cover;
         }
         .mobile__story_img.img2 {
           background-image: url('~assets/img/product/product7.jpeg');
-          background-position: center center;
-          background-repeat: no-repeat;
-          background-size: cover;
         }
 
         .mobile__story_content {
@@ -361,24 +270,18 @@
       .mobile__productList_img {
         width: 100%;
         height: 20rem;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
       }
       .mobile__productList_img.img1 {
         background-image: url('~assets/img/product/product1.jpeg');
-        background-position: center center;
-        background-repeat: no-repeat;
-        background-size: cover;
       }
       .mobile__productList_img.img2 {
         background-image: url('~assets/img/product/product2.jpeg');
-        background-position: center center;
-        background-repeat: no-repeat;
-        background-size: cover;
       }
       .mobile__productList_img.img3 {
         background-image: url('~assets/img/product/product3.jpeg');
-        background-position: center center;
-        background-repeat: no-repeat;
-        background-size: cover;
       }
 
       .mobile__productList_info {

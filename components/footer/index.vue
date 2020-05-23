@@ -152,5 +152,5 @@ export default {}
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/footer/_footer.scss';
+@import '@/assets/scss/public/footer/_footer.scss';
 </style>
