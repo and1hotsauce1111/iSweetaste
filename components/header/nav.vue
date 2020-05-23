@@ -1,32 +1,16 @@
 <template>
   <div class="header__menu_container">
     <ul class="header__menu">
-      <li>
-        <nuxt-link to="/">
-          首頁
+      <li
+        v-for="(list, index) in menuList"
+        :key="index"
+        class="header__menu_list"
+      >
+        <nuxt-link :to="list.route">
+          {{ list.name }}
         </nuxt-link>
       </li>
-      <li>
-        <nuxt-link to="/">
-          甜點
-        </nuxt-link>
-      </li>
-      <li>
-        <nuxt-link to="/">
-          註冊
-        </nuxt-link>
-      </li>
-      <li>
-        <nuxt-link to="/">
-          登入
-        </nuxt-link>
-      </li>
-      <li>
-        <nuxt-link to="/">
-          商家分佈
-        </nuxt-link>
-      </li>
-      <li>
+      <li class="header__menu_list">
         <fa :icon="['fas', 'shopping-cart']" />
       </li>
     </ul>
@@ -37,7 +21,19 @@
 </template>
 
 <script>
-export default {}
+export default {
+  data() {
+    return {
+      menuList: [
+        { name: '首頁', route: '/' },
+        { name: '甜點', route: '/product' },
+        { name: '註冊', route: '/register' },
+        { name: '登入', route: '/login' },
+        { name: '商家分佈', route: '/shop' }
+      ]
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
