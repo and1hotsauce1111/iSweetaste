@@ -23,7 +23,7 @@ module.exports = {
   /*
    ** Global CSS
    */
-  css: ['@/assets/scss/_reset.scss'],
+  css: ['@/assets/scss/_reset.scss', '~/assets/main.css'],
   styleResources: {
     scss: [
       '@/assets/scss/_variables.scss',

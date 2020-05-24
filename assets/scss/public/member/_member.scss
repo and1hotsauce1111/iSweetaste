@@ -1,21 +1,26 @@
-.login__section {
+.login__section,
+.register__section {
   max-width: 940px;
   margin: 3.75rem auto;
 
-  .login__section_wrap {
+  .login__section_wrap,
+  .register__section_wrap {
     max-width: 780px;
     margin: 0 auto;
     display: flex;
 
-    .login__section_memberLogin {
+    .login__section_memberLogin,
+    .register__section_memberRegister {
       max-width: 50%;
       flex: 0 0 50%;
       background: $darkGreen;
 
-      .login__section_memberLogin_form_container {
+      .login__section_memberLogin_form_container,
+      .register__section_memberRegister_form_container {
         padding: 0 30px;
 
-        .login__section_memberLogin_title {
+        .login__section_memberLogin_title,
+        .register__section_memberRegister_title {
           margin: 2.5rem 0;
           color: $limeGreen;
           text-align: center;
@@ -23,11 +28,17 @@
           font-family: $font-title;
         }
 
-        .login__section_memberLogin_input {
+        .login__section_memberLogin_input,
+        .register__section_memberRegister_input {
           width: 100%;
 
           .login__section_memberLogin_input_account,
-          .login__section_memberLogin_input_password {
+          .login__section_memberLogin_input_password,
+          .register__section_memberRegister_input_name,
+          .register__section_memberRegister_input_email,
+          .register__section_memberRegister_input_verifyCode,
+          .register__section_memberRegister_input_password,
+          .register__section_memberRegister_input_confirmPwd {
             position: relative;
             width: 100%;
             margin-bottom: 1rem;
@@ -60,9 +71,35 @@
               transform: translate(-8%, -50%);
             }
           }
+
+          .register__section_memberRegister_input_btn {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1rem;
+
+            button {
+              border: none;
+              background: $yellow;
+              width: 4.5rem;
+              height: 2rem;
+              color: $darkGreen;
+              font-family: $font-title;
+              border-radius: 2px;
+              padding: 0 0.5rem;
+              cursor: pointer;
+            }
+
+            p {
+              display: none;
+              color: $yellow;
+              font-family: $font-title;
+              margin: 1rem 0;
+            }
+          }
         }
 
-        .login__section_memberLogin_remember {
+        .login__section_memberLogin_remember,
+        .register__section_memberRegister_remember {
           width: 100%;
           color: $limeGreen;
           font-family: $font-title;
@@ -75,7 +112,8 @@
         display: none;
       }
 
-      .login__section_memberLogin_form_submit {
+      .login__section_memberLogin_form_submit,
+      .register__section_memberRegister_form_submit {
         display: block;
         width: 100%;
         height: 4.06rem;
@@ -87,14 +125,16 @@
         font-weight: 500;
       }
     }
-    .login__section_socialMedia {
+    .login__section_socialMedia,
+    .register__section_socialMedia {
       max-width: 50%;
       flex: 0 0 50%;
       background: $limeGreen;
       margin: 1rem 0;
       padding: 0 1.87rem;
 
-      .login__section_socialMedia_title {
+      .login__section_socialMedia_title,
+      .register__section_socialMedia_title {
         font-family: $font-title;
         font-size: $font-xl;
         color: $darkGrayish;
@@ -102,7 +142,8 @@
         margin: 2.5rem 0;
       }
 
-      .login__section_socialMedia_list {
+      .login__section_socialMedia_list,
+      .register__section_socialMedia_list {
         width: 100%;
 
         li {
@@ -123,33 +164,41 @@
 }
 
 @media screen and (max-width: 768px) {
-  .login__section {
+  .login__section,
+  .register__section {
     margin-right: 1.5rem;
     margin-left: 1.5rem;
   }
 }
 
 @media screen and (max-width: 414px) {
-  .login__section {
+  .login__section,
+  .register__section {
     max-width: 100%;
     margin: 0;
-    .login__section_wrap {
+
+    .login__section_wrap,
+    .register__section_wrap {
       max-width: 100%;
       flex: 0 0 100%;
       flex-direction: column;
 
-      .login__section_socialMedia {
+      .login__section_socialMedia,
+      .register__section_socialMedia {
         display: none;
       }
 
-      .login__section_memberLogin {
+      .login__section_memberLogin,
+      .register__section_memberRegister {
         max-width: 100%;
         flex: 0 0 100%;
 
-        .login__section_memberLogin_form_container {
+        .login__section_memberLogin_form_container,
+        .register__section_memberRegister_form_container {
           padding: 0;
 
-          .login__section_memberLogin_title {
+          .login__section_memberLogin_title,
+          .register__section_memberRegister_title {
             margin: 1.87rem 0;
           }
 
@@ -164,6 +213,7 @@
               justify-content: center;
               align-items: center;
               max-width: 19.6rem;
+              margin: 0 auto;
 
               li {
                 width: 33.333%;
@@ -186,10 +236,13 @@
             }
           }
 
-          .login__section_memberLogin_input {
+          .login__section_memberLogin_input,
+          .register__section_memberRegister_input {
             padding: 1.87rem 1.87rem 0 1.87rem;
           }
-          .login__section_memberLogin_remember {
+
+          .login__section_memberLogin_remember,
+          .register__section_memberRegister_remember {
             padding: 0 1.87rem 1.87rem 1.87rem;
             margin: 0;
           }

@@ -87,5 +87,5 @@ export default {}
 
 <style lang="scss" scoped>
 @import '@/assets/scss/public/_checkbox.scss';
-@import '@/assets/scss/login/_login.scss';
+@import '@/assets/scss/public/member/_member.scss';
 </style>

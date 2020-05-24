@@ -4,10 +4,7 @@
       <Geo />
       <div class="mobile__header_hamburger" @click="toggleMobileMenu">
         <!-- <fa :icon="['fas', 'bars']" /> -->
-        <div
-          ref="mobileHamburger"
-          class="mobile__header_hamburger_line_container"
-        >
+        <div ref="mobileHamburger" class="mobile__header_hamburger_line_container">
           <div class="mobile__header_hamburger_line"></div>
           <div class="mobile__header_hamburger_line"></div>
           <div class="mobile__header_hamburger_line"></div>
@@ -27,6 +24,7 @@
           v-for="(list, index) in menuList"
           :key="index"
           class="mobile__clip_menu_list"
+          @click="toggleMobileMenu"
         >
           <nuxt-link :to="list.route">
             {{ list.name }}
