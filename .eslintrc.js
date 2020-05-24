@@ -31,6 +31,8 @@ module.exports = {
       {
         multiline: 'always'
       }
-    ]
+    ],
+    'vue/singleline-html-element-content-newline': 'off',
+    'vue/multiline-html-element-content-newline': 'off'
   }
 }

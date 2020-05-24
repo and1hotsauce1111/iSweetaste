@@ -1,21 +1,19 @@
 <template>
   <div class="header__menu_container">
     <ul class="header__menu">
-      <li
-        v-for="(list, index) in menuList"
-        :key="index"
-        class="header__menu_list"
-      >
-        <nuxt-link :to="list.route">
-          {{ list.name }}
-        </nuxt-link>
+      <li v-for="(list, index) in menuList" :key="index" class="header__menu_list">
+        <nuxt-link :to="list.route">{{ list.name }}</nuxt-link>
       </li>
       <li class="header__menu_list">
-        <fa :icon="['fas', 'shopping-cart']" />
+        <nuxt-link to="/cart">
+          <fa :icon="['fas', 'shopping-cart']" />
+        </nuxt-link>
       </li>
     </ul>
     <div class="mobile__cart">
-      <fa :icon="['fas', 'shopping-cart']" />
+      <nuxt-link to="/cart">
+        <fa :icon="['fas', 'shopping-cart']" />
+      </nuxt-link>
     </div>
   </div>
 </template>
