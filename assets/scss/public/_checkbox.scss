@@ -1,0 +1,52 @@
+.checkbox__container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    input ~ .checkbox__custom {
+      background: $yellow;
+    }
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    cursor: pointer;
+
+    &:checked ~ .checkbox__custom {
+      background: $limeGreen;
+    }
+
+    &:checked ~ .checkbox__custom::after {
+      opacity: 1;
+    }
+  }
+
+  .checkbox__custom {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    background: $limeGreen;
+
+    &::after {
+      content: '';
+      position: absolute;
+      opacity: 0;
+      left: 5px;
+      top: 2px;
+      width: 3px;
+      height: 8px;
+      border: solid $darkGreen;
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+      transition: all 0.3s;
+    }
+  }
+}

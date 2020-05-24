@@ -189,7 +189,8 @@
 }
 
 .mobile__story_section,
-.mobile__story_section {
+.mobile__story_section,
+.mobile__productList_section {
   display: none;
 }
 
@@ -201,6 +202,10 @@
   .story__section,
   .story__slogan,
   .procut-list {
+    display: none;
+  }
+
+  .product__section {
     display: none;
   }
 
@@ -359,6 +364,10 @@
     .banner__img {
       height: auto;
     }
+  }
+
+  .product__section {
+    display: none;
   }
 
   .mobile__productList_section {

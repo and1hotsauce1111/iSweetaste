@@ -17,7 +17,8 @@
                 :key="index"
                 class="product__menu_list_li"
               >
-                {{ list.title }}<span>&nbsp;&nbsp;({{ list.num }})</span>
+                {{ list.title }}
+                <span>&nbsp;&nbsp;({{ list.num }})</span>
               </li>
             </ul>
           </div>
