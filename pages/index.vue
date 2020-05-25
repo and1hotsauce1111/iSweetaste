@@ -9,9 +9,7 @@
             <a href="#" class="banner__news_list_item">
               <div :class="['banner__news_box ' + item.class]"></div>
               <div :class="['banner_news_box_bg ' + item.class]"></div>
-              <div :class="['banner_news_box_word ' + item.class]">
-                {{ item.title }}
-              </div>
+              <div :class="['banner_news_box_word ' + item.class]">{{ item.title }}</div>
             </a>
           </li>
         </ul>
@@ -29,12 +27,8 @@
             </div>
             <div class="story_content">
               <div class="story_content_p">
-                <p>
-                  青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-                </p>
-                <p>
-                  是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-                </p>
+                <p>青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
+                <p>是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
               </div>
             </div>
             <div class="story_title">
@@ -53,12 +47,8 @@
           <div class="story_col">
             <div class="story_content">
               <div class="story_content_p">
-                <p>
-                  青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-                </p>
-                <p>
-                  是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-                </p>
+                <p>青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
+                <p>是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
               </div>
             </div>
             <div class="story_title">
@@ -76,10 +66,7 @@
       </div>
       <!-- slogan -->
       <div class="story__slogan">
-        <img
-          src="~assets/img/quote/desktop/lg-想吃甜點是不需要理由的.svg"
-          alt
-        />
+        <img src="~assets/img/quote/desktop/lg-想吃甜點是不需要理由的.svg" alt />
       </div>
     </div>
 
@@ -94,17 +81,11 @@
           >
             <img class="product-list-item_img" :src="item.img" alt />
             <div class="product-list-item_info">
-              <div class="info_name">
-                {{ item.name }}
-              </div>
-              <div class="info_price">
-                {{ 'NT$ ' + item.price }}
-              </div>
+              <div class="info_name">{{ item.name }}</div>
+              <div class="info_price">{{ 'NT$ ' + item.price }}</div>
             </div>
             <div class="product-list-item_addCart">
-              <button class="addCart_btn">
-                加入購物車
-              </button>
+              <button class="addCart_btn">加入購物車</button>
             </div>
             <span class="product-list-item_today">本日精選</span>
             <span class="product-list-item_like">
@@ -122,12 +103,8 @@
         <div class="mobile__story_col">
           <div class="mobile__story_img img1"></div>
           <div class="mobile__story_content">
-            <p>
-              青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-            </p>
-            <p>
-              是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-            </p>
+            <p>青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
+            <p>是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
           </div>
         </div>
       </div>
@@ -136,12 +113,8 @@
         <div class="mobile__story_col">
           <div class="mobile__story_img img2"></div>
           <div class="mobile__story_content">
-            <p>
-              青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-            </p>
-            <p>
-              是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。
-            </p>
+            <p>青山依舊在，幾度夕陽紅。慣看秋月春風。一壺濁酒喜相逢，浪花淘盡英雄。是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
+            <p>是非成敗轉頭空，滾滾長江東逝水，白髮漁樵江渚上，古今多少事，都付笑談中。</p>
           </div>
         </div>
       </div>
@@ -150,34 +123,32 @@
 
     <!-- mobile/pad product list -->
     <div class="mobile__productList_section">
-      <div
-        v-for="(item, index) in productItem"
-        :key="index"
-        class="mobile__productList_container"
-      >
+      <div v-for="(item, index) in productItem" :key="index" class="mobile__productList_container">
         <div :class="['mobile__productList_img ' + item.imgClass]"></div>
         <div class="mobile__productList_info">
-          <div class="mobile__productList_name">
-            {{ item.name }}
-          </div>
-          <div class="mobile__productList_prize">
-            {{ 'NT$ ' + item.price }}
-          </div>
+          <div class="mobile__productList_name">{{ item.name }}</div>
+          <div class="mobile__productList_prize">{{ 'NT$ ' + item.price }}</div>
         </div>
-        <button class="mobile__productList_addCart">
-          加入購物車
-        </button>
+        <button class="mobile__productList_addCart">加入購物車</button>
         <span class="mobile__productList_today">本日精選</span>
         <span class="mobile__productList_like">
           <fa :icon="['far', 'heart']" />
         </span>
       </div>
     </div>
+
+    <!-- chat area -->
+    <chat />
   </div>
 </template>
 
 <script>
+import Chat from '@/components/chat/index'
+
 export default {
+  components: {
+    Chat
+  },
   data() {
     return {
       newsBox: [

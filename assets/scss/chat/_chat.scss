@@ -1,0 +1,320 @@
+// customer serivice
+.customer-sevice-container {
+  position: fixed;
+  bottom: 2%;
+  right: 12%;
+  transition: all 0.3s;
+  font-family: $font-title;
+  z-index: 9999;
+
+  // chat room
+  .customer-service-chat-room {
+    position: relative;
+    right: 2%;
+    top: 10%;
+    width: 350px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s;
+
+    .customer-service-chat-room-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: $darkGreen;
+      height: 3rem;
+      line-height: 3rem;
+      color: $limeGreen;
+      padding: 10px;
+      border-radius: 5px 5px 0 0;
+
+      .customer-service-chat-room-header-title {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .customer-service-chat-room-header-close {
+        display: inline-flex;
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+    }
+    .customer-service-chat-room-messages {
+      height: 354px;
+      overflow-y: scroll;
+      background-color: #fff;
+      border-bottom: 1px solid $limeGreen;
+      padding: 10px;
+
+      .unread {
+        position: relative;
+        text-align: center;
+        font-size: 10px;
+        padding: 3px 0;
+        margin: 5px 0;
+        background: rgb(164, 210, 228);
+        border-radius: 3px;
+        color: #fff;
+
+        &::after {
+          clear: both;
+          content: '';
+          display: block;
+          font-size: 0;
+          height: 0;
+          line-height: 0;
+          visibility: hidden;
+        }
+
+        svg {
+          position: absolute;
+          float: left;
+          top: 30%;
+          left: 5%;
+          transform: translate(-30%, -5%);
+        }
+      }
+
+      .customer-service-chat-room-messages-self-container {
+        cursor: pointer;
+
+        &::after {
+          clear: both;
+          content: '';
+          display: block;
+          font-size: 0;
+          height: 0;
+          line-height: 0;
+          visibility: hidden;
+        }
+
+        .customer-service-chat-room-messages-self {
+          float: right;
+          clear: right;
+          padding: 10px;
+          margin-bottom: 5px;
+          background-color: $limeGreen;
+          border-radius: 5px;
+
+          &::after {
+            clear: both;
+            content: '';
+            display: block;
+            font-size: 0;
+            height: 0;
+            line-height: 0;
+            visibility: hidden;
+          }
+        }
+        .customer-service-chat-room-messages-time {
+          float: right;
+          clear: right;
+          height: 0;
+          overflow: hidden;
+          transition: all 0.3s;
+        }
+        .customer-service-chat-room-messages-time.show {
+          height: 20px;
+        }
+      }
+      .customer-service-chat-room-messages-other-container {
+        margin-top: 5px;
+
+        &::after {
+          clear: both;
+          content: '';
+          display: block;
+          font-size: 0;
+          height: 0;
+          line-height: 0;
+          visibility: hidden;
+        }
+        .customer-service-chat-room-messages-other {
+          float: left;
+          clear: left;
+          padding: 10px;
+          margin-bottom: 15px;
+          background-color: $darkGreen;
+          border-radius: 5px;
+          color: $limeGreen;
+
+          &::after {
+            clear: both;
+            content: '';
+            display: block;
+            font-size: 0;
+            height: 0;
+            line-height: 0;
+            visibility: hidden;
+          }
+          .meta {
+            color: $yellow;
+            font-weight: bold;
+            opacity: 0.7;
+            margin-bottom: 7px;
+            span {
+              color: $yellow;
+            }
+          }
+        }
+      }
+    }
+    .customer-service-chat-room-form {
+      height: 53px;
+      border-radius: 0 0 5px 5px;
+      box-shadow: 0 4px 3px 0 #ccc;
+
+      form {
+        display: flex;
+      }
+      input[type='text'] {
+        font-size: 16px;
+        padding: 10px;
+        height: 53px;
+        border: none;
+        border-radius: 0 0 0 5px;
+        flex: 1;
+      }
+      .btn {
+        cursor: pointer;
+        padding: 5px 15px;
+        background: $limeGreen;
+        color: $darkGreen;
+        border: 0;
+        font-size: 16px;
+        border-radius: 0 0 5px 0;
+      }
+    }
+    .customer-service-chat-room-triangle {
+      position: absolute;
+      right: -6%;
+      bottom: 18%;
+      display: inline-block;
+      font-size: 0;
+      overflow: hidden;
+      border-bottom-right-radius: 50%;
+      border-bottom-left-radius: 50%;
+      transform: rotate(-90deg);
+
+      &::before {
+        content: '';
+        position: relative;
+        top: 16px;
+        display: inline-block;
+        border: 20px solid rgba(0, 0, 0, 0);
+        border-bottom-width: 14px;
+        border-top-width: 20px;
+        border-top-color: #fff;
+      }
+    }
+  }
+  .customer-service-chat-room.show {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.customer-sevice-container.show {
+  opacity: 1;
+}
+
+.customer-service {
+  position: fixed;
+  background-image: url('~assets/img/icons/dialogue.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 130px;
+  height: 80px;
+  border-radius: 50%;
+  bottom: 5%;
+  right: 3%;
+  cursor: pointer;
+  transition: all 0.3s;
+  user-select: none;
+  z-index: 5;
+
+  .customer-service-message-count {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background: #f00;
+    height: 26px;
+    width: 26px;
+    border-radius: 50%;
+    color: #fff;
+    font-family: $font-title;
+  }
+}
+.customer-service.show {
+  opacity: 1;
+}
+
+@media screen and (max-width: 1024px) {
+  .customer-sevice-container {
+    .customer-service-chat-room {
+      right: 8%;
+    }
+  }
+}
+@media screen and (max-width: 768px) {
+  .customer-sevice-container {
+    .customer-service-chat-room {
+      right: 5%;
+      top: 10%;
+    }
+  }
+
+  .customer-service {
+    width: 9%;
+    height: 100px;
+    background-position: center center;
+    background-size: contain;
+
+    .customer-service-message-count {
+      top: 1.5rem;
+      right: 0;
+      height: 20px;
+      width: 20px;
+    }
+  }
+}
+@media screen and (max-width: 414px) {
+  .customer-sevice-container {
+    width: 100%;
+    .customer-service-chat-room {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      margin: 0.5rem;
+      width: 96%;
+      .customer-service-chat-room-messages {
+        height: 84%;
+      }
+    }
+
+    .customer-service-chat-room-triangle {
+      display: none !important;
+    }
+  }
+
+  .customer-service {
+    width: 15%;
+  }
+}
+@media screen and (max-width: 375px) {
+  .customer-sevice-container {
+    .customer-service-chat-room {
+      .customer-service-chat-room-messages {
+        height: 80%;
+      }
+    }
+  }
+}
