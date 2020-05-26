@@ -4,36 +4,41 @@
       <div class="login__section_memberLogin">
         <form class="login__section_memberLogin_form">
           <div class="login__section_memberLogin_form_container">
-            <h1 class="login__section_memberLogin_title">
-              會員登入
-            </h1>
+            <h1 class="login__section_memberLogin_title">會員登入</h1>
+            <div class="login__section_errorMsg">驗證碼錯誤</div>
             <div class="mobile__socialMedia">
               <ul class="mobile__socialMedia_list">
                 <li>
                   <a href="#">
-                    <img src="~assets/img/icons/ic-facebook-logotype.svg" alt="" />
+                    <img src="~assets/img/icons/ic-facebook-logotype.svg" alt />
                   </a>
                 </li>
                 <li>
                   <a href="#">
-                    <img src="~assets/img/icons/ic-google.svg" alt="" />
+                    <img src="~assets/img/icons/ic-google.svg" alt />
                   </a>
                 </li>
                 <li>
                   <a href="#">
-                    <img src="~assets/img/icons/ic-yahoo.svg" alt="" />
+                    <img src="~assets/img/icons/ic-yahoo.svg" alt />
                   </a>
                 </li>
               </ul>
             </div>
             <div class="login__section_memberLogin_input">
               <div class="login__section_memberLogin_input_account">
-                <fa :icon="['fas', 'user']" />
-                <input type="text" placeholder="電子信箱/手機號碼" />
+                <div class="login__section_memberLogin_input_container">
+                  <fa :icon="['fas', 'user']" />
+                  <input type="text" placeholder="電子信箱/手機號碼" />
+                </div>
+                <div class="login__section_memberLogin_input_error">未輸入電子信箱／手機</div>
               </div>
               <div class="login__section_memberLogin_input_password">
-                <fa :icon="['fas', 'key']" />
-                <input type="password" placeholder="請輸入使用者密碼" />
+                <div class="login__section_memberLogin_input_container">
+                  <fa :icon="['fas', 'key']" />
+                  <input type="password" placeholder="請輸入使用者密碼" />
+                </div>
+                <div class="login__section_memberLogin_input_error">未輸入密碼</div>
               </div>
             </div>
             <div class="login__section_memberLogin_remember">
@@ -45,34 +50,25 @@
             </div>
           </div>
 
-          <a href="#" class="login__section_memberLogin_form_submit">
-            登入帳號
-          </a>
+          <a href="#" class="login__section_memberLogin_form_submit">登入帳號</a>
         </form>
       </div>
       <div class="login__section_socialMedia">
-        <h2 class="login__section_socialMedia_title">
-          ⸺連結社群帳號⸺
-        </h2>
+        <h2 class="login__section_socialMedia_title">⸺連結社群帳號⸺</h2>
         <ul class="login__section_socialMedia_list">
           <li>
             <a href="#">
-              <img
-                src="~assets/img/icons/ic-facebook-logotype.svg"
-                alt=""
-                width="108"
-                height="20"
-              />
+              <img src="~assets/img/icons/ic-facebook-logotype.svg" alt width="108" height="20" />
             </a>
           </li>
           <li>
             <a href="#">
-              <img src="~assets/img/icons/ic-google.svg" alt="" width="108" height="20" />
+              <img src="~assets/img/icons/ic-google.svg" alt width="108" height="20" />
             </a>
           </li>
           <li>
             <a href="#">
-              <img src="~assets/img/icons/ic-yahoo.svg" alt="" width="108" height="20" />
+              <img src="~assets/img/icons/ic-yahoo.svg" alt width="108" height="20" />
             </a>
           </li>
         </ul>
