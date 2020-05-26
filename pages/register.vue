@@ -108,7 +108,13 @@
             </div>
           </div>
 
-          <a href="#" class="register__section_memberRegister_form_submit" @click="register">註冊帳號</a>
+          <input
+            type="button"
+            value="註冊帳號"
+            href="#"
+            class="register__section_memberRegister_form_submit"
+            @click="register"
+          />
         </form>
       </div>
       <div class="register__section_socialMedia">
@@ -166,13 +172,13 @@ export default {
       registerMsg: '',
       verifyCodeTimer: null, // 獲得驗證碼計時器
       clearErrorTimer: null, // 定時清除錯誤訊息
-      changePageTimer: null // 跳轉頁面計時器
+      changeRouterTimer: null // 跳轉頁面計時器
     }
   },
   beforeDestroy() {
     // 清空所有計時器
     clearInterval(this.verifyCodeTimer)
-    clearTimeout(this.changePageTime)
+    clearTimeout(this.changeRouterTimer)
     clearTimeout(this.clearErrorTimer)
   },
   methods: {
@@ -311,6 +317,7 @@ export default {
             self.clearErrorMsg()
           })
       }
+      return false
     },
     clearErrorMsg() {
       const self = this
@@ -326,7 +333,7 @@ export default {
       }, 3000)
     },
     routerChange() {
-      this.changePageTimer = setTimeout(() => {
+      this.changeRouterTimer = setTimeout(() => {
         this.$refs.registerMsg.classList.remove('show')
         // 清空所有計時器
         clearInterval(this.verifyCodeTimer)

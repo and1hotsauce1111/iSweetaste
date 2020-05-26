@@ -172,7 +172,7 @@ router.get('/users/logout', (req, res, next) => {
   // req.logout() express 原生的方法
   req.logout()
   req.session.destroy()
-  return res.send({ msg: '已成功登出' })
+  return res.send({ msg: '已成功登出', retCode: 0 })
 })
 
 // 已登入的攔截 防止登入後訪問登入頁面

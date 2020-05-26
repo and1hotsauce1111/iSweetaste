@@ -92,6 +92,8 @@ if (process.env.REDIS_URL) {
 // Passport middleware
 app.use(passport.initialize())
 app.use(passport.session())
+// Passport config
+require('./interface/utils/passport.config.js')(passport)
 
 // 掛載router
 app.use(user)

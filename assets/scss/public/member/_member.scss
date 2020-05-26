@@ -165,6 +165,9 @@
         font-family: $font-title;
         font-size: $font-xl;
         font-weight: 500;
+        border: none;
+        color: $darkGreen;
+        cursor: pointer;
       }
     }
     .login__section_socialMedia,
