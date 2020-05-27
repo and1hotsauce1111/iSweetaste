@@ -113,6 +113,7 @@
 
 <script>
 export default {
+  middleware: 'validate',
   data() {
     return {
       shoppingList: [
