@@ -50,6 +50,7 @@
                     type="password"
                     placeholder="請輸入使用者密碼"
                     @blur="validatePwd"
+                    @keyup.enter="login"
                   />
                 </div>
                 <div
@@ -61,7 +62,7 @@
             <div class="login__section_memberLogin_remember">
               <label class="checkbox__container">
                 記住我
-                <input type="checkbox" />
+                <input v-model="rememberMe" type="checkbox" />
                 <span class="checkbox__custom"></span>
               </label>
             </div>
@@ -118,19 +119,11 @@ export default {
       errorMsg: {
         email: '',
         pwd: ''
-      }
+      },
+      rememberMe: false
     }
   },
-  mounted() {
-    const inputPwd = this.$refs.enterPwd
-    inputPwd.addEventListener('keyup', e => {
-      if (e.keyCode === 13) {
-        this.login()
-      }
-    })
-  },
   beforeDestroy() {
-    window.removeEventListener('keyup')
     clearTimeout(this.clearMsgTimer)
     clearTimeout(this.changeRouterTimer)
     this.clearMsgTimer = null
@@ -163,7 +156,6 @@ export default {
       this.$refs.errorPwd.classList.remove('show')
     },
     async login() {
-      // console.log(this.validation.email && this.validation.pwd)
       if (this.loginInfo.email && this.loginInfo.pwd) {
         console.log('login')
 
@@ -173,7 +165,8 @@ export default {
           data: { msg, retCode }
         } = await self.$axios.post('/users/login', {
           email: self.loginInfo.email,
-          password: self.loginInfo.pwd
+          password: self.loginInfo.pwd,
+          rememberMe: self.rememberMe
         })
 
         if (status === 200 && retCode === 0) {

@@ -57,7 +57,7 @@
                 >{{ errorMsg.email }}</div>
               </div>
               <div class="register__section_memberRegister_input_btn">
-                <button @click="verifyCode">發送驗證碼</button>
+                <button @click.prevent="verifyCode">發送驗證碼</button>
                 <p ref="verifyCodeMsg">{{ countDownMsg }}</p>
               </div>
               <div class="register__section_memberRegister_input_verifyCode">
@@ -98,6 +98,7 @@
                     placeholder="確認密碼"
                     style="padding:0 20px"
                     @blur="validteConfirmPwd"
+                    @keyup.enter="register"
                   />
                   <div
                     ref="errorConfirmPwd"
@@ -113,7 +114,7 @@
             value="註冊帳號"
             href="#"
             class="register__section_memberRegister_form_submit"
-            @click="register"
+            @click.prevent="register"
           />
         </form>
       </div>
@@ -238,8 +239,7 @@ export default {
       this.validation.confirmPwd = true
       this.$refs.errorConfirmPwd.classList.remove('show')
     },
-    async verifyCode(e) {
-      e.preventDefault()
+    async verifyCode() {
       // 已經發送過驗證碼
       if (this.verifyCodeTimer) return false
 
@@ -285,8 +285,7 @@ export default {
         }
       }
     },
-    register(e) {
-      e.preventDefault()
+    register() {
       const self = this
       if (
         this.validation.name &&

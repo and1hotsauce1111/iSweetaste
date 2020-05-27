@@ -141,6 +141,11 @@ router.post('/users/login', (req, res, next) => {
     if (err) return res.send({ msg: '發生非預期錯誤，請稍後再嘗試登入', retCode: -1 })
     if (!user) return res.send({ msg: info.message, retCode: -1 })
 
+    // 重新設置session expire time
+    if (req.body.rememberMe) {
+      req.session.cookie.maxAge = 86400 * 7
+    }
+
     // req.login() express 原生的方法
     req.login(user, err => {
       if (err) return next(err)
