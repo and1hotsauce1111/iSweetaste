@@ -14,7 +14,13 @@ module.exports = {
         content: process.env.npm_package_description || ''
       }
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+    link: [
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      {
+        rel: 'stylesheet',
+        href: 'https://unpkg.com/leaflet@1.6.0/dist/leaflet.css'
+      }
+    ]
   },
   /*
    ** Customize the progress-bar color
@@ -34,7 +40,10 @@ module.exports = {
   /*
    ** Plugins to load before mounting the App
    */
-  plugins: [{ src: '@/plugins/element-ui', ssr: true }],
+  plugins: [
+    { src: '@/plugins/element-ui', ssr: true },
+    { src: '@/plugins/mint-ui', ssr: true }
+  ],
   /*
    ** Nuxt.js dev-modules
    */
@@ -95,15 +104,24 @@ module.exports = {
      ** You can extend webpack config here
      */
     analyze: true,
-    vendor: ['element-ui'],
+    vendor: ['element-ui', 'mint-ui'],
     babel: {
       plugins: [
         [
           'component',
           {
+            libraryName: 'mint-ui',
+            style: true
+          },
+          'mint-ui'
+        ],
+        [
+          'component',
+          {
             libraryName: 'element-ui',
             styleLibraryName: 'theme-chalk'
-          }
+          },
+          'element-ui'
         ]
       ],
       comments: true
