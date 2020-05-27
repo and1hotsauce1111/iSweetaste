@@ -4,19 +4,13 @@
       <div class="banner__img"></div>
     </div>
     <!-- product -->
-    <div class="product__section">
+    <div v-if="loginUser" class="product__section">
       <div class="product__container">
         <div class="product__menu">
-          <div class="product__menu_title">
-            甜點類別
-          </div>
+          <div class="product__menu_title">甜點類別</div>
           <div class="product__menu_list_container">
             <ul class="product__menu_list_ul">
-              <li
-                v-for="(list, index) in menuList"
-                :key="index"
-                class="product__menu_list_li"
-              >
+              <li v-for="(list, index) in menuList" :key="index" class="product__menu_list_li">
                 {{ list.title }}
                 <span>&nbsp;&nbsp;({{ list.num }})</span>
               </li>
@@ -31,22 +25,13 @@
               class="product-list-item__container"
             >
               <!-- <img class="product-list-item_img" :src="item.img" alt /> -->
-              <div
-                class="product-list-item_img"
-                :style="item.styleObject"
-              ></div>
+              <div class="product-list-item_img" :style="item.styleObject"></div>
               <div class="product-list-item_info">
-                <div class="info_name">
-                  {{ item.name }}
-                </div>
-                <div class="info_price">
-                  {{ 'NT$ ' + item.price }}
-                </div>
+                <div class="info_name">{{ item.name }}</div>
+                <div class="info_price">{{ 'NT$ ' + item.price }}</div>
               </div>
               <div class="product-list-item_addCart">
-                <button class="addCart_btn">
-                  加入購物車
-                </button>
+                <button class="addCart_btn">加入購物車</button>
               </div>
               <span class="product-list-item_today">本日精選</span>
               <span class="product-list-item_like">
@@ -70,11 +55,37 @@
         </div>
       </div>
     </div>
+    <!-- not login -->
+    <div v-else class="product__section_notLogin">
+      <div class="product__section_notLogin_container">
+        <div class="product__section_notLogin_img"></div>
+        <div class="product__section_notLogin_text">請登入後檢視商品詳細訊息</div>
+        <div class="product__section_notLogin_link">
+          <a href="/login">立即登入</a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
+  // SSR
+  async asyncData(ctx) {
+    const {
+      status,
+      data: { loginUser, retCode }
+    } = await ctx.$axios.get('/users/getUser')
+    if (status === 200 && retCode === 0) {
+      return {
+        loginUser
+      }
+    } else {
+      return {
+        loginUser: ''
+      }
+    }
+  },
   data() {
     return {
       menuList: [

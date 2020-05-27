@@ -126,6 +126,47 @@
   }
 }
 
+.product__section_notLogin {
+  margin: 3.75rem 0;
+  .product__section_notLogin_container {
+    max-width: 940px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .product__section_notLogin_img {
+      width: 100%;
+      height: 300px;
+      background-image: url('//p0.meituan.net/codeman/56a7d5abcb5ce3d90fc91195e5b5856911194.png');
+      background-position: center center;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    .product__section_notLogin_text {
+      text-align: center;
+      font-family: $font-title;
+      font-size: $font-l;
+      margin-top: 1.5rem;
+    }
+
+    .product__section_notLogin_link {
+      text-align: center;
+      margin-top: 1rem;
+
+      a {
+        display: inline-block;
+        font-family: $font-title;
+        font-weight: 500;
+        background: $yellow;
+        border-radius: 3px;
+        padding: 1rem;
+      }
+    }
+  }
+}
+
 // 平板轉橫
 @media screen and (max-width: 1023px) {
 }

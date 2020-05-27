@@ -159,7 +159,7 @@ router.get('/users/getUser', (req, res, next) => {
   // req.isAuthenticated() express 原生的方法
   if (req.isAuthenticated()) {
     const { id, name, email } = req.user
-    return res.send({ id, user: name, email, retCode: 0 })
+    return res.send({ id, loginUser: name, email, retCode: 0 })
   }
   return res.send({ id: '', user: '', email: '', retCode: -1 })
 })
