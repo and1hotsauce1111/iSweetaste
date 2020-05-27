@@ -23,7 +23,7 @@ module.exports = {
   /*
    ** Global CSS
    */
-  css: ['@/assets/scss/_reset.scss', '~/assets/main.css'],
+  css: ['@/assets/scss/_reset.scss'],
   styleResources: {
     scss: [
       '@/assets/scss/_variables.scss',
@@ -34,7 +34,7 @@ module.exports = {
   /*
    ** Plugins to load before mounting the App
    */
-  plugins: [],
+  plugins: [{ src: '@/plugins/element-ui', ssr: true }],
   /*
    ** Nuxt.js dev-modules
    */
@@ -94,6 +94,20 @@ module.exports = {
     /*
      ** You can extend webpack config here
      */
+    analyze: true,
+    vendor: ['element-ui'],
+    babel: {
+      plugins: [
+        [
+          'component',
+          {
+            libraryName: 'element-ui',
+            styleLibraryName: 'theme-chalk'
+          }
+        ]
+      ],
+      comments: true
+    },
     extend(config, ctx) {}
   }
 }

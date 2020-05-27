@@ -1,0 +1,17 @@
+.map__container {
+  max-width: 940px;
+  margin: 1.5rem auto;
+  height: 300px;
+  display: flex;
+  justify-content: space-between;
+
+  .map__list_container {
+    flex: 0 0 35%;
+    border: 1px solid blue;
+  }
+
+  .map__shopGeo_container {
+    flex: 0 0 63%;
+    border: 1px solid red;
+  }
+}

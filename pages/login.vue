@@ -36,10 +36,9 @@
                     @blur="validateEmail"
                   />
                 </div>
-                <div
-                  ref="errorEmail"
-                  class="login__section_memberLogin_input_error"
-                >{{ errorMsg.email }}</div>
+                <div ref="errorEmail" class="login__section_memberLogin_input_error">
+                  {{ errorMsg.email }}
+                </div>
               </div>
               <div class="login__section_memberLogin_input_password">
                 <div class="login__section_memberLogin_input_container">
@@ -53,10 +52,9 @@
                     @keyup.enter="login"
                   />
                 </div>
-                <div
-                  ref="errorPwd"
-                  class="login__section_memberLogin_input_error"
-                >{{ errorMsg.pwd }}</div>
+                <div ref="errorPwd" class="login__section_memberLogin_input_error">
+                  {{ errorMsg.pwd }}
+                </div>
               </div>
             </div>
             <div class="login__section_memberLogin_remember">
@@ -82,7 +80,12 @@
         <ul class="login__section_socialMedia_list">
           <li>
             <a href="#">
-              <img src="~assets/img/icons/ic-facebook-logotype.svg" alt width="108" height="20" />
+              <img
+                src="~assets/img/icons/ic-facebook-logotype.svg"
+                alt
+                width="108"
+                height="20"
+              />
             </a>
           </li>
           <li>
