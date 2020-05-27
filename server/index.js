@@ -29,6 +29,7 @@ const server = http.createServer(app)
 
 // load routers
 const user = require('./interface/User')
+const geo = require('./interface/Geo')
 
 // connect to mongoDB
 const db = process.env.MONGODB_CONNECT
@@ -97,6 +98,7 @@ require('./interface/utils/passport.config.js')(passport)
 
 // 掛載router
 app.use(user)
+app.use(geo)
 
 async function start() {
   // Init Nuxt.js

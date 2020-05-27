@@ -37,7 +37,8 @@
             <img class="mobile__clip_menu_list_userInfo_img" src="~assets/img/icons/user.png" alt />
             <div class="mobile__clip_menu_list_userInfo_username">{{ loginUser }}</div>
           </div>
-          <fa :icon="['fas', 'map-marker-alt']" />&emsp;Taichung
+          <fa :icon="['fas', 'map-marker-alt']" />
+          &emsp;{{ currentCity }}
         </li>
         <li
           v-for="(list, index) in mobileMenuList"
@@ -58,7 +59,8 @@
       </ul>
       <ul v-else ref="mobileMenuList" class="mobile__clip_menu_container">
         <li class="mobile__clip_menu_list">
-          <fa :icon="['fas', 'map-marker-alt']" />&emsp;Taichung
+          <fa :icon="['fas', 'map-marker-alt']" />
+          &emsp;{{ currentCity }}
         </li>
         <li
           v-for="(list, index) in mobileMenuList"
@@ -105,6 +107,9 @@ export default {
   computed: {
     loginUser() {
       return decodeURIComponent(this.$store.state.user.user.name)
+    },
+    currentCity() {
+      return this.$store.state.geo.position.city
     }
   },
   methods: {

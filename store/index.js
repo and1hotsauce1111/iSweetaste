@@ -15,5 +15,12 @@ export const actions = {
         ? { id, name: user, email }
         : { id: '', name: '', email: '' }
     )
+
+    // 取得使用者所在城市
+    const {
+      status: geoStatus,
+      data: { data, geoRetCode }
+    } = await app.$axios.get('/geo/getPosition')
+    commit('geo/setPosition', geoStatus === 200 && geoRetCode === 0 ? data : {})
   }
 }

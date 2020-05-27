@@ -1,11 +1,18 @@
 <template>
   <div class="header__currentCity">
-    <fa :icon="['fas', 'map-marker-alt']" />&nbsp;Taichung
+    <fa :icon="['fas', 'map-marker-alt']" />
+    &nbsp;{{ currentCity }}
   </div>
 </template>
 
 <script>
-export default {}
+export default {
+  computed: {
+    currentCity() {
+      return this.$store.state.geo.position.city
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
