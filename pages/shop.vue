@@ -3,6 +3,7 @@
     <div class="map__list_container">
       <div class="map__list_selectCity">
         <div class="map__list_city">
+          <span class="map__list_city_title">請選擇城市:</span>
           <el-select v-model="value" placeholder="请选择">
             <el-option
               v-for="item in options"
@@ -13,10 +14,41 @@
             </el-option>
           </el-select>
         </div>
-        <div class="map__list_area"></div>
+        <div class="map__list_area">
+          <span class="map__list_area_title">請選擇區域: </span>
+          <el-select v-model="value" placeholder="请选择">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </div>
+      </div>
+      <div class="map__list_searchResult">
+        <span class="map__list_searchResult_result">搜尋結果：共 15 家店家</span>
+      </div>
+      <div class="map__list_showShop">
+        <div class="map__list_showShop_list">
+          <h3 class="map__list_showShop_list_title">柳原教會</h3>
+          <div class="map__list_showShop_list_address">
+            地址:&nbsp;
+            <a href="#" class="map__list_showShop_list_address_link">
+              臺中市400中區興中街119號
+            </a>
+          </div>
+          <div class="map__list_showShop_list_phone">
+            電話:&nbsp;
+            <a href="javascript:;" class="map__list_showShop_list_phone_link">
+              886-4-22222749
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="map__shopGeo_container"></div>
+    <div class="map__shopMap_container"></div>
   </div>
 </template>
 

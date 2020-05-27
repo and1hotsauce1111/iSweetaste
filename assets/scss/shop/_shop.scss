@@ -1,16 +1,69 @@
 .map__container {
   max-width: 940px;
   margin: 1.5rem auto;
-  height: 300px;
   display: flex;
   justify-content: space-between;
 
   .map__list_container {
+    max-width: 35%;
     flex: 0 0 35%;
-    border: 1px solid blue;
+
+    .map__list_selectCity {
+      width: 100%;
+      .map__list_city,
+      .map__list_area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: $font-title;
+        margin-bottom: 1.2rem;
+      }
+    }
+
+    .map__list_searchResult {
+      width: 100%;
+      border-bottom: 1px solid $darkGreen;
+      padding-bottom: 0.5rem;
+      text-align: right;
+
+      .map__list_searchResult_result {
+        font-family: $font-title;
+        font-size: $font-s;
+        font-weight: 450;
+      }
+    }
+
+    .map__list_showShop {
+      width: 100%;
+      max-height: 35rem;
+      overflow-y: auto;
+      margin-top: 1rem;
+      background: #fff;
+      box-shadow: 1px 1px 3px 1px #ccc;
+
+      .map__list_showShop_list {
+        padding: 0.5rem 1rem;
+        font-family: $font-title;
+
+        .map__list_showShop_list_title {
+          font-size: $font-l;
+          padding-bottom: 1rem;
+        }
+
+        .map__list_showShop_list_address,
+        .map__list_showShop_list_phone {
+          margin-bottom: 0.5rem;
+          .map__list_showShop_list_address_link,
+          .map__list_showShop_list_phone_link {
+            color: $blue;
+          }
+        }
+      }
+    }
   }
 
-  .map__shopGeo_container {
+  .map__shopMap_container {
+    max-width: 63%;
     flex: 0 0 63%;
     border: 1px solid red;
   }
