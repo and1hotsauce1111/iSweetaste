@@ -14,3 +14,21 @@ a {
 input:focus {
   outline: none;
 }
+
+// element-ui css rewrite
+.el-select-dropdown {
+  font-family: $font-title;
+
+  .el-select-dropdown__item {
+    padding: 0 0.5rem;
+  }
+}
+
+.el-loading-mask {
+  .el-loading-spinner {
+    .el-loading-text {
+      font-family: $font-title !important;
+      color: $blue;
+    }
+  }
+}

@@ -33,8 +33,8 @@ module.exports = {
   styleResources: {
     scss: [
       '@/assets/scss/_variables.scss',
-      '@/assets/scss/_reboot.scss',
-      '@/assets/scss/_font.scss'
+      '@/assets/scss/_font.scss',
+      '@/assets/scss/_reboot.scss'
     ]
   },
   /*

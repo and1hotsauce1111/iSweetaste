@@ -6,7 +6,7 @@
 
   .map__list_container {
     max-width: 35%;
-    flex: 0 0 32%;
+    flex: 0 0 34%;
 
     .map__list_selectCity {
       width: 100%;
@@ -23,7 +23,8 @@
     // 手機選單
     .mobile__map__list_selectCity {
       display: none;
-      margin-bottom: 2rem;
+      margin: 1rem auto;
+      font-family: $font-title;
     }
 
     .map__list_searchResult {
@@ -41,27 +42,39 @@
 
     .map__list_showShop {
       width: 100%;
-      max-height: 35rem;
+      max-height: 36rem;
       overflow-y: auto;
       margin-top: 1rem;
       background: #fff;
       box-shadow: 1px 1px 3px 1px #ccc;
 
       .map__list_showShop_list {
-        padding: 0.5rem 1rem;
+        margin: 1rem 0.5rem;
+        padding: 0 0.5rem;
         font-family: $font-title;
+        border-bottom: 1px solid $darkGreen;
+
+        &:last-child {
+          border: none;
+        }
 
         .map__list_showShop_list_title {
           font-size: $font-l;
+          display: inline-block;
           padding-bottom: 1rem;
+          line-height: 2rem;
         }
 
         .map__list_showShop_list_address,
         .map__list_showShop_list_phone {
           margin-bottom: 0.5rem;
+          font-size: 14px;
+
           .map__list_showShop_list_address_link,
           .map__list_showShop_list_phone_link {
             color: $blue;
+            display: inline-block;
+            line-height: 1.2rem;
           }
         }
       }
@@ -70,11 +83,12 @@
 
   .map__shopMap_container {
     max-width: 63%;
-    flex: 0 0 68%;
+    flex: 0 0 66%;
 
     #map {
       width: 100%;
       height: 500px;
+      z-index: 5;
     }
   }
 }
