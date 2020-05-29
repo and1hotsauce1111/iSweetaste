@@ -75,6 +75,7 @@ export default {
   .header__menu,
   .header__menu__Login {
     flex: 0 0 59.8%;
+    height: 100px;
     line-height: 100px;
     display: flex;
     justify-content: space-around;
@@ -146,6 +147,7 @@ export default {
       // flex: 0 0 10%;
       // .header__menu,
       .header__menu__Login {
+        height: 80px;
         line-height: 80px;
 
         .header__menu_list {
