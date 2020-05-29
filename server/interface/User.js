@@ -32,58 +32,78 @@ if (process.env.REDIS_URL) {
 // register router
 router.post('/users/register', (req, res) => {
   // 取得前端傳過來的值
-  const { username, email, password, code } = req.body
+  const { username, email, password } = req.body
 
-  // 取得redis中的value
-  RedisStore.hgetall('nodemail', async (err, value) => {
+  if (username && email && password) {
+    // 寫入DB
+    // password加密
+    const salt = bcrypt.genSaltSync(10)
+    const hashPwd = bcrypt.hashSync(password, salt)
+    const new_user = new User({
+      name: username,
+      email,
+      password: hashPwd
+    })
+
+    try {
+      new_user.save()
+      return res.send({ msg: '註冊成功！', retCode: 0 })
+    } catch (e) {
+      return res.send({ msg: '發生意外的錯誤，請稍後再嘗試', retCode: -1 })
+    }
+  } else {
+    return res.send({ msg: '資料不齊全，請重新輸入', retCode: -1 })
+  }
+})
+
+// register username verify
+router.post('/users/verifyName', async (req, res) => {
+  const userName = req.body.username
+  const existUserName = await User.find({ name: userName })
+  console.log(existUserName)
+
+  if (existUserName.length !== 0) return res.send({ msg: '該暱稱已被使用', retCode: -1 })
+  return res.send({ msg: '該暱稱可以使用', retCode: 0 })
+})
+
+// register email verify
+router.post('/users/verifyEmail', async (req, res) => {
+  const userEmail = req.body.email
+  const existUserEmail = await User.find({ email: userEmail })
+  console.log(existUserEmail)
+
+  if (existUserEmail.length !== 0) return res.send({ msg: '該信箱已被使用', retCode: -1 })
+  return res.send({ msg: '該信箱可以使用', retCode: 0 })
+})
+
+// register verifyCode check
+router.post('/users/checkVerifyCode', (req, res) => {
+  const verifyCode = req.body.code
+  RedisStore.hgetall('nodemail', (err, value) => {
     if (err) return console.log(err)
-    // 資料驗證
-    if (code) {
+
+    if (verifyCode) {
+      console.log('in')
+
       const saveCode = value.code
       const saveExpire = value.expire
 
-      if (code === saveCode) {
+      if (verifyCode === saveCode) {
         //  比對code碼是否逾期
         if (new Date().getTime() - saveExpire > 0) {
           return res.send({ msg: '驗證碼已逾期，請重新註冊！', retCode: -1 })
         }
+        return res.send({ msg: '驗證碼成功！', retCode: 0 })
       } else {
         return res.send({ msg: '驗證碼錯誤！', retCode: -1 })
       }
     } else {
       return res.send({ msg: '請輸入驗證碼', retCode: -1 })
     }
-
-    // username和email關聯
-    const exist_user_by_name = await User.find({ name: username })
-    const exist_user_by_email = await User.find({ email })
-
-    if (exist_user_by_name.length) return res.send({ msg: '該暱稱已被使用', retCode: -1 })
-    if (exist_user_by_email.length)
-      return res.send({ msg: '該信箱已被註冊', retCode: -1 })
-
-    if (!exist_user_by_name.length && !exist_user_by_email.length) {
-      // 寫入DB
-      // password加密
-      const salt = bcrypt.genSaltSync(10)
-      const hashPwd = bcrypt.hashSync(password, salt)
-      const new_user = new User({
-        name: username,
-        email,
-        password: hashPwd
-      })
-
-      try {
-        new_user.save()
-        return res.send({ msg: '註冊成功！', retCode: 0 })
-      } catch (e) {
-        return res.send({ msg: '發生意外的錯誤，請稍後再嘗試', retCode: -1 })
-      }
-    }
   })
 })
 
-// email verify
+// 發送email認證碼
 router.post('/users/verify', (req, res, next) => {
   // 驗證碼是否逾期
   RedisStore.hget('nodemail', 'expire', async (err, value) => {

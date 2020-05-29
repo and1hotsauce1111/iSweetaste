@@ -36,9 +36,10 @@
                     @blur="validateEmail"
                   />
                 </div>
-                <div ref="errorEmail" class="login__section_memberLogin_input_error">
-                  {{ errorMsg.email }}
-                </div>
+                <div
+                  ref="errorEmail"
+                  class="login__section_memberLogin_input_error"
+                >{{ errorMsg.email }}</div>
               </div>
               <div class="login__section_memberLogin_input_password">
                 <div class="login__section_memberLogin_input_container">
@@ -52,9 +53,10 @@
                     @keyup.enter="login"
                   />
                 </div>
-                <div ref="errorPwd" class="login__section_memberLogin_input_error">
-                  {{ errorMsg.pwd }}
-                </div>
+                <div
+                  ref="errorPwd"
+                  class="login__section_memberLogin_input_error"
+                >{{ errorMsg.pwd }}</div>
               </div>
             </div>
             <div class="login__section_memberLogin_remember">
@@ -66,13 +68,11 @@
             </div>
           </div>
 
-          <input
-            type="button"
-            value="登入帳號"
+          <a
             href="javascript:;"
             class="login__section_memberLogin_form_submit"
             @click.prevent="login"
-          />
+          >登入帳號</a>
         </form>
       </div>
       <div class="login__section_socialMedia">
@@ -80,12 +80,7 @@
         <ul class="login__section_socialMedia_list">
           <li>
             <a href="#">
-              <img
-                src="~assets/img/icons/ic-facebook-logotype.svg"
-                alt
-                width="108"
-                height="20"
-              />
+              <img src="~assets/img/icons/ic-facebook-logotype.svg" alt width="108" height="20" />
             </a>
           </li>
           <li>
@@ -160,8 +155,6 @@ export default {
     },
     async login() {
       if (this.loginInfo.email && this.loginInfo.pwd) {
-        console.log('login')
-
         const self = this
         const {
           status,
@@ -176,6 +169,7 @@ export default {
           // 成功登入
           self.loginMsg = msg
           self.$refs.loginMsg.classList.add('show')
+          window.scrollTo(0, 0)
           self.routerChange()
           return false
         }
@@ -202,7 +196,13 @@ export default {
         clearTimeout(self.clearMsgTimer)
         clearTimeout(self.changeRouterTimer)
         this.clearMsgTimer = null
-        location.href = '/'
+        // 清空input
+        this.loginInfo.email = ''
+        this.loginInfo.pwd = ''
+        this.errorMsg.email = ''
+        this.errorMsg.pwd = ''
+        this.loginMsg = ''
+        location.replace('/')
       }, 1500)
     }
   }

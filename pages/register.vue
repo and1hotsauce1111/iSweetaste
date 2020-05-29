@@ -39,7 +39,8 @@
                 <div
                   ref="errorName"
                   class="register__section_memberRegister_input_error"
-                >{{ errorMsg.name }}</div>
+                  v-html="statusMsg.name"
+                ></div>
               </div>
               <div class="register__section_memberRegister_input_email">
                 <div class="register__section_memberRegister_input_container">
@@ -54,7 +55,8 @@
                 <div
                   ref="errorEmail"
                   class="register__section_memberRegister_input_error"
-                >{{ errorMsg.email }}</div>
+                  v-html="statusMsg.email"
+                ></div>
               </div>
               <div class="register__section_memberRegister_input_btn">
                 <button @click.prevent="verifyCode">發送驗證碼</button>
@@ -72,7 +74,8 @@
                   <div
                     ref="errorVerifyCode"
                     class="register__section_memberRegister_input_error"
-                  >{{ errorMsg.verifyCode }}</div>
+                    v-html="statusMsg.verifyCode"
+                  ></div>
                 </div>
               </div>
               <div class="register__section_memberRegister_input_password">
@@ -88,7 +91,8 @@
                 <div
                   ref="errorPwd"
                   class="register__section_memberRegister_input_error"
-                >{{ errorMsg.pwd }}</div>
+                  v-html="statusMsg.pwd"
+                ></div>
               </div>
               <div class="register__section_memberRegister_input_confirmPwd">
                 <div class="register__section_memberRegister_input_container">
@@ -103,19 +107,18 @@
                   <div
                     ref="errorConfirmPwd"
                     class="register__section_memberRegister_input_error"
-                  >{{ errorMsg.confirmPwd }}</div>
+                    v-html="statusMsg.confirmPwd"
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <input
-            type="button"
-            value="註冊帳號"
-            href="#"
+          <a
+            href="javascript:;"
             class="register__section_memberRegister_form_submit"
             @click.prevent="register"
-          />
+          >註冊帳號</a>
         </form>
       </div>
       <div class="register__section_socialMedia">
@@ -147,7 +150,7 @@ export default {
   data() {
     return {
       // 錯誤訊息
-      errorMsg: {
+      statusMsg: {
         name: '',
         email: '',
         verifyCode: '',
@@ -183,43 +186,91 @@ export default {
     clearTimeout(this.clearErrorTimer)
   },
   methods: {
-    validateName() {
+    async validateName() {
       if (this.registerInfo.name.trim() === '') {
-        this.errorMsg.name = '請輸入暱稱!'
+        this.statusMsg.name = '<span style="color:red">請輸入暱稱!</span>'
         this.$refs.errorName.classList.add('show')
         return false
       }
-      this.validation.name = true
-      this.$refs.errorName.classList.remove('show')
+
+      const {
+        status,
+        data: { msg, retCode }
+      } = await this.$axios.post('/users/verifyName', {
+        username: this.registerInfo.name
+      })
+      if (status === 200 && retCode === 0) {
+        this.statusMsg.name = `<span style="color:#ffe180">${msg}</span>`
+        this.validation.name = true
+        this.$refs.errorName.classList.remove('show')
+        this.$refs.errorName.classList.add('show')
+      } else if (status === 200 && retCode === -1) {
+        this.statusMsg.name = `<span style="color:red">${msg}</span>`
+        this.$refs.errorName.classList.remove('show')
+        this.$refs.errorName.classList.add('show')
+      } else {
+        this.registerMsg = `<span style="color:red">${msg}</span>`
+      }
     },
-    validateEmail() {
+    async validateEmail() {
       if (this.registerInfo.email.trim() === '') {
-        this.errorMsg.email = '請輸入信箱!'
+        this.statusMsg.email = '<span style="color:red">請輸入信箱!</span>'
         this.$refs.errorEmail.classList.add('show')
         return false
-      } else {
-        const emailRule = /^\w+((-\w+)|(\.\w+))*@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/
-        if (this.registerInfo.email.search(emailRule) === -1) {
-          this.errorMsg.email = '信箱格式錯誤!'
-          this.$refs.errorEmail.classList.add('show')
-          return false
-        }
       }
-      this.validation.email = true
-      this.$refs.errorEmail.classList.remove('show')
+      const emailRule = /^\w+((-\w+)|(\.\w+))*@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/
+      if (this.registerInfo.email.search(emailRule) === -1) {
+        this.statusMsg.email = '<span style="color:red">信箱格式錯誤!</span>'
+        this.$refs.errorEmail.classList.add('show')
+        return false
+      }
+
+      const {
+        status,
+        data: { msg, retCode }
+      } = await this.$axios.post('/users/verifyEmail', { email: this.registerInfo.email })
+      if (status === 200 && retCode === 0) {
+        this.statusMsg.email = `<span style="color:#ffe180">${msg}</span>`
+        this.validation.email = true
+        this.$refs.errorEmail.classList.remove('show')
+        this.$refs.errorEmail.classList.add('show')
+      } else if (status === 200 && retCode === -1) {
+        this.statusMsg.email = `<span style="color:red">${msg}</span>`
+        this.$refs.errorEmail.classList.remove('show')
+        this.$refs.errorEmail.classList.add('show')
+      } else {
+        this.registerMsg = msg
+      }
     },
-    validateVerifyCode() {
+    async validateVerifyCode() {
       if (this.registerInfo.verifyCode.trim() === '') {
-        this.errorMsg.verifyCode = '請輸入驗證碼!'
+        this.statusMsg.verifyCode = '<span style="color:red">請輸入驗證碼!</span>'
         this.$refs.errorVerifyCode.classList.add('show')
         return false
       }
-      this.validation.verifyCode = true
-      this.$refs.errorVerifyCode.classList.remove('show')
+
+      const {
+        status,
+        data: { msg, retCode }
+      } = await this.$axios.post('/users/checkVerifyCode', {
+        code: this.registerInfo.verifyCode
+      })
+      if (status === 200 && retCode === 0) {
+        this.statusMsg.verifyCode = `<span style="color:#ffe180">${msg}</span>`
+        this.validation.verifyCode = true
+        this.$refs.errorVerifyCode.classList.remove('show')
+        this.$refs.errorVerifyCode.classList.add('show')
+      } else if (status === 200 && retCode === -1) {
+        this.statusMsg.verifyCode = `<span style="color:red">${msg}</span>`
+        this.$refs.errorVerifyCode.classList.remove('show')
+        this.$refs.errorVerifyCode.classList.add('show')
+      } else {
+        this.registerMsg = msg
+      }
     },
     validtePwd() {
       if (this.registerInfo.pwd.trim() === '') {
-        this.errorMsg.pwd = '請輸入密碼!'
+        this.statusMsg.pwd = '<span style="color:red">請輸入密碼!</span>'
         this.$refs.errorPwd.classList.add('show')
         return false
       }
@@ -228,11 +279,11 @@ export default {
     },
     validteConfirmPwd() {
       if (this.registerInfo.confirmPwd.trim() === '') {
-        this.errorMsg.confirmPwd = '請再次輸入密碼!'
+        this.statusMsg.confirmPwd = '<span style="color:red">請再次輸入密碼!</span>'
         this.$refs.errorConfirmPwd.classList.add('show')
         return false
       } else if (this.registerInfo.pwd !== this.registerInfo.confirmPwd) {
-        this.errorMsg.confirmPwd = '兩次輸入密碼不一致!'
+        this.statusMsg.confirmPwd = '<span style="color:red">兩次輸入密碼不一致!</span>'
         this.$refs.errorConfirmPwd.classList.add('show')
         return false
       }
@@ -298,13 +349,13 @@ export default {
           .post('/users/register', {
             username: window.encodeURIComponent(self.registerInfo.name),
             password: self.registerInfo.pwd,
-            email: self.registerInfo.email,
-            code: self.registerInfo.verifyCode
+            email: self.registerInfo.email
           })
           .then(({ status, data: { msg, retCode } }) => {
             if (status === 200 && retCode === 0) {
               self.registerMsg = msg
               self.$refs.registerMsg.classList.add('show')
+              window.scrollTo(0, 0)
               self.routerChange()
               return false
             }
@@ -338,7 +389,20 @@ export default {
         clearInterval(this.verifyCodeTimer)
         clearTimeout(this.changePageTime)
         clearTimeout(this.clearErrorTimer)
-        location.href = '/login'
+        // 清空所有表單
+        this.registerInfo.name = ''
+        this.registerInfo.email = ''
+        this.registerInfo.verifyCode = ''
+        this.registerInfo.pwd = ''
+        this.registerInfo.confirmPwd = ''
+        this.statusMsg.name = ''
+        this.statusMsg.email = ''
+        this.statusMsg.verifyCode = ''
+        this.statusMsg.pwd = ''
+        this.statusMsg.confirmPwd = ''
+        this.registerMsg = ''
+
+        location.replace('/login')
       }, 1500)
     }
   }

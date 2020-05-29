@@ -59,7 +59,7 @@
           }
 
           .register__content__form_submit {
-            width: 64px;
+            width: 4rem;
             height: 100%;
             background: $yellow;
             border: none;
@@ -178,6 +178,10 @@
 
           .register__content__form {
             max-width: 100%;
+
+            .register__content__form_input {
+              width: 80%;
+            }
           }
         }
       }

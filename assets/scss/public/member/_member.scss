@@ -94,7 +94,7 @@
 
             .register__section_memberRegister_input_error,
             .login__section_memberLogin_input_error {
-              color: $yellow;
+              // color: red;
               font-family: $font-title;
               height: 0;
               overflow: hidden;
@@ -117,7 +117,7 @@
             button {
               border: none;
               background: $yellow;
-              width: 4.5rem;
+              width: 6rem;
               height: 2rem;
               color: $darkGreen;
               font-family: $font-title;
