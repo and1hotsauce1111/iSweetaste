@@ -16,14 +16,8 @@
       </li>
       <li class="header__menu__Login_userInfo">
         <div class="header__menu__Login_userInfo_container" @click="showPanel">
-          <img
-            class="header__menu__Login_userInfo_img"
-            src="~assets/img/icons/user.png"
-            alt=""
-          />
-          <div class="header__menu__Login_userInfo_username">
-            {{ loginUser }}
-          </div>
+          <img class="header__menu__Login_userInfo_img" src="~assets/img/icons/user.png" alt />
+          <div class="header__menu__Login_userInfo_username">{{ loginUser }}</div>
         </div>
       </li>
       <li class="header__menu__Login_list">
@@ -84,6 +78,7 @@ export default {
     line-height: 100px;
     display: flex;
     justify-content: space-around;
+    align-items: center;
   }
 
   .header__menu__Login {
@@ -121,7 +116,7 @@ export default {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          max-width: 7.5rem;
+          max-width: 6rem;
           height: 100%;
           user-select: none;
         }
@@ -144,23 +139,45 @@ export default {
   }
 }
 // pad
-@media screen and (max-width: 768px) {
-  .header__menu_container {
-    flex: 0 0 10%;
+@media screen and (max-width: 767px) {
+  .header__container {
+    .header__menu_container {
+      padding-right: 0.5rem;
+      // flex: 0 0 10%;
+      // .header__menu,
+      .header__menu__Login {
+        line-height: 80px;
 
-    .header__menu,
-    .header__menu__Login {
-      display: none !important;
-    }
-    .mobile__cart {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
+        .header__menu_list {
+          padding-right: 0.3rem;
+        }
+      }
+      // .mobile__cart {
+      //   display: flex;
+      //   justify-content: center;
+      //   align-items: center;
+      //   cursor: pointer;
+      // }
     }
   }
 }
 // mobile
-@media screen and (max-width: 376px) {
+@media screen and (max-width: 414px) {
+  .header__container {
+    .header__menu_container {
+      flex: 0 0 10%;
+
+      .header__menu,
+      .header__menu__Login {
+        display: none !important;
+      }
+      .mobile__cart {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    }
+  }
 }
 </style>

@@ -31,52 +31,46 @@
     </div>
 
     <div ref="mobileClipMenu" class="mobile__clip_menu">
-      <ul v-if="loginUser" ref="mobileMenuList" class="mobile__clip_menu_container">
-        <li class="mobile__clip_menu_list">
-          <div class="mobile__clip_menu_list_userInfo">
-            <img class="mobile__clip_menu_list_userInfo_img" src="~assets/img/icons/user.png" alt />
-            <div class="mobile__clip_menu_list_userInfo_username">{{ loginUser }}</div>
-          </div>
+      <div class="mobile__clip_menu_userSection">
+        <div v-if="loginUser" class="mobile__clip_menu_userInfo">
+          <img class="mobile__clip_menu_userInfo_img" src="~assets/img/icons/user.png" alt />
+          <div class="mobile__clip_menu_userInfo_username">{{ loginUser }}</div>
+        </div>
+        <div class="mobile__clip_menu_location">
           <fa :icon="['fas', 'map-marker-alt']" />
-          &emsp;{{ currentCity }}
-        </li>
+          &emsp;
+          {{ currentCity }}
+        </div>
+      </div>
+      <ul v-if="loginUser" ref="mobileMenuList" class="mobile__clip_menu_container">
         <li
           v-for="(list, index) in mobileMenuList"
           :key="index"
           class="mobile__clip_menu_list"
           @click="toggleMobileMenu"
         >
-          <nuxt-link :to="list.route">
-            <fa :icon="['fas', list.icon]" />
-            &emsp;{{ list.name }}
-          </nuxt-link>
+          <fa :icon="['fas', list.icon]" />
+
+          <nuxt-link :to="list.route">{{ list.name }}</nuxt-link>
         </li>
         <li class="mobile__clip_menu_list">
-          <a href="javascript:;" @click="logout">
-            <fa :icon="['fas', 'sign-out-alt']" />&emsp;退出
-          </a>
+          <fa :icon="['fas', 'sign-out-alt']" />
+          <a href="javascript:;" @click="logout">退出</a>
         </li>
       </ul>
       <ul v-else ref="mobileMenuList" class="mobile__clip_menu_container">
-        <li class="mobile__clip_menu_list">
-          <fa :icon="['fas', 'map-marker-alt']" />
-          &emsp;{{ currentCity }}
-        </li>
         <li
           v-for="(list, index) in mobileMenuList"
           :key="index"
           class="mobile__clip_menu_list"
           @click="toggleMobileMenu"
         >
-          <nuxt-link :to="list.route">
-            <fa :icon="['fas', list.icon]" />
-            &emsp;{{ list.name }}
-          </nuxt-link>
+          <fa :icon="['fas', list.icon]" />
+          <nuxt-link :to="list.route">{{ list.name }}</nuxt-link>
         </li>
         <li class="mobile__clip_menu_list">
-          <a href="/login">
-            <fa :icon="['fas', 'sign-in-alt']" />&emsp;登入
-          </a>
+          <fa :icon="['fas', 'sign-in-alt']" />
+          <a href="/login">登入</a>
         </li>
       </ul>
     </div>

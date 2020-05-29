@@ -113,21 +113,14 @@
 @media screen and (max-width: 1023px) {
 }
 // pad
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767px) {
   .header__section {
     .header__container {
       height: 80px;
       justify-content: space-around;
 
-      .mobile__header_hamburger {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-      }
-
       .header__logo_container {
-        flex: 0 0 50%;
+        flex: 0 0 20%;
         width: 110px;
         height: 100%;
         text-align: center;
@@ -148,6 +141,8 @@
       position: fixed;
       top: 0;
       left: 0;
+      right: 0;
+      bottom: 0;
       overflow: hidden;
       width: 100%;
       height: 100vh;
@@ -155,41 +150,63 @@
       z-index: 99;
       pointer-events: none;
       overscroll-behavior: contain;
-      clip-path: circle(100px at 0 -20%);
-      -webkit-clip-path: circle(100px at 0 -20%);
+      clip-path: circle(100px at 0 -100%);
+      -webkit-clip-path: circle(100px at 0 -100%);
       transition: all 1s ease-out;
+
+      .mobile__clip_menu_userSection {
+        margin: 4rem 0 2rem 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        .mobile__clip_menu_userInfo {
+          .mobile__clip_menu_userInfo_img {
+            width: 9rem;
+            height: 9rem;
+            margin-bottom: 1rem;
+          }
+          .mobile__clip_menu_userInfo_username {
+            color: #fff;
+            margin: 1rem 0;
+            font-family: $font-title;
+            font-size: $font-l;
+            text-align: center;
+          }
+        }
+        .mobile__clip_menu_location {
+          color: #fff;
+          font-family: $font-title;
+          font-size: $font-l;
+        }
+      }
 
       .mobile__clip_menu_container {
         height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
         color: $limeGreen;
         padding: 1.5rem 0;
         font-family: $font-Neue;
         font-size: $font-l;
 
         li.mobile__clip_menu_list {
-          width: 100%;
-          text-align: center;
+          width: 80%;
+          margin: 0 auto;
           padding: 2rem 0;
+          border-bottom: 1px solid $yellow;
           opacity: 0;
           transition: all 1s ease-out;
 
-          .mobile__clip_menu_list_userInfo {
-            margin-bottom: 1.5rem;
-
-            .mobile__clip_menu_list_userInfo_img {
-              width: 9.5rem;
-              height: 9.5rem;
-              margin-bottom: 1rem;
-            }
+          svg {
+            margin-right: 2rem;
           }
 
           a {
             color: $limeGreen;
             font-size: $font-l;
+            display: inline-block;
+            width: 80%;
+            text-align-last: left;
           }
         }
         li.mobile__clip_menu_list:nth-child(1) {
@@ -225,15 +242,32 @@
 // mobile
 @media screen and (max-width: 414px) {
   .header__section {
+    .header__container {
+      .mobile__header_hamburger {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    }
+
     .mobile__clip_menu {
+      .mobile__clip_menu_userSection {
+        margin-bottom: 0;
+
+        .mobile__clip_menu_userInfo {
+          .mobile__clip_menu_userInfo_img {
+            width: 5rem;
+            height: 5rem;
+          }
+        }
+      }
+
       .mobile__clip_menu_container {
         li.mobile__clip_menu_list {
-          .mobile__clip_menu_list_userInfo {
-            .mobile__clip_menu_list_userInfo_img {
-              width: 6rem;
-              height: 6rem;
-            }
-          }
+          width: 90%;
+          margin: 0 auto;
+          padding: 1rem 0;
         }
       }
     }
@@ -243,15 +277,41 @@
 @media screen and (max-width: 375px) {
   .header__section {
     .mobile__clip_menu {
+      .mobile__clip_menu_userSection {
+        margin-top: 4rem;
+        margin-bottom: 0;
+
+        .mobile__clip_menu_userInfo {
+          text-align: center;
+
+          .mobile__clip_menu_userInfo_img {
+            width: 4rem;
+            height: 4rem;
+          }
+          .mobile__clip_menu_userInfo_username {
+            font-size: $font-m;
+          }
+        }
+
+        .mobile__clip_menu_location {
+          font-size: $font-m;
+        }
+      }
+
       .mobile__clip_menu_container {
         li.mobile__clip_menu_list {
+          width: 90%;
+          margin: 0 auto;
           padding: 1rem;
+          font-size: $font-m;
 
-          .mobile__clip_menu_list_userInfo {
-            .mobile__clip_menu_list_userInfo_img {
-              width: 5rem;
-              height: 5rem;
-            }
+          svg {
+            margin-right: 1rem;
+          }
+
+          a {
+            font-size: $font-m;
+            text-align-last: left;
           }
         }
       }

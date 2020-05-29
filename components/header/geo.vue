@@ -27,19 +27,19 @@ export default {
 // 平板轉橫
 @media screen and (max-width: 1023px) {
   .header__currentCity {
-    flex: 0 0 15%;
+    flex: 0 0 16%;
     margin-left: 1rem;
     line-height: 80px;
   }
 }
 // pad
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767px) {
   .header__currentCity {
-    display: none;
+    margin-left: 0.5rem;
   }
 }
 // mobile
-@media screen and (max-width: 376px) {
+@media screen and (max-width: 414px) {
   .header__currentCity {
     display: none;
   }

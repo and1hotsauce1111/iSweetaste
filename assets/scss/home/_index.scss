@@ -194,17 +194,11 @@
   display: none;
 }
 
-// 平板轉橫
+// 平板轉橫 /手機轉橫
 @media screen and (max-width: 1023px) {
-}
-// pad
-@media screen and (max-width: 768px) {
   .story__section,
   .story__slogan,
-  .procut-list {
-    display: none;
-  }
-
+  .procut-list,
   .product__section {
     display: none;
   }
@@ -347,6 +341,9 @@
       }
     }
   }
+}
+// pad
+@media screen and (max-width: 768px) {
 }
 // mobile
 @media screen and (max-width: 376px) {
