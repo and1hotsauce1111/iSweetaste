@@ -130,13 +130,15 @@ export default {
   methods: {
     validateEmail() {
       if (this.loginInfo.email.trim() === '') {
-        this.errorMsg.email = '請輸入註冊信箱!'
+        this.$refs.errorEmail.innerHTML =
+          '<span style="color:#e84a5f">請輸入註冊信箱!</span>'
         this.$refs.errorEmail.classList.add('show')
         return false
       } else {
         const emailRule = /^\w+((-\w+)|(\.\w+))*@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/
         if (this.loginInfo.email.search(emailRule) === -1) {
-          this.errorMsg.email = '信箱格式錯誤!'
+          this.$refs.errorEmail.innerHTML =
+            '<span style="color:#e84a5f">信箱格式錯誤!</span>'
           this.$refs.errorEmail.classList.add('show')
           return false
         }
@@ -146,7 +148,7 @@ export default {
     },
     validatePwd() {
       if (this.loginInfo.pwd.trim() === '') {
-        this.errorMsg.pwd = '請輸入密碼!'
+        this.$refs.errorPwd.innerHTML = '<span style="color:#e84a5f">請輸入密碼!</span>'
         this.$refs.errorPwd.classList.add('show')
         return false
       }

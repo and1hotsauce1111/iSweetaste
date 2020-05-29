@@ -36,11 +36,7 @@
                     @blur="validateName"
                   />
                 </div>
-                <div
-                  ref="errorName"
-                  class="register__section_memberRegister_input_error"
-                  v-html="statusMsg.name"
-                ></div>
+                <div ref="errorName" class="register__section_memberRegister_input_error"></div>
               </div>
               <div class="register__section_memberRegister_input_email">
                 <div class="register__section_memberRegister_input_container">
@@ -52,11 +48,7 @@
                     @blur="validateEmail"
                   />
                 </div>
-                <div
-                  ref="errorEmail"
-                  class="register__section_memberRegister_input_error"
-                  v-html="statusMsg.email"
-                ></div>
+                <div ref="errorEmail" class="register__section_memberRegister_input_error"></div>
               </div>
               <div class="register__section_memberRegister_input_btn">
                 <button @click.prevent="verifyCode">發送驗證碼</button>
@@ -71,11 +63,7 @@
                     style="padding:0 20px"
                     @blur="validateVerifyCode"
                   />
-                  <div
-                    ref="errorVerifyCode"
-                    class="register__section_memberRegister_input_error"
-                    v-html="statusMsg.verifyCode"
-                  ></div>
+                  <div ref="errorVerifyCode" class="register__section_memberRegister_input_error"></div>
                 </div>
               </div>
               <div class="register__section_memberRegister_input_password">
@@ -88,11 +76,7 @@
                     @blur="validtePwd"
                   />
                 </div>
-                <div
-                  ref="errorPwd"
-                  class="register__section_memberRegister_input_error"
-                  v-html="statusMsg.pwd"
-                ></div>
+                <div ref="errorPwd" class="register__section_memberRegister_input_error"></div>
               </div>
               <div class="register__section_memberRegister_input_confirmPwd">
                 <div class="register__section_memberRegister_input_container">
@@ -104,11 +88,7 @@
                     @blur="validteConfirmPwd"
                     @keyup.enter="register"
                   />
-                  <div
-                    ref="errorConfirmPwd"
-                    class="register__section_memberRegister_input_error"
-                    v-html="statusMsg.confirmPwd"
-                  ></div>
+                  <div ref="errorConfirmPwd" class="register__section_memberRegister_input_error"></div>
                 </div>
               </div>
             </div>
@@ -149,14 +129,6 @@
 export default {
   data() {
     return {
-      // 錯誤訊息
-      statusMsg: {
-        name: '',
-        email: '',
-        verifyCode: '',
-        pwd: '',
-        confirmPwd: ''
-      },
       // input data
       registerInfo: {
         name: '',
@@ -188,7 +160,7 @@ export default {
   methods: {
     async validateName() {
       if (this.registerInfo.name.trim() === '') {
-        this.statusMsg.name = '<span style="color:red">請輸入暱稱!</span>'
+        this.$refs.errorName.innerHTML = '<span style="color:#e84a5f">請輸入暱稱!</span>'
         this.$refs.errorName.classList.add('show')
         return false
       }
@@ -200,27 +172,28 @@ export default {
         username: this.registerInfo.name
       })
       if (status === 200 && retCode === 0) {
-        this.statusMsg.name = `<span style="color:#ffe180">${msg}</span>`
+        this.$refs.errorName.innerHTML = `<span style="color:#ffe180">${msg}</span>`
         this.validation.name = true
         this.$refs.errorName.classList.remove('show')
         this.$refs.errorName.classList.add('show')
       } else if (status === 200 && retCode === -1) {
-        this.statusMsg.name = `<span style="color:red">${msg}</span>`
+        this.$refs.errorName.innerHTML = `<span style="color:#e84a5f">${msg}</span>`
         this.$refs.errorName.classList.remove('show')
         this.$refs.errorName.classList.add('show')
       } else {
-        this.registerMsg = `<span style="color:red">${msg}</span>`
+        this.registerMsg = `<span style="color:#e84a5f">${msg}</span>`
       }
     },
     async validateEmail() {
       if (this.registerInfo.email.trim() === '') {
-        this.statusMsg.email = '<span style="color:red">請輸入信箱!</span>'
+        this.$refs.errorEmail.innerHTML = '<span style="color:#e84a5f">請輸入信箱!</span>'
         this.$refs.errorEmail.classList.add('show')
         return false
       }
       const emailRule = /^\w+((-\w+)|(\.\w+))*@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/
       if (this.registerInfo.email.search(emailRule) === -1) {
-        this.statusMsg.email = '<span style="color:red">信箱格式錯誤!</span>'
+        this.$refs.errorEmail.innerHTML =
+          '<span style="color:#e84a5f">信箱格式錯誤!</span>'
         this.$refs.errorEmail.classList.add('show')
         return false
       }
@@ -230,12 +203,12 @@ export default {
         data: { msg, retCode }
       } = await this.$axios.post('/users/verifyEmail', { email: this.registerInfo.email })
       if (status === 200 && retCode === 0) {
-        this.statusMsg.email = `<span style="color:#ffe180">${msg}</span>`
+        this.$refs.errorEmail.innerHTML = `<span style="color:#ffe180">${msg}</span>`
         this.validation.email = true
         this.$refs.errorEmail.classList.remove('show')
         this.$refs.errorEmail.classList.add('show')
       } else if (status === 200 && retCode === -1) {
-        this.statusMsg.email = `<span style="color:red">${msg}</span>`
+        this.$refs.errorEmail.innerHTML = `<span style="color:#e84a5f">${msg}</span>`
         this.$refs.errorEmail.classList.remove('show')
         this.$refs.errorEmail.classList.add('show')
       } else {
@@ -244,7 +217,8 @@ export default {
     },
     async validateVerifyCode() {
       if (this.registerInfo.verifyCode.trim() === '') {
-        this.statusMsg.verifyCode = '<span style="color:red">請輸入驗證碼!</span>'
+        this.$refs.errorVerifyCode.innerHTML =
+          '<span style="color:#e84a5f">請輸入驗證碼!</span>'
         this.$refs.errorVerifyCode.classList.add('show')
         return false
       }
@@ -256,12 +230,12 @@ export default {
         code: this.registerInfo.verifyCode
       })
       if (status === 200 && retCode === 0) {
-        this.statusMsg.verifyCode = `<span style="color:#ffe180">${msg}</span>`
+        this.$refs.errorVerifyCode.innerHTML = `<span style="color:#ffe180">${msg}</span>`
         this.validation.verifyCode = true
         this.$refs.errorVerifyCode.classList.remove('show')
         this.$refs.errorVerifyCode.classList.add('show')
       } else if (status === 200 && retCode === -1) {
-        this.statusMsg.verifyCode = `<span style="color:red">${msg}</span>`
+        this.$refs.errorVerifyCode.innerHTML = `<span style="color:#e84a5f">${msg}</span>`
         this.$refs.errorVerifyCode.classList.remove('show')
         this.$refs.errorVerifyCode.classList.add('show')
       } else {
@@ -270,7 +244,7 @@ export default {
     },
     validtePwd() {
       if (this.registerInfo.pwd.trim() === '') {
-        this.statusMsg.pwd = '<span style="color:red">請輸入密碼!</span>'
+        this.$refs.errorPwd.innerHTML = '<span style="color:#e84a5f">請輸入密碼!</span>'
         this.$refs.errorPwd.classList.add('show')
         return false
       }
@@ -279,11 +253,13 @@ export default {
     },
     validteConfirmPwd() {
       if (this.registerInfo.confirmPwd.trim() === '') {
-        this.statusMsg.confirmPwd = '<span style="color:red">請再次輸入密碼!</span>'
+        this.$refs.errorConfirmPwd.innerHTML =
+          '<span style="color:#e84a5f">請再次輸入密碼!</span>'
         this.$refs.errorConfirmPwd.classList.add('show')
         return false
       } else if (this.registerInfo.pwd !== this.registerInfo.confirmPwd) {
-        this.statusMsg.confirmPwd = '<span style="color:red">兩次輸入密碼不一致!</span>'
+        this.$refs.errorConfirmPwd.innerHTML =
+          '<span style="color:#e84a5f">兩次輸入密碼不一致!</span>'
         this.$refs.errorConfirmPwd.classList.add('show')
         return false
       }
@@ -395,11 +371,6 @@ export default {
         this.registerInfo.verifyCode = ''
         this.registerInfo.pwd = ''
         this.registerInfo.confirmPwd = ''
-        this.statusMsg.name = ''
-        this.statusMsg.email = ''
-        this.statusMsg.verifyCode = ''
-        this.statusMsg.pwd = ''
-        this.statusMsg.confirmPwd = ''
         this.registerMsg = ''
 
         location.replace('/login')
