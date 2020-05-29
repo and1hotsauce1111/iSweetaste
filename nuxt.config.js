@@ -96,6 +96,16 @@ module.exports = {
   axios: {
     proxy: true
   },
+  proxy: {
+    '/users': {
+      target: 'https://jameslin-ishop.herokuapp.com/',
+      changeOrigin: true
+    },
+    '/geo': {
+      target: 'https://jameslin-ishop.herokuapp.com/',
+      changeOrigin: true
+    }
+  },
   /*
    ** Build configuration
    */
