@@ -322,7 +322,9 @@
 @media screen and (orientation: landscape) {
   .customer-sevice-container {
     .customer-service-chat-room {
-      height: 50%;
+      .customer-service-chat-room-messages {
+        height: 50%;
+      }
     }
   }
 }
