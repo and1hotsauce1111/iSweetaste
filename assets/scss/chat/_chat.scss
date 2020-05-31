@@ -318,3 +318,11 @@
     }
   }
 }
+
+@media screen and (orientation: landscape) {
+  .customer-sevice-container {
+    .customer-service-chat-room {
+      height: 50%;
+    }
+  }
+}

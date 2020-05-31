@@ -134,9 +134,11 @@ export default {
 
 // 平板轉橫
 @media screen and (max-width: 1023px) {
-  .header__menu,
-  .header__menu__Login {
-    flex: 0 0 55%;
+  .header__container {
+    .header__menu,
+    .header__menu__Login {
+      flex: 0 0 55%;
+    }
   }
 }
 // pad
@@ -147,8 +149,8 @@ export default {
       // flex: 0 0 10%;
       // .header__menu,
       .header__menu__Login {
-        height: 80px;
-        line-height: 80px;
+        // height: 80px;
+        // line-height: 80px;
 
         .header__menu_list {
           padding-right: 0.3rem;
@@ -165,6 +167,25 @@ export default {
 }
 // mobile
 @media screen and (max-width: 414px) {
+  .header__container {
+    .header__menu_container {
+      flex: 0 0 10%;
+
+      .header__menu,
+      .header__menu__Login {
+        display: none !important;
+      }
+      .mobile__cart {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    }
+  }
+}
+// 手機轉橫
+@media screen and (orientation: landscape) and (max-width: 812px) {
   .header__container {
     .header__menu_container {
       flex: 0 0 10%;
