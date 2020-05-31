@@ -1,9 +1,9 @@
 .header__section {
   position: relative;
+  max-width: 940px;
+  margin: 0 auto;
 
   .header__container {
-    max-width: 940px;
-    margin: 0 auto;
     font-family: $font-title;
     font-size: $font-m;
     font-weight: 500;
@@ -64,17 +64,18 @@
 
   // 使用者面板
   .header__menu__Login_userInfo_panel_wrap {
+    position: absolute;
+    top: 75%;
+    right: 2%;
+    z-index: 99;
+
     .header__menu__Login_userInfo_panel {
-      position: absolute;
       display: flex;
       flex-direction: column;
-      top: 75%;
-      right: 13%;
       width: 250px;
       background: #fff;
       box-shadow: 1px 1px 3px 2px #ccc;
       padding: 0.5rem;
-      z-index: 99;
       font-family: $font-title;
 
       .header__menu__Login_userInfo_panel_item {

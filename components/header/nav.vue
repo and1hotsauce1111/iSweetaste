@@ -15,7 +15,7 @@
         <nuxt-link :to="list.route">{{ list.name }}</nuxt-link>
       </li>
       <li class="header__menu__Login_userInfo">
-        <div class="header__menu__Login_userInfo_container" @click="showPanel">
+        <div class="header__menu__Login_userInfo_container" @click.stop="showPanel">
           <img class="header__menu__Login_userInfo_img" src="~assets/img/icons/user.png" alt />
           <div class="header__menu__Login_userInfo_username">{{ loginUser }}</div>
         </div>
@@ -92,7 +92,8 @@ export default {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        max-height: 40%;
+        height: 40px;
+        line-height: 40px;
         padding: 0 1rem;
         border-bottom-right-radius: 18px;
         border-bottom-left-radius: 18px;

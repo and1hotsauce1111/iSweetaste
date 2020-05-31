@@ -106,6 +106,12 @@ export default {
       return this.$store.state.geo.position.city
     }
   },
+  mounted() {
+    const closeUserPanel = () => {
+      this.showUserPanel = false
+    }
+    window.addEventListener('click', closeUserPanel)
+  },
   methods: {
     toggleMobileMenu() {
       const mobileClipMenu = this.$refs.mobileClipMenu
