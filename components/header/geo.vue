@@ -44,4 +44,10 @@ export default {
     display: none;
   }
 }
+// 手機轉橫
+@media screen and (orientation: landscape) and (max-width: 812px) {
+  .header__currentCity {
+    display: none;
+  }
+}
 </style>
