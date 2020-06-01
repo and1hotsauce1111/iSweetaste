@@ -92,9 +92,20 @@
 
 <script>
 export default {
+  mounted() {
+    window.addEventListener('resize', this.resizeHandler)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.resizeHandler)
+  },
   methods: {
     openChat() {
       this.$refs.chatArea.classList.toggle('open')
+    },
+    resizeHandler() {
+      if (window.innerHeight > 319) {
+        this.$refs.chatArea.style.height = '100%'
+      }
     }
   }
 }
