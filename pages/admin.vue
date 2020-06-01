@@ -105,7 +105,9 @@ export default {
     resizeHandler() {
       if (window.innerHeight > 319) {
         this.$refs.chatArea.style.height = '100%'
+        return false
       }
+      this.$refs.chatArea.style.height = '50%'
     }
   }
 }
