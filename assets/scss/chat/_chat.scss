@@ -164,29 +164,26 @@
       }
     }
     .customer-service-chat-room-form {
-      height: 53px;
+      height: 3.3rem;
+      line-height: 3.3rem;
       border-radius: 0 0 5px 5px;
       box-shadow: 0 4px 3px 0 #ccc;
+      background: #fff;
 
       form {
-        display: flex;
+        display: block;
+        text-align: right;
+        padding: 0 0.5rem;
       }
       input[type='text'] {
-        font-size: 16px;
-        padding: 10px;
-        height: 53px;
+        width: 100%;
+        padding: 0.6rem 1rem 0.6rem 0.8rem;
         border: none;
-        border-radius: 0 0 0 5px;
-        flex: 1;
-      }
-      .btn {
-        cursor: pointer;
-        padding: 5px 15px;
-        background: $limeGreen;
-        color: $darkGreen;
-        border: 0;
-        font-size: 16px;
-        border-radius: 0 0 5px 0;
+        background: #eee;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+        border-bottom-right-radius: 15px;
+        border-bottom-left-radius: 15px;
       }
     }
     .customer-service-chat-room-triangle {
@@ -296,7 +293,7 @@
       margin: 0.5rem;
       width: 96%;
       .customer-service-chat-room-messages {
-        height: 70%;
+        height: 80%;
       }
     }
 
@@ -313,7 +310,7 @@
   .customer-sevice-container {
     .customer-service-chat-room {
       .customer-service-chat-room-messages {
-        height: 70%;
+        height: 80%;
       }
     }
   }

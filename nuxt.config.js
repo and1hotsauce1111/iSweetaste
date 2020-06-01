@@ -114,8 +114,8 @@ module.exports = {
      ** You can extend webpack config here
      */
     // analyze: true,
-    extractCSS: true,
-    optimizeCSS: true,
+    // extractCSS: true,
+    // optimizeCSS: true,
     vendor: ['element-ui', 'mint-ui'],
     babel: {
       plugins: [

@@ -18,6 +18,18 @@
 
     <!-- user panel -->
     <div v-if="showUserPanel" class="header__menu__Login_userInfo_panel_wrap">
+      <div v-if="loginUser === 'admin'" class="header__menu__Login_userInfo_panel">
+        <div class="header__menu__Login_userInfo_panel_container">
+          <a class="header__menu__Login_userInfo_panel_item" href="/admin">
+            <div class="header__menu__Login_userInfo_panel_item_icon">
+              <fa :icon="['far', 'comment-dots']" />
+            </div>
+            <span>線上客服</span>&emsp;
+            <span v-if="msgCount && msgCount <= 99" class="msg_count">{{ msgCount }}</span>
+            <span v-if="msgCount && msgCount > 99" class="msg_count_large">{{ msgCount }}</span>
+          </a>
+        </div>
+      </div>
       <div class="header__menu__Login_userInfo_panel">
         <div class="header__menu__Login_userInfo_panel_container">
           <div class="header__menu__Login_userInfo_panel_item" @click="logout">
@@ -95,7 +107,8 @@ export default {
         { name: '商家分佈', route: '/shop', icon: 'store' }
       ],
       preventBodyScroll: false,
-      showUserPanel: false
+      showUserPanel: false,
+      msgCount: 10
     }
   },
   computed: {

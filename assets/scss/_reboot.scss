@@ -32,3 +32,8 @@ input:focus {
     }
   }
 }
+
+.el-tooltip__popper {
+  transition-delay: 0s !important;
+  font-family: $font-title !important;
+}

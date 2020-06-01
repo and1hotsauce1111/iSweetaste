@@ -1,0 +1,263 @@
+.chatRoom__wrap {
+  margin: 2rem 0;
+
+  .chatRoom__container {
+    display: flex;
+    max-width: 940px;
+    min-height: 500px;
+    margin: 0 auto;
+
+    // 聊天室列表
+    .chatRoom__userList_container {
+      flex: 0 0 40%;
+      max-width: 420px;
+      padding: 0 1rem;
+
+      .chatRoom__userList_header {
+        margin-top: 1rem;
+
+        .chatRoom__userList_header_title {
+          font-family: $font-title;
+          font-size: $font-xl;
+          margin-bottom: 1rem;
+        }
+      }
+
+      .chatRoom__userList_search {
+        position: relative;
+        .search_container {
+          input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.25rem;
+            border: none;
+            background: #eee;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border-bottom-left-radius: 15px;
+          }
+          svg {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            transform: translate(-5%, -50%);
+          }
+        }
+      }
+
+      .chatRoom__userList_list {
+        margin-top: 1rem;
+        font-family: $font-title;
+        max-height: 800px;
+        overflow-y: auto;
+
+        .chatRoom__userList_list_user {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.5rem;
+          margin-bottom: 0.5rem;
+          border-radius: 10px;
+          cursor: pointer;
+
+          .chatRoom__userList_list_user_img {
+            img {
+              width: 50px;
+              height: 50px;
+            }
+          }
+          .chatRoom__userList_list_user_message {
+            .chatRoom__userList_list_user_message_name {
+              font-weight: 700;
+              margin-bottom: 0.3rem;
+            }
+            .chatRoom__userList_list_user_message_content {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              max-width: 250px;
+              .msg {
+                max-width: 180px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
+            }
+          }
+          .chatRoom__userList_list_user_notify {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: rgb(0, 153, 255);
+            border-radius: 50%;
+          }
+        }
+        .chatRoom__userList_list_user.selected {
+          background: #eee;
+        }
+      }
+    }
+
+    // 訊息欄
+    .chatRoom__userMessage_container {
+      flex: 0 0 60%;
+      // border: 1px solid $darkGreen;
+      box-shadow: 0 0 5px 3px $limeGreen;
+      border-radius: 10px;
+      font-family: $font-title;
+
+      // Current user
+      .chatRoom__userMessage_currentUser {
+        width: 100%;
+        height: 60px;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid #ccc;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+
+        .chatRoom__userMessage_currentUser_img {
+          margin-right: 0.5rem;
+          img {
+            width: 40px;
+            height: 40px;
+          }
+        }
+        .chatRoom__userMessage_currentUser_userInfo {
+          align-items: flex-start;
+          display: flex;
+          flex-direction: column;
+          max-width: 150px;
+          height: 32px;
+          justify-content: center;
+
+          .chatRoom__userMessage_currentUser_userInfo_lastOnline {
+            margin-top: 0.3rem;
+            color: #ccc;
+            font-size: $font-s;
+          }
+        }
+      }
+
+      // message content area
+      .chatRoom__userMessage_content {
+        max-height: 800px;
+        min-height: 500px;
+        overflow-x: visible;
+        overflow-y: auto;
+        padding: 1rem 0.5rem;
+        overscroll-behavior: contain;
+
+        .chatRoom__userMessage_content_wrapper {
+          .unread {
+            position: relative;
+            text-align: center;
+            font-size: 10px;
+            padding: 3px 0;
+            margin: 5px 0;
+            background: rgb(164, 210, 228);
+            border-radius: 3px;
+            color: #fff;
+
+            &::after {
+              clear: both;
+              content: '';
+              display: block;
+              font-size: 0;
+              height: 0;
+              line-height: 0;
+              visibility: hidden;
+            }
+
+            svg {
+              position: absolute;
+              float: left;
+              top: 30%;
+              left: 5%;
+              transform: translate(-30%, -5%);
+            }
+          }
+
+          // message bubble public style
+          .chatRoom__userMessage_content_container {
+            &::after {
+              clear: both;
+              content: '';
+              display: block;
+              font-size: 0;
+              height: 0;
+              line-height: 0;
+              visibility: hidden;
+            }
+
+            .chatRoom__userMessage_content_message {
+              padding: 10px;
+              margin-bottom: 5px;
+              border-radius: 5px;
+
+              &::after {
+                clear: both;
+                content: '';
+                display: block;
+                font-size: 0;
+                height: 0;
+                line-height: 0;
+                visibility: hidden;
+              }
+
+              .chatRoom__userMessage_content_time {
+                display: inline-block;
+                background: rgba(0, 0, 0, 0.8);
+                color: #fff;
+                padding: 0.3rem;
+                font-size: $font-s;
+              }
+            }
+          }
+
+          .self_container {
+            position: relative;
+
+            .content_self {
+              float: right;
+              clear: right;
+              background-color: $limeGreen;
+            }
+          }
+
+          .other_container {
+            margin-top: 5px;
+
+            .content_other {
+              float: left;
+              clear: left;
+              background-color: $darkGreen;
+              color: $limeGreen;
+            }
+          }
+        }
+      }
+
+      // message submit form
+      .chatRoom__input_container {
+        width: 100%;
+
+        #chatRoom__input_form {
+          text-align: right;
+          margin: 0.5rem;
+
+          #send_msg {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 0.8rem;
+            border: none;
+            background: #eee;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border-bottom-left-radius: 15px;
+          }
+        }
+      }
+    }
+  }
+}

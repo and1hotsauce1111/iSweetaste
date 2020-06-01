@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="loginUser !== 'admin'">
     <div class="customer-service" @click="toggleChat">
       <span class="customer-service-message-count">1</span>
     </div>
@@ -58,9 +58,9 @@
         <div class="customer-service-chat-room-form">
           <form id="chat-form">
             <input id="msg" type="text" placeholder="請輸入訊息..." required autocomplete="off" />
-            <button class="btn">
+            <!-- <button class="btn">
               <fa :icon="['fas', 'paper-plane']" />&nbsp;送出
-            </button>
+            </button>-->
           </form>
         </div>
         <div class="customer-service-chat-room-triangle"></div>
@@ -71,6 +71,11 @@
 
 <script>
 export default {
+  computed: {
+    loginUser() {
+      return decodeURIComponent(this.$store.state.user.user.name)
+    }
+  },
   methods: {
     toggleChat() {
       this.$refs.chatContainer.classList.toggle('show')
