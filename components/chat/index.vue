@@ -79,8 +79,10 @@ export default {
   mounted() {
     const resizeHandler = () => {
       if (window.innerHeight < 568) {
-        this.$refs.chatMessage.style.height = '50%'
+        this.$refs.chatMessage.style.height = window.innerHeight / 2 + 'px'
+        return false
       }
+      this.$refs.chatMessage.style.height = '80%'
     }
     window.addEventListener('resize', resizeHandler)
   },
