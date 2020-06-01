@@ -77,7 +77,7 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener('resize', resizeHandler)
+    window.addEventListener('resize', this.resizeHandler)
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler)
@@ -87,7 +87,7 @@ export default {
       this.$refs.chatContainer.classList.toggle('show')
     },
     resizeHandler() {
-      if (window.innerHeight < 568) {
+      if (window.innerHeight < 415) {
         this.$refs.chatMessage.style.height = window.innerHeight / 2 + 'px'
         return false
       }
