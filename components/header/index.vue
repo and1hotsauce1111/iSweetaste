@@ -65,6 +65,10 @@
 
           <nuxt-link :to="list.route">{{ list.name }}</nuxt-link>
         </li>
+        <li v-if="loginUser === 'admin'" class="mobile__clip_menu_list">
+          <fa :icon="['fas', 'comment-dots']" />
+          <a href="/admin">線上客服</a>
+        </li>
         <li class="mobile__clip_menu_list">
           <fa :icon="['fas', 'sign-out-alt']" />
           <a href="javascript:;" @click="logout">退出</a>

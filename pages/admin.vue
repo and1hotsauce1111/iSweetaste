@@ -14,7 +14,7 @@
         <div class="chatRoom__userList_list">
           <ul>
             <li v-for="(num, index) in 3" :key="index">
-              <div class="chatRoom__userList_list_user">
+              <div class="chatRoom__userList_list_user" @click="openChat">
                 <div class="chatRoom__userList_list_user_img">
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
@@ -31,9 +31,12 @@
           </ul>
         </div>
       </div>
-      <div class="chatRoom__userMessage_container">
+      <div ref="chatArea" class="chatRoom__userMessage_container">
         <!-- 現在對話的對象標頭 -->
         <div class="chatRoom__userMessage_currentUser">
+          <div class="chatRoom__userMessage_currentUser_back" @click="openChat">
+            <fa :icon="['fas', 'chevron-left']" />
+          </div>
           <div class="chatRoom__userMessage_currentUser_img">
             <img src="~assets/img/icons/user.png" alt />
           </div>
@@ -88,7 +91,13 @@
 </template>
 
 <script>
-export default {}
+export default {
+  methods: {
+    openChat() {
+      this.$refs.chatArea.classList.toggle('open')
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
