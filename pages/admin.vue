@@ -107,7 +107,7 @@ export default {
         this.$refs.chatArea.style.height = '100%'
         return false
       }
-      this.$refs.chatArea.style.height = '50%'
+      this.$refs.chatArea.style.height = window.innerHeight / 2 + 'px'
     }
   }
 }
