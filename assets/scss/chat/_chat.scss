@@ -184,6 +184,7 @@
         border-top-right-radius: 15px;
         border-bottom-right-radius: 15px;
         border-bottom-left-radius: 15px;
+        font-size: initial;
       }
     }
     .customer-service-chat-room-triangle {
@@ -316,12 +317,12 @@
   }
 }
 
-@media screen and (orientation: landscape) {
-  .customer-sevice-container {
-    .customer-service-chat-room {
-      .customer-service-chat-room-messages {
-        height: 0;
-      }
-    }
-  }
-}
+// @media screen and (orientation: landscape) {
+//   .customer-sevice-container {
+//     .customer-service-chat-room {
+//       .customer-service-chat-room-messages {
+//         height: 0;
+//       }
+//     }
+//   }
+// }

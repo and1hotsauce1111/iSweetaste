@@ -32,7 +32,7 @@
             </svg>
           </div>
         </div>
-        <div class="customer-service-chat-room-messages">
+        <div ref="chatMessage" class="customer-service-chat-room-messages">
           <div class="customer-service-chat-room-messages-wrapper">
             <div class="customer-service-chat-room-messages-other-container">
               <div class="unread">
@@ -75,6 +75,14 @@ export default {
     loginUser() {
       return decodeURIComponent(this.$store.state.user.user.name)
     }
+  },
+  mounted() {
+    const resizeHandler = () => {
+      if (window.innerHeight < 568) {
+        this.$refs.chatMessage.style.height = '50%'
+      }
+    }
+    window.addEventListener('resize', resizeHandler)
   },
   methods: {
     toggleChat() {
