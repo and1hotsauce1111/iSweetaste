@@ -34,6 +34,7 @@
         border-radius: 0.3rem;
         padding: 0.5rem;
         font-size: initial;
+        background: #fff;
       }
     }
 
@@ -172,4 +173,14 @@
   }
 }
 @media screen and (max-width: 375px) {
+  .map__container {
+    .map__list_container {
+      .mobile__map__list_selectCity {
+        select {
+          width: 9rem;
+          height: 2.5rem;
+        }
+      }
+    }
+  }
 }
