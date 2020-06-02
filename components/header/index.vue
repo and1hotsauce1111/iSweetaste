@@ -140,14 +140,17 @@ export default {
 
       // 避免全頁面菜單顯示時，頁面隨著滾動
       const body = document.querySelector('body')
+      const html = document.querySelector('html')
       this.preventBodyScroll = !this.preventBodyScroll
 
       if (this.preventBodyScroll) {
-        body.scroll = 'no'
+        body.style.height = '100%'
         body.style.overflow = 'hidden'
+        html.style.height = '100%'
+        html.style.overflow = 'hidden'
       } else {
-        body.scroll = 'auto'
         body.style.overflow = 'auto'
+        html.style.overflow = 'auto'
       }
 
       mobileClipMenu.classList.toggle('open')
