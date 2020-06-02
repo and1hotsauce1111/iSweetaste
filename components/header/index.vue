@@ -141,6 +141,7 @@ export default {
       // 避免全頁面菜單顯示時，頁面隨著滾動
       const body = document.querySelector('body')
       this.preventBodyScroll = !this.preventBodyScroll
+
       if (this.preventBodyScroll) {
         body.scroll = 'no'
         body.style.overflow = 'hidden'
