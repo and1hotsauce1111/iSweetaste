@@ -35,7 +35,7 @@
             :key="city.CityName"
             :label="city.CityName"
             :value="city.CityName"
-          ></option>
+          >{{ city.CityName }}</option>
         </select>
         <select id="select_area" v-model="form.curArea" name="selectArea" @change="updateShop">
           <option value="選擇全區">選擇全區</option>
@@ -44,7 +44,7 @@
             :key="area.AreaName"
             :label="area.AreaName"
             :value="area.AreaName"
-          ></option>
+          >{{ area.AreaName }}</option>
         </select>
       </div>
       <div class="map__list_searchResult">
