@@ -49,19 +49,27 @@
         <!-- 訊息主體 -->
         <div class="chatRoom__userMessage_content">
           <div class="chatRoom__userMessage_content_wrapper">
-            <div class="chatRoom__userMessage_content_container other_container" title="9:35 AM">
+            <div class="chatRoom__userMessage_content_container other_container">
               <div class="unread">
                 <fa :icon="['fas', 'tag']" />&nbsp;
                 <span>以下為尚未閱讀的訊息</span>
               </div>
-              <el-tooltip
-                class="chatRoom__userMessage_content_message content_other"
-                effect="dark"
-                content="9:35 AM"
-                placement="left-start"
-              >
-                <p class="text">Hello</p>
-              </el-tooltip>
+              <div class="chatRoom__userMessage_content_message_wrap">
+                <div class="chatRoom__userMessage_content_userImg">
+                  <img src="~assets/img/icons/user.png" alt />
+                </div>
+                <el-tooltip
+                  class="chatRoom__userMessage_content_message content_other"
+                  effect="dark"
+                  content="9:35 AM"
+                  placement="left-start"
+                >
+                  <p class="text">Hello</p>
+                </el-tooltip>
+                <div class="chatRoom__userMessage_content_userReadImg">
+                  <img src="~assets/img/icons/user.png" alt />
+                </div>
+              </div>
             </div>
             <div
               v-for="(item, index) in 100"

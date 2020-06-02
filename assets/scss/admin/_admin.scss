@@ -215,13 +215,34 @@
                 line-height: 0;
                 visibility: hidden;
               }
+            }
 
-              .chatRoom__userMessage_content_time {
-                display: inline-block;
-                background: rgba(0, 0, 0, 0.8);
-                color: #fff;
-                padding: 0.3rem;
-                font-size: $font-s;
+            .chatRoom__userMessage_content_message_wrap {
+              display: flex;
+              align-items: center;
+              position: relative;
+
+              .chatRoom__userMessage_content_userImg {
+                img {
+                  margin-right: 0.3rem;
+                  width: 1.75rem;
+                  height: 1.75rem;
+                  display: block;
+                  border: 0;
+                }
+              }
+              .chatRoom__userMessage_content_userReadImg {
+                position: absolute;
+                right: 0;
+                bottom: 0.5rem;
+
+                img {
+                  width: 1rem;
+                  height: 1rem;
+                  display: block;
+                  border: 0;
+                  float: right;
+                }
               }
             }
           }
@@ -298,10 +319,6 @@
           }
         }
       }
-
-      .chatRoom__userMessage_container {
-        flex: 0 0 80%;
-      }
     }
   }
 }
@@ -375,12 +392,11 @@
       }
       .chatRoom__userMessage_container.open {
         transform: translateX(0);
-        // transform-origin: left;
       }
     }
   }
 }
-@media screen and (max-width: 374px) {
+@media screen and (max-width: 375px) {
   .chatRoom__wrap {
     .chatRoom__container {
       .chatRoom__userList_container {

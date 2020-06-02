@@ -26,11 +26,16 @@ config.dev = process.env.NODE_ENV !== 'production'
 
 // setting server
 const server = http.createServer(app)
+// socket init
+const io = require('socket.io')(server)
+const { socketInit } = require('./interface/utils/socket-init')
+socketInit(io)
 
 // load routers
 const user = require('./interface/User')
 const geo = require('./interface/Geo')
 const cart = require('./interface/Cart')
+const chat = require('./interface/Chat')
 
 // connect to mongoDB
 const db = process.env.MONGODB_CONNECT
@@ -101,6 +106,7 @@ require('./interface/utils/passport.config.js')(passport)
 app.use(user)
 app.use(geo)
 app.use(cart)
+app.use(chat)
 
 async function start() {
   // Init Nuxt.js
