@@ -24,7 +24,16 @@
     .mobile__map__list_selectCity {
       display: none;
       margin: 1rem auto;
-      font-family: $font-title;
+      text-align: center;
+
+      select {
+        width: 12rem;
+        height: 2.5rem;
+        font-family: $font-title;
+        border: 1px solid #eee;
+        border-radius: 0.3rem;
+        padding: 0.5rem;
+      }
     }
 
     .map__list_searchResult {

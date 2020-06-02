@@ -28,7 +28,24 @@
       </div>
       <!-- 手機選單 -->
       <div class="mobile__map__list_selectCity">
-        <mt-picker :slots="slots" @change="onValuesChange"></mt-picker>
+        <!-- <mt-picker :slots="slots" @change="onValuesChange"></mt-picker> -->
+        <select id="select_city" v-model="form.curCity" name="selectCity" @change="getAllShop">
+          <option
+            v-for="city in allCity"
+            :key="city.CityName"
+            :label="city.CityName"
+            :value="city.CityName"
+          ></option>
+        </select>
+        <select id="select_area" v-model="form.curArea" name="selectArea" @change="updateShop">
+          <option value="選擇全區">選擇全區</option>
+          <option
+            v-for="area in allArea"
+            :key="area.AreaName"
+            :label="area.AreaName"
+            :value="area.AreaName"
+          ></option>
+        </select>
       </div>
       <div class="map__list_searchResult">
         <span class="map__list_searchResult_result">搜尋結果：共 {{ filterShopList.length }} 家店家</span>
@@ -210,7 +227,7 @@ export default {
     'form.curCity': {
       handler() {
         // 先清空area
-        this.form.curArea = ''
+        this.form.curArea = '選擇全區'
         if (this.allCity) {
           // 更改當前城市區域列表
           this.allArea = this.allCity.filter(
@@ -220,9 +237,9 @@ export default {
           this.form.curCityEngName = this.allCity.filter(
             item => item.CityName === this.form.curCity
           )[0].CityEngName
-          // 更改手機版select 預設值
-          const index = this.allCity.map(city => city.CityName).indexOf(this.form.curCity)
-          this.slots[0].defaultIndex = index
+          // // 更改手機版select 預設值
+          // const index = this.allCity.map(city => city.CityName).indexOf(this.form.curCity)
+          // this.slots[0].defaultIndex = index
         }
       }
     },
@@ -231,12 +248,12 @@ export default {
         const area = this.allArea.filter(area => area.AreaName === this.form.curArea)
         if (area.length !== 0) {
           this.form.curAreaZipCode = area[0].ZipCode
-          // 更改手機版select 預設值
-          const index = this.allArea.findIndex(
-            area => area.AreaName === this.form.curArea
-          )
-          // 因為添加了選擇全區 需要+1
-          this.slots[2].defaultIndex = index + 1
+          // // 更改手機版select 預設值
+          // const index = this.allArea.findIndex(
+          //   area => area.AreaName === this.form.curArea
+          // )
+          // // 因為添加了選擇全區 需要+1
+          // this.slots[2].defaultIndex = index + 1
         }
       }
     }
@@ -271,29 +288,29 @@ export default {
     })
   },
   methods: {
-    onValuesChange(picker, values) {
-      // 選單連動
-      const currentArea = this.allCity
-        .filter(item => item.CityName === values[0])[0]
-        .AreaList.map(area => area.AreaName)
-      currentArea.unshift('選擇全區')
+    // onValuesChange(picker, values) {
+    //   // 選單連動
+    //   const currentArea = this.allCity
+    //     .filter(item => item.CityName === values[0])[0]
+    //     .AreaList.map(area => area.AreaName)
+    //   currentArea.unshift('選擇全區')
 
-      // 設定連動下拉地區
-      picker.setSlotValues(1, currentArea)
+    //   // 設定連動下拉地區
+    //   picker.setSlotValues(1, currentArea)
 
-      // 地圖更新
-      const cityAndArea = picker.getValues()
-      this.form.curCity = picker.getValues()[0]
-      this.form.curArea = cityAndArea[1]
+    //   // 地圖更新
+    //   const cityAndArea = picker.getValues()
+    //   this.form.curCity = picker.getValues()[0]
+    //   this.form.curArea = cityAndArea[1]
 
-      if (Object.keys(osmMap).length !== 0) {
-        if (cityAndArea[1] === '選擇全區') {
-          this.getAllShop()
-          return false
-        }
-        this.updateShop()
-      }
-    },
+    //   if (Object.keys(osmMap).length !== 0) {
+    //     if (cityAndArea[1] === '選擇全區') {
+    //       this.getAllShop()
+    //       return false
+    //     }
+    //     this.updateShop()
+    //   }
+    // },
     getAllShop() {
       // 顯示laoding
       const loadingInstance = Loading.service({
@@ -326,6 +343,8 @@ export default {
         })
         self.shopList = shopList
         self.filterShopList = shopList
+        // 預設選取全區
+        // self.form.curCity = '選擇全區'
 
         loadingInstance.close()
         self.$refs.showShopList.scrollTop = 0
