@@ -22,5 +22,15 @@ export const actions = {
       data: { data, geoRetCode }
     } = await app.$axios.get('/geo/getPosition')
     commit('geo/setPosition', geoStatus === 200 && geoRetCode === 0 ? data : {})
+
+    // 取得當前連線聊天室管理者
+    const {
+      status: adminStatus,
+      data: { admin }
+    } = await app.$axios.get('/users/getAdmin')
+    commit(
+      'chat/saveAdmin',
+      adminStatus === 200 ? { id: admin._id, name: admin.name } : { id: '', name: '' }
+    )
   }
 }

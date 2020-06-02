@@ -55,7 +55,7 @@
         text-align: center;
         font-size: 10px;
         padding: 3px 0;
-        margin: 5px 0;
+        margin: 0.5rem 0;
         background: rgb(164, 210, 228);
         border-radius: 3px;
         color: #fff;
@@ -80,8 +80,6 @@
       }
 
       .customer-service-chat-room-messages-self-container {
-        cursor: pointer;
-
         &::after {
           clear: both;
           content: '';
@@ -134,13 +132,13 @@
           visibility: hidden;
         }
         .customer-service-chat-room-messages-other {
+          position: relative;
+          display: flex;
+          align-items: center;
           float: left;
+          width: 100%;
           clear: left;
-          padding: 10px;
-          margin-bottom: 15px;
-          background-color: $darkGreen;
-          border-radius: 5px;
-          color: $limeGreen;
+          margin-bottom: 0.5rem;
 
           &::after {
             clear: both;
@@ -151,13 +149,35 @@
             line-height: 0;
             visibility: hidden;
           }
-          .meta {
-            color: $yellow;
-            font-weight: bold;
-            opacity: 0.7;
-            margin-bottom: 7px;
-            span {
-              color: $yellow;
+
+          .customer-service-chat-room-messages-other_msg {
+            background: $darkGreen;
+            padding: 0.6rem;
+            border-radius: 5px;
+            color: $limeGreen;
+          }
+
+          .customer-service-chat-room-messages-other_userImg {
+            img {
+              margin-right: 0.3rem;
+              width: 1.75rem;
+              height: 1.75rem;
+              display: block;
+              border: 0;
+            }
+          }
+
+          .customer-service-chat-room-messages-other_userReadImg {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+
+            img {
+              width: 1rem;
+              height: 1rem;
+              display: block;
+              border: 0;
+              float: right;
             }
           }
         }
@@ -316,13 +336,3 @@
     }
   }
 }
-
-// @media screen and (orientation: landscape) {
-//   .customer-sevice-container {
-//     .customer-service-chat-room {
-//       .customer-service-chat-room-messages {
-//         height: 0;
-//       }
-//     }
-//   }
-// }

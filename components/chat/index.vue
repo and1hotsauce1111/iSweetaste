@@ -32,7 +32,7 @@
             </svg>
           </div>
         </div>
-        <div ref="chatMessage" class="customer-service-chat-room-messages">
+        <div ref="msgContent" class="customer-service-chat-room-messages">
           <div class="customer-service-chat-room-messages-wrapper">
             <div class="customer-service-chat-room-messages-other-container">
               <div class="unread">
@@ -40,18 +40,28 @@
                 <span>以下為尚未閱讀的訊息</span>
               </div>
               <div class="customer-service-chat-room-messages-other">
-                <p class="meta">
-                  user
-                  <span>9:35 AM</span>
-                </p>
-                <p class="text">Hello</p>
+                <div class="customer-service-chat-room-messages-other_userImg">
+                  <img src="~assets/img/icons/user.png" alt />
+                </div>
+                <el-tooltip
+                  class="customer-service-chat-room-messages-other_msg"
+                  effect="dark"
+                  content="9:35 AM"
+                  placement="left-start"
+                >
+                  <p class="text">Hello</p>
+                </el-tooltip>
+                <div class="customer-service-chat-room-messages-other_userReadImg">
+                  <img src="~assets/img/icons/user.png" alt />
+                </div>
               </div>
             </div>
             <div class="customer-service-chat-room-messages-self-container">
               <div class="customer-service-chat-room-messages-self">
-                <p class="text">Hellllllo</p>
+                <el-tooltip effect="dark" content="9:35 AM" placement="right-start">
+                  <p class="text">Hellllllo</p>
+                </el-tooltip>
               </div>
-              <div class="customer-service-chat-room-messages-time">9:35 AM</div>
             </div>
           </div>
         </div>
@@ -87,11 +97,19 @@ export default {
       this.$refs.chatContainer.classList.toggle('show')
     },
     resizeHandler() {
+      // 調整聊天視窗大小
+      // 手機轉橫
       if (window.innerHeight < 415) {
-        this.$refs.chatMessage.style.height = window.innerHeight / 2 + 'px'
+        this.$refs.msgContent.style.height = window.innerHeight / 2 + 'px'
         return false
       }
-      this.$refs.chatMessage.style.height = '80%'
+      // 平板
+      if (window.innerWidth > 415) {
+        this.$refs.msgContent.style.height = '354px'
+        return false
+      }
+      // 手機
+      this.$refs.msgContent.style.height = '80%'
     }
   }
 }
