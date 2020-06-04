@@ -80,6 +80,9 @@
       }
 
       .customer-service-chat-room-messages-self-container {
+        margin-right: 1rem;
+        position: relative;
+
         &::after {
           clear: both;
           content: '';
@@ -108,15 +111,12 @@
             visibility: hidden;
           }
         }
-        .customer-service-chat-room-messages-time {
-          float: right;
-          clear: right;
-          height: 0;
-          overflow: hidden;
-          transition: all 0.3s;
-        }
-        .customer-service-chat-room-messages-time.show {
-          height: 20px;
+
+        .unsend_msg {
+          position: absolute;
+          font-size: 0.7rem;
+          right: -5%;
+          bottom: 0.5rem;
         }
       }
       .customer-service-chat-room-messages-other-container {
@@ -190,7 +190,7 @@
       box-shadow: 0 4px 3px 0 #ccc;
       background: #fff;
 
-      form {
+      #chat-form {
         display: block;
         text-align: right;
         padding: 0 0.5rem;

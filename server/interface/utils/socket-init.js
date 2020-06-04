@@ -6,16 +6,18 @@ const {
   getAdminId
 } = require('./socket-users')
 
-const formatMessage = require('./format-message')
-
 module.exports = {
   socketInit(io) {
     io.on('connection', socket => {
       // user join
       const chatbotName = 'Sweetaste'
-      socket.on('userJoin', ({ userId, username, room, unread }) => {
-        console.log('user join')
-        const user = userJoin(socket.id, userId, username, room, unread)
+      socket.on('userJoin', userInfo => {
+        // console.log('user join')
+        // console.log(userInfo)
+        userInfo['socketId'] = socket.id
+        console.log(userInfo)
+
+        const user = userJoin(userInfo)
         if (!user) return false
         socket.join(user.room)
         // welcome message
@@ -24,29 +26,35 @@ module.exports = {
         //   formatMessage(chatbotName, '您好，歡迎來到Sweetaste')
         // )
         // send all userlist to admin
-        io.to(room).emit('getAllUser', getRoomUsers(room))
+        io.to(user.room).emit('getAllUser', getRoomUsers(user.room))
       })
 
       // listen on user message
-      socket.on('sendToAdmin', ({ userId, username, msg }) => {
+      socket.on('sendToAdmin', msgInfo => {
+        console.log('send to admin')
+
         const id = getAdminId()
+        console.log(id)
+
         // 判斷是否在線
         if (!id) return false
         io.to(id).emit('msgFromUser', {
-          msg: formatMessage(username, msg),
+          msg: msgInfo
           // socketId: socket.id,
-          userId
+          // userId
         })
       })
 
       // listen on admin message
-      socket.on('sendToUser', ({ id, msg }) => {
-        console.log('sendToUser')
+      socket.on('sendToUser', msgInfo => {
+        console.log('send to user')
 
-        const user = getCurrentUser(id)
+        const user = getCurrentUser(msgInfo.to)
+        console.log(user)
+
         if (!user) return false
         let socketId = user.socketId
-        io.to(socketId).emit('msgFromAdmin', formatMessage('admin', msg))
+        io.to(socketId).emit('msgFromAdmin', msgInfo)
       })
 
       // user disconnect

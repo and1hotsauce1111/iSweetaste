@@ -108,12 +108,19 @@
       </div>
       <a class="mobile__cart__section_order_submit" href="#">結帳</a>
     </div>
+    <!-- 聊天室 -->
+    <chat />
   </div>
 </template>
 
 <script>
+import Chat from '@/components/chat/index'
+
 export default {
   middleware: 'validate',
+  components: {
+    Chat
+  },
   data() {
     return {
       shoppingList: [

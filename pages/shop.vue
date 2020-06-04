@@ -86,12 +86,15 @@
     <div class="map__shopMap_container">
       <div id="map"></div>
     </div>
+    <!-- 聊天室 -->
+    <chat />
   </div>
 </template>
 
 <script>
 import { Loading } from 'element-ui'
 import allCity from '@/assets/json/allCity.json'
+import Chat from '@/components/chat/index'
 
 // 解決組件初始化抓不到windows物件
 let $L
@@ -122,6 +125,9 @@ const osmConfig = {
 }
 
 export default {
+  components: {
+    Chat
+  },
   async asyncData({ app }) {
     const geoData = app.store.state.geo.position
     if (!geoData) {
@@ -237,9 +243,6 @@ export default {
           this.form.curCityEngName = this.allCity.filter(
             item => item.CityName === this.form.curCity
           )[0].CityEngName
-          // // 更改手機版select 預設值
-          // const index = this.allCity.map(city => city.CityName).indexOf(this.form.curCity)
-          // this.slots[0].defaultIndex = index
         }
       }
     },
@@ -248,12 +251,6 @@ export default {
         const area = this.allArea.filter(area => area.AreaName === this.form.curArea)
         if (area.length !== 0) {
           this.form.curAreaZipCode = area[0].ZipCode
-          // // 更改手機版select 預設值
-          // const index = this.allArea.findIndex(
-          //   area => area.AreaName === this.form.curArea
-          // )
-          // // 因為添加了選擇全區 需要+1
-          // this.slots[2].defaultIndex = index + 1
         }
       }
     }
@@ -288,29 +285,6 @@ export default {
     })
   },
   methods: {
-    // onValuesChange(picker, values) {
-    //   // 選單連動
-    //   const currentArea = this.allCity
-    //     .filter(item => item.CityName === values[0])[0]
-    //     .AreaList.map(area => area.AreaName)
-    //   currentArea.unshift('選擇全區')
-
-    //   // 設定連動下拉地區
-    //   picker.setSlotValues(1, currentArea)
-
-    //   // 地圖更新
-    //   const cityAndArea = picker.getValues()
-    //   this.form.curCity = picker.getValues()[0]
-    //   this.form.curArea = cityAndArea[1]
-
-    //   if (Object.keys(osmMap).length !== 0) {
-    //     if (cityAndArea[1] === '選擇全區') {
-    //       this.getAllShop()
-    //       return false
-    //     }
-    //     this.updateShop()
-    //   }
-    // },
     getAllShop() {
       // 顯示laoding
       const loadingInstance = Loading.service({

@@ -2,12 +2,11 @@
 const users = []
 
 // Join user to chat
-function userJoin(socketId, userId, username, room, unread) {
-  const user = { socketId, userId, username, room, unread }
-  const existUser = users.find(user => user.socketId === socketId)
+function userJoin(userInfo) {
+  const existUser = users.find(user => user.socketId === userInfo.socketId)
   if (!existUser) {
-    users.push(user)
-    return user
+    users.push(userInfo)
+    return userInfo
   }
   return existUser
 }

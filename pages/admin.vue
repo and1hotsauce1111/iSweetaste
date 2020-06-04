@@ -19,7 +19,9 @@
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
                 <div class="chatRoom__userList_list_user_message">
-                  <div class="chatRoom__userList_list_user_message_name">user{{ num }}</div>
+                  <div class="chatRoom__userList_list_user_message_name">
+                    user{{ num }}
+                  </div>
                   <div class="chatRoom__userList_list_user_message_content">
                     <p class="msg">Lorem ipsum dolor sit amet.</p>
                     <span class="time">9:30 PM</span>
@@ -42,7 +44,9 @@
           </div>
           <div class="chatRoom__userMessage_currentUser_userInfo">
             <h2>User1</h2>
-            <span class="chatRoom__userMessage_currentUser_userInfo_lastOnline">50分鐘前上線</span>
+            <span class="chatRoom__userMessage_currentUser_userInfo_lastOnline">
+              50分鐘前上線
+            </span>
           </div>
         </div>
 
@@ -84,14 +88,23 @@
               >
                 <p class="text">Hellllllo</p>
               </el-tooltip>
+              <fa class="unsend_msg" :icon="['far', 'check-circle']" />
             </div>
           </div>
         </div>
         <!-- 輸入框 -->
         <div class="chatRoom__input_container">
-          <form id="chatRoom__input_form">
-            <input id="send_msg" type="text" placeholder="請輸入訊息..." required autocomplete="off" />
-          </form>
+          <div id="chatRoom__input_form">
+            <input
+              id="send_msg"
+              v-model="sendMsg"
+              type="text"
+              placeholder="請輸入訊息..."
+              required
+              autocomplete="off"
+              @keyup.enter="sendMessage"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -99,9 +112,50 @@
 </template>
 
 <script>
+// import groupBy from 'lodash/groupBy'
+import socket from '@/plugins/socket-io'
+
 export default {
+  data() {
+    return {
+      sendMsg: '',
+      onlineUsers: [], // 在線的使用者
+      userLists: [], // 已加入的所有使用者
+      currentUserId: '',
+      allMessages: [],
+      hasHistoryMsg: false,
+      adminMsgTime: 0, // 管理者最後一則訊息的時間
+      showUnreadTag: false,
+      timer: null
+    }
+  },
+  computed: {
+    adminId() {
+      return this.$store.state.chat.admin.id
+    }
+  },
   mounted() {
     window.addEventListener('resize', this.resizeHandler)
+
+    // admin join
+    socket.emit('userJoin', {
+      userId: this.adminId,
+      username: 'admin',
+      room: 'admin',
+      unread: 0,
+      loginTime: new Date().getTime()
+    })
+
+    // 獲取所有在線的使用者
+    socket.on('getAllUser', users => {
+      this.onlineUsers = users.filter(user => user.username !== 'admin')
+    })
+
+    // 監聽使用者傳來的訊息
+    socket.on('msgFromUser', ({ userId, msg }) => {
+      console.log('receive msg')
+      console.log(msg)
+    })
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler)
@@ -116,6 +170,13 @@ export default {
         return false
       }
       this.$refs.chatArea.style.height = window.innerHeight / 2 + 'px'
+    },
+    sendMessage() {
+      socket.emit('sendToUser', {
+        id: '5eaf9f9619e26b3afb08b3a7',
+        msg: this.sendMsg
+      })
+      this.sendMsg = ''
     }
   }
 }

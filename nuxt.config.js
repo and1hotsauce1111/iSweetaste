@@ -42,7 +42,9 @@ module.exports = {
    */
   plugins: [
     { src: '@/plugins/element-ui', ssr: true },
-    { src: '@/plugins/mint-ui', ssr: true }
+    { src: '@/plugins/socket-io', ssr: true },
+    { src: '@/plugins/message-utils' },
+    { src: '@/plugins/moment', ssr: true }
   ],
   /*
    ** Nuxt.js dev-modules
@@ -98,11 +100,11 @@ module.exports = {
   },
   proxy: {
     '/users': {
-      target: 'https://jameslin-ishop.herokuapp.com/',
+      target: 'https://jameslin-isweetaste.herokuapp.com/',
       changeOrigin: true
     },
     '/geo': {
-      target: 'https://jameslin-ishop.herokuapp.com/',
+      target: 'https://jameslin-isweetaste.herokuapp.com/',
       changeOrigin: true
     }
   },
@@ -116,17 +118,9 @@ module.exports = {
     // analyze: true,
     // extractCSS: true,
     // optimizeCSS: true,
-    vendor: ['element-ui', 'mint-ui'],
+    vendor: ['element-ui'],
     babel: {
       plugins: [
-        [
-          'component',
-          {
-            libraryName: 'mint-ui',
-            style: true
-          },
-          'mint-ui'
-        ],
         [
           'component',
           {

@@ -191,6 +191,8 @@
 
           // message bubble public style
           .chatRoom__userMessage_content_container {
+            position: relative;
+
             &::after {
               clear: both;
               content: '';
@@ -203,7 +205,8 @@
 
             .chatRoom__userMessage_content_message {
               padding: 10px;
-              margin-bottom: 5px;
+              margin-bottom: 0.5rem;
+              margin-right: 1rem;
               border-radius: 5px;
 
               &::after {
@@ -245,6 +248,13 @@
                 }
               }
             }
+          }
+
+          .unsend_msg {
+            position: absolute;
+            font-size: 0.6rem;
+            right: 0;
+            bottom: 0.6rem;
           }
 
           .self_container {

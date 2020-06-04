@@ -65,11 +65,18 @@
         </div>
       </div>
     </div>
+    <!-- 聊天室 -->
+    <chat />
   </div>
 </template>
 
 <script>
+import Chat from '@/components/chat/index'
+
 export default {
+  components: {
+    Chat
+  },
   // SSR
   async asyncData(ctx) {
     const {
