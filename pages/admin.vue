@@ -13,15 +13,13 @@
         </div>
         <div class="chatRoom__userList_list">
           <ul>
-            <li v-for="(num, index) in 3" :key="index">
-              <div class="chatRoom__userList_list_user" @click="openChat">
+            <li v-for="friend in friendList" :key="friend.userId">
+              <div class="chatRoom__userList_list_user" @click="openChat(friend.userId)">
                 <div class="chatRoom__userList_list_user_img">
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
                 <div class="chatRoom__userList_list_user_message">
-                  <div class="chatRoom__userList_list_user_message_name">
-                    user{{ num }}
-                  </div>
+                  <div class="chatRoom__userList_list_user_message_name">{{ friend.username }}</div>
                   <div class="chatRoom__userList_list_user_message_content">
                     <p class="msg">Lorem ipsum dolor sit amet.</p>
                     <span class="time">9:30 PM</span>
@@ -36,17 +34,19 @@
       <div ref="chatArea" class="chatRoom__userMessage_container">
         <!-- 現在對話的對象標頭 -->
         <div class="chatRoom__userMessage_currentUser">
-          <div class="chatRoom__userMessage_currentUser_back" @click="openChat">
+          <div class="chatRoom__userMessage_currentUser_back" @click="backToUserList">
             <fa :icon="['fas', 'chevron-left']" />
           </div>
           <div class="chatRoom__userMessage_currentUser_img">
             <img src="~assets/img/icons/user.png" alt />
           </div>
           <div class="chatRoom__userMessage_currentUser_userInfo">
-            <h2>User1</h2>
-            <span class="chatRoom__userMessage_currentUser_userInfo_lastOnline">
-              50分鐘前上線
-            </span>
+            <h2>{{ currentUserMsg.titleArea.username }}</h2>
+            <span
+              v-if="showLastLoginTime"
+              class="chatRoom__userMessage_currentUser_userInfo_lastOnline"
+            >{{ updateOnlineTime || formatOnlineTime }}上線</span>
+            <span v-else class="chatRoom__userMessage_currentUser_userInfo_lastOnline">上線中</span>
           </div>
         </div>
 
@@ -75,11 +75,7 @@
                 </div>
               </div>
             </div>
-            <div
-              v-for="(item, index) in 100"
-              :key="index"
-              class="chatRoom__userMessage_content_container self_container"
-            >
+            <div class="chatRoom__userMessage_content_container self_container">
               <el-tooltip
                 class="chatRoom__userMessage_content_message content_self"
                 effect="dark"
@@ -113,25 +109,55 @@
 
 <script>
 // import groupBy from 'lodash/groupBy'
+import { Loading } from 'element-ui'
 import socket from '@/plugins/socket-io'
 
 export default {
   data() {
     return {
       sendMsg: '',
-      onlineUsers: [], // 在線的使用者
-      userLists: [], // 已加入的所有使用者
-      currentUserId: '',
-      allMessages: [],
+      allUsers: [], // 在線的使用者
+      friendList: [], // 已加入的所有使用者
+      currentUserId: '', // 當前選中的使用者
+      offlineUser: null, // 離線使用者
+      currentUserMsg: {
+        titleArea: {},
+        msgContent: []
+      }, // 顯示當前對話者的訊息內容
+      allMsg: [],
       hasHistoryMsg: false,
-      adminMsgTime: 0, // 管理者最後一則訊息的時間
+      userLastMsgTime: 0, // 管理者最後一則訊息的時間
       showUnreadTag: false,
-      timer: null
+      throttleTimer: null // 節流函數計時器
     }
   },
   computed: {
     adminId() {
       return this.$store.state.chat.admin.id
+    },
+    // 顯示使用者上次上線時間
+    showLastLoginTime() {
+      const existUser = this.allUsers.findIndex(
+        friend => friend.userId === this.currentUserMsg.titleArea.userId
+      )
+      if (existUser !== -1) return false
+      return true
+    },
+    // 格式化上線時間
+    formatOnlineTime() {
+      const existUser = this.friendList.findIndex(
+        friend => friend.userId === this.currentUserMsg.titleArea.userId
+      )
+      if (existUser !== -1)
+        return this.$formatTime(this.$moment, this.currentUserMsg.titleArea.loginTime)
+      return ''
+    },
+    // socket 即時更新上線時間
+    updateOnlineTime() {
+      if (this.offlineUser !== null) {
+        return this.$formatTime(this.$moment, parseInt(this.offlineUser.loginTime))
+      }
+      return false
     }
   },
   mounted() {
@@ -143,12 +169,21 @@ export default {
       username: 'admin',
       room: 'admin',
       unread: 0,
-      loginTime: new Date().getTime()
+      loginTime: this.$moment()
+        .tz('Asia/Taipei')
+        .format('x')
     })
 
+    // 已加入的所有使用者
+    this.$messageHandler._getAllFriends(this)
+
     // 獲取所有在線的使用者
-    socket.on('getAllUser', users => {
-      this.onlineUsers = users.filter(user => user.username !== 'admin')
+    socket.on('getAllUser', (users, offlineUser) => {
+      console.log('getAllUser')
+      if (offlineUser) {
+        this.offlineUser = offlineUser
+      }
+      this.allUsers = users.filter(user => user.username !== 'admin')
     })
 
     // 監聽使用者傳來的訊息
@@ -161,8 +196,28 @@ export default {
     window.removeEventListener('resize', this.resizeHandler)
   },
   methods: {
-    openChat() {
-      this.$refs.chatArea.classList.toggle('open')
+    openChat(userId) {
+      this.$refs.chatArea.classList.add('open')
+      this.currentUserId = userId
+      // 顯示laoding
+      const loadingInstance = Loading.service({
+        target: '.chatRoom__userMessage_container'
+      })
+
+      const currentFriend = this.friendList.find(friend => friend.userId === userId)
+      const currentMsg = this.allMsg.find(msg => msg.useId === userId)
+
+      this.currentUserMsg.titleArea = currentFriend
+      this.currentUserMsg.msgContent = currentMsg
+
+      // console.log(this.$formatTime(this.$moment, currentFriend.loginTime))
+
+      setTimeout(() => {
+        loadingInstance.close()
+      }, 3000)
+    },
+    backToUserList() {
+      this.$refs.chatArea.classList.remove('open')
     },
     resizeHandler() {
       if (window.innerHeight > 319) {

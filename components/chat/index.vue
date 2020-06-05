@@ -220,7 +220,9 @@ export default {
           username: self.loginUser,
           room: 'admin',
           unread: 0,
-          loginTime: this.$moment()
+          // 透過socket即時顯示用
+          loginTime: self
+            .$moment()
             .tz('Asia/Taipei')
             .format('x')
         })
@@ -234,20 +236,35 @@ export default {
           data: { retCode: addFriendRetCode, friend: newFriend }
         } = await self.$axios.post('/addFriend', {
           selfId: 'admin',
-          friendId: self.currentUserId
+          friendId: self.currentUserId,
+          loginTime: self
+            .$moment()
+            .tz('Asia/Taipei')
+            .format('x')
         })
 
         if (addFriendStatus === 200 && addFriendRetCode === 0) {
           // 首次登入歡迎提示
           const obj = {
-            text: '歡迎來到Sweetaste',
+            from: self.adminId,
+            to: self.currentUserId,
+            message: '歡迎來到Sweetaste',
+            unread: '0',
+            createAt: self
+              .$moment()
+              .tz('Asia/Taipei')
+              .format('x'),
             formatTime: self
               .$moment()
               .tz('Asia/Taipei')
               .format('lll'),
-            from: admin[0].name
+            showUnreadTag: false,
+            isSend: false
           }
-          self.allMsg.push(obj)
+          self.allMsg.push({
+            userId: self.currentUserId,
+            msg: [obj]
+          })
           // 紀錄使用者資料
           self.userInfo = newFriend
         }
@@ -266,13 +283,23 @@ export default {
           username: self.loginUser,
           room: 'admin',
           unread: 0,
-          loginTime: this.$moment()
+          loginTime: self
+            .$moment()
             .tz('Asia/Taipei')
             .format('x')
         })
 
         self.userInfo = oldFriend
         self.adminInfo = admin
+
+        // 更新登入時間
+        await self.$axios.post('/upadatLoginTime', {
+          userId: self.currentUserId,
+          loginTime: self
+            .$moment()
+            .tz('Asia/Taipei')
+            .format('x')
+        })
 
         // 獲取歷史訊息
         self.$messageHandler._getHistoryMessage(self)

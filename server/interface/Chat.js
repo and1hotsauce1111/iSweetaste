@@ -20,19 +20,21 @@ router.get('/admin', isAdmin, (req, res, next) => {
 
 // 使用者加入
 router.post('/addFriend', async (req, res) => {
-  const { selfId, friendId } = req.body
+  const { selfId, friendId, loginTime } = req.body
   // 判斷是否重複添加
   const existFriend = await Friend.find({ friendId })
   if (existFriend.length !== 0)
     return res.send({ friend: existFriend, msg: '使用者已存在', retCode: -1 })
   const new_friend = new Friend({
     selfId,
-    friendId
+    friendId,
+    loginTime
   })
   try {
-    new_friend.save()
-    const newFriend = await Friend.find({ friendId })
-    return res.send({ friend: newFriend, msg: '成功添加使用者列表', retCode: 0 })
+    new_friend.save().then(async () => {
+      const newFriend = await Friend.find({ friendId })
+      return res.send({ friend: newFriend, msg: '成功添加使用者列表', retCode: 0 })
+    })
   } catch (e) {
     return res.send({ msg: '發生意外的錯誤，請稍後再嘗試', retCode: -1 })
   }
@@ -127,6 +129,21 @@ router.post('/allHistoryMessage', async (req, res) => {
   return res.send({ allMsg, msg: '查無歷史訊息', retCode: -1 })
 })
 
+// 更新使用者登入時間
+router.post('/upadatLoginTime', async (req, res) => {
+  const { userId, loginTime } = req.body
+
+  try {
+    if (userId) {
+      await Friend.update({ friendId: userId }, { loginTime })
+      return res.send({ msg: '成功更新登入時間', retCode: 0 })
+    }
+  } catch (e) {
+    console.log(e)
+    return res.send({ msg: '更新登入時間失敗', retCode: -1 })
+  }
+})
+
 // 更新聊天訊息為已讀
 router.post('/readMessage', async (req, res) => {
   const { to, from } = req.body
@@ -154,35 +171,38 @@ router.post('/sendMsgSucceed', async (req, res) => {
 router.post('/getUnreadMsgCount', async (req, res) => {
   const { from, to } = req.body
   if (from && to) {
-    const allMessages = await Messages.find()
-      .or([
-        { $and: [{ from: from }, { to: to }] },
-        { $and: [{ from: to }, { to: from }] }
-      ])
-      .populate('from to')
-      .sort([['createAt', 1]])
+    try {
+      const allMessages = await Messages.find()
+        .or([
+          { $and: [{ from: from }, { to: to }] },
+          { $and: [{ from: to }, { to: from }] }
+        ])
+        .populate('from to')
+        .sort([['createAt', 1]])
 
-    if (allMessages.length !== 0) {
-      const unreadAdminMessage = allMessages.filter(msg => {
-        return msg.username === 'admin' && msg.unread === '0'
-      })
+      if (allMessages.length !== 0) {
+        const unreadAdminMessage = allMessages.filter(msg => {
+          return msg.username === 'admin' && msg.unread === '0'
+        })
 
-      const unreadAdminMessageCount = unreadAdminMessage.length
+        const unreadAdminMessageCount = unreadAdminMessage.length
 
-      if (unreadAdminMessageCount === 0)
-        return res.send({ msg: '查無未讀訊息', retCode: -1 })
+        if (unreadAdminMessageCount === 0)
+          return res.send({ msg: '查無未讀訊息', retCode: -1 })
 
+        return res.send({
+          unreadMsgCount: unreadAdminMessageCount,
+          msg: '成功獲取',
+          retCode: 0
+        })
+      }
       return res.send({
-        unreadMsgCount: unreadAdminMessageCount,
-        msg: '成功獲取',
-        retCode: 0
+        msg: '查無歷史訊息',
+        retCode: -1
       })
+    } catch (e) {
+      console.log(e)
     }
-    return res.send({
-      unreadMsgCount: unreadAdminMessageCount,
-      msg: '查無歷史訊息',
-      retCode: -1
-    })
   }
   return res.send({ msg: '查詢訊息不完整', retCode: -1 })
 })

@@ -43,8 +43,9 @@ module.exports = {
   plugins: [
     { src: '@/plugins/element-ui', ssr: true },
     { src: '@/plugins/socket-io', ssr: true },
+    { src: '@/plugins/moment', ssr: true },
     { src: '@/plugins/message-utils' },
-    { src: '@/plugins/moment', ssr: true }
+    { src: '@/plugins/format-time' }
   ],
   /*
    ** Nuxt.js dev-modules

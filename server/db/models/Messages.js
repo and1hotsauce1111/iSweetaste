@@ -9,8 +9,8 @@ const Messages = new Schema({
     required: true
   },
   unread: { type: String, required: true },
-  createAt: { type: Number, required: true },
-  formatTime: { type: String, required: true },
+  createAt: { type: String, required: true },
+  formatTime: { type: Number, required: true },
   showUnreadTag: { type: Boolean, required: true },
   // 判斷訊息送出的顯示勾勾
   isSend: { type: Boolean, required: true }

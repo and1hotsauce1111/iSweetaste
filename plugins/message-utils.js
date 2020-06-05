@@ -204,8 +204,7 @@ Vue.prototype.$messageHandler = {
     const self = vm
     const {
       status,
-      data: { friends },
-      retCode
+      data: { friends, retCode }
     } = await self.$axios.get('/allFriends')
     if (status === 200 && retCode === 0) {
       const friendList = friends.map(friend => {
@@ -213,6 +212,7 @@ Vue.prototype.$messageHandler = {
           username: friend.friendId.name,
           userId: friend.friendId._id,
           socketId: '',
+          loginTime: friend.loginTime,
           unread: 0
         }
       })
@@ -225,6 +225,8 @@ Vue.prototype.$messageHandler = {
           }
         })
       })
+      // 預設顯示第一個使用者
+      self.currentUserMsg.titleArea = friendList[0]
     }
   },
   _scrollToBottom(vm) {
@@ -266,6 +268,6 @@ Vue.prototype.$messageHandler = {
       })
 
       await vm.$axios.post('/sendMsgSucceed', { from, to })
-    }, 5000)
+    }, 2000)
   }
 }

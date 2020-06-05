@@ -12,19 +12,14 @@ module.exports = {
       // user join
       const chatbotName = 'Sweetaste'
       socket.on('userJoin', userInfo => {
-        // console.log('user join')
+        console.log('user join')
         // console.log(userInfo)
         userInfo['socketId'] = socket.id
-        console.log(userInfo)
+        // console.log(userInfo)
 
         const user = userJoin(userInfo)
         if (!user) return false
         socket.join(user.room)
-        // welcome message
-        // io.to(socket.id).emit(
-        //   'welcomeMessage',
-        //   formatMessage(chatbotName, '您好，歡迎來到Sweetaste')
-        // )
         // send all userlist to admin
         io.to(user.room).emit('getAllUser', getRoomUsers(user.room))
       })
@@ -34,7 +29,7 @@ module.exports = {
         console.log('send to admin')
 
         const id = getAdminId()
-        console.log(id)
+        // console.log(id)
 
         // 判斷是否在線
         if (!id) return false
@@ -50,7 +45,7 @@ module.exports = {
         console.log('send to user')
 
         const user = getCurrentUser(msgInfo.to)
-        console.log(user)
+        // console.log(user)
 
         if (!user) return false
         let socketId = user.socketId
@@ -63,7 +58,7 @@ module.exports = {
         const user = userLeave(socket.id)
         if (user) {
           // send all userlist to admin
-          io.to(user.room).emit('getAllUser', getRoomUsers(user.room))
+          io.to(user.room).emit('getAllUser', getRoomUsers(user.room), user)
         }
       })
     })

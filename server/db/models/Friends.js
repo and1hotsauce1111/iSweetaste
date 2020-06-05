@@ -10,6 +10,7 @@ const Friends = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  loginTime: { type: Number, required: true },
   meta: {
     updateAt: { type: Date, default: Date.now() },
     createAt: { type: Date, default: Date.now() }
