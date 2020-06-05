@@ -17,15 +17,17 @@ Vue.prototype.$messageHandler = {
         // 存一份到localstorage
         window.localStorage.setItem(msgInfo.from, vm.tempMsg)
         // 存進DB
-        this._throttleApiFn(vm, msgInfo.from)
+        this._throttleApiFn(vm, msgInfo.from, msgInfo.to)
         // 清空輸入框
         vm.sendMsg = ''
+        this._scrollToBottom(vm)
       } else {
         vm.tempMsg.push(msgInfo)
         this._outPutMessage(vm, vm.currentUserId, msgInfo)
         window.localStorage.setItem(msgInfo.from, vm.tempMsg)
-        this._throttleApiFn(vm, msgInfo.from)
+        this._throttleApiFn(vm, msgInfo.from, msgInfo.to)
         vm.sendMsg = ''
+        this._scrollToBottom(vm)
       }
     }
   },
@@ -39,9 +41,6 @@ Vue.prototype.$messageHandler = {
       from: self.currentUserId,
       to: self.adminInfo[0]._id
     })
-
-    console.log(allMsg)
-    console.log(status === 200 && allMsg.length !== 0 && retCode === 0)
 
     // 查無歷史訊息
     if (status === 200 && allMsg.length === 0 && retCode === -1) return false
@@ -142,11 +141,7 @@ Vue.prototype.$messageHandler = {
   //   this._scrollToBottom(vm)
   // },
   async _saveMessage(vm, id) {
-    console.log('save msg')
-    const {
-      data: { msg }
-    } = await vm.$axios.post('/addChatMessage', { tempMsg: vm.tempMsg })
-    console.log(msg)
+    await vm.$axios.post('/addChatMessage', { tempMsg: vm.tempMsg })
 
     // 清空暫存資料
     vm.tempMsg = []
@@ -187,6 +182,10 @@ Vue.prototype.$messageHandler = {
         }
       }
       unreadMsg[0].showUnreadTag = true
+      // 移動捲軸到相對應位置
+      this._scrollToUnread(vm)
+    } else {
+      this._scrollToBottom(vm)
     }
   },
   async _getUserUnreadMsgCount(vm, from, to) {
@@ -252,13 +251,21 @@ Vue.prototype.$messageHandler = {
     })
   },
   _formatTime() {},
-  _throttleApiFn(vm, id) {
+  _throttleApiFn(vm, from, to) {
     if (vm.throttleTimer) return
     const self = this
 
-    vm.throttleTimer = setTimeout(() => {
-      self._saveMessage(vm, id, vm.tempMsg)
+    vm.throttleTimer = setTimeout(async () => {
+      self._saveMessage(vm, from)
       vm.throttleTimer = null
+      // 更改訊息為實心勾勾
+      vm.allMsg[0].msg.forEach(msg => {
+        if (msg.from === from) {
+          msg.isSend = true
+        }
+      })
+
+      await vm.$axios.post('/sendMsgSucceed', { from, to })
     }, 5000)
   }
 }

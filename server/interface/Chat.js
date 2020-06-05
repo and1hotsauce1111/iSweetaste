@@ -66,6 +66,7 @@ router.post('/addChatMessage', async (req, res) => {
     addMsg.push(new Messages(msg))
   })
 
+  // 批次添加
   Messages.collection.insert(addMsg, function(err, docs) {
     if (err) return res.send({ msg: '紀錄聊天訊息失敗', retCode: -1 })
     return res.send({ msg: '成功添加聊天訊息', retCode: 0 })
@@ -129,11 +130,24 @@ router.post('/allHistoryMessage', async (req, res) => {
 // 更新聊天訊息為已讀
 router.post('/readMessage', async (req, res) => {
   const { to, from } = req.body
-  const updateReadMsg = await Messages.updateMany({ to: to, from: from }, { status: '1' })
+  const updateReadMsg = await Messages.updateMany({ to: to, from: from }, { unread: '1' })
   const updateSucceedNum = updateReadMsg.n
   if (updateSucceedNum > 0)
     return res.send({ updateSucceedNum, msg: '成功更改為已讀訊息', retCode: 0 })
   return res.send({ updateSucceedNum, msg: '更改已讀訊息失敗', retCode: -1 })
+})
+
+// 更新發送訊息狀態
+router.post('/sendMsgSucceed', async (req, res) => {
+  const { to, from } = req.body
+  const updateSendMsg = await Messages.updateMany(
+    { to: to, from: from },
+    { isSend: true }
+  )
+  const updateSendMsgNum = updateSendMsg.n
+  if (updateSendMsgNum > 0)
+    return res.send({ updateSendMsgNum, msg: '成功更改發送訊息狀態', retCode: 0 })
+  return res.send({ updateSendMsgNum, msg: '更改發送訊息失敗', retCode: -1 })
 })
 
 // 獲取未讀訊息小紅點
@@ -150,7 +164,7 @@ router.post('/getUnreadMsgCount', async (req, res) => {
 
     if (allMessages.length !== 0) {
       const unreadAdminMessage = allMessages.filter(msg => {
-        return msg.username === 'admin' && msg.status === '0'
+        return msg.username === 'admin' && msg.unread === '0'
       })
 
       const unreadAdminMessageCount = unreadAdminMessage.length

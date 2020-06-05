@@ -1,20 +1,13 @@
 <template>
   <div v-if="loginUser !== 'admin' && currentUserId !== ''">
     <div class="customer-service" @click="toggleChat">
-      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">{{
-        unreadMsgCount
-      }}</span>
+      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">{{ unreadMsgCount }}</span>
     </div>
     <div class="customer-sevice-container">
       <div ref="chatContainer" class="customer-service-chat-room">
         <div class="customer-service-chat-room-header">
           <div class="customer-service-chat-room-header-title">
-            <img
-              src="~assets/img/logo/desktop/logo-light.svg"
-              alt
-              width="26"
-              height="26"
-            />&nbsp; Sweetaste
+            <img src="~assets/img/logo/desktop/logo-light.svg" alt width="26" height="26" />&nbsp; Sweetaste
           </div>
           <div class="customer-service-chat-room-header-close" @click="toggleChat">
             <svg height="26px" width="26px" viewBox="-4 -4 24 24">
@@ -70,17 +63,22 @@
                 </div>
               </div>
             </div>
-            <div v-else class="customer-service-chat-room-messages-self-container">
+            <div v-else ref="selfMsg" class="customer-service-chat-room-messages-self-container">
               <div class="customer-service-chat-room-messages-self">
-                <el-tooltip
-                  effect="dark"
-                  :content="msg.formatTime"
-                  placement="right-start"
-                >
+                <el-tooltip effect="dark" :content="msg.formatTime" placement="right-start">
                   <p class="text">{{ msg.message }}</p>
                 </el-tooltip>
               </div>
-              <fa class="unsend_msg" :icon="['far', 'check-circle']" />
+              <fa
+                v-if="!msg.isSend && msg.unread === '0'"
+                class="unsend_msg"
+                :icon="['far', 'check-circle']"
+              />
+              <fa
+                v-if="msg.isSend && msg.unread === '0'"
+                class="unsend_msg"
+                :icon="['fas', 'check-circle']"
+              />
             </div>
           </div>
         </div>
@@ -122,7 +120,7 @@ export default {
       userLastMsgTime: '', // 使用者最後一則訊息的時間
       unreadMsgCount: 0, // 未讀訊息小紅點
       showUnreadTag: false, // 顯示對話框中未讀訊息tag
-      throttleTimer: null
+      throttleTimer: null // 節流函數計時器
     }
   },
   computed: {
@@ -140,7 +138,6 @@ export default {
         const existMsg = this.allMsg.find(
           message => message.userId === this.currentUserId
         )
-        console.log(existMsg)
         if (existMsg) {
           return existMsg.msg
         }
@@ -177,24 +174,23 @@ export default {
       this.userJoin()
       this.isJoin = true
       this.isOpenChat = !this.isOpenChat
-      if (this.unreadMsgCount > 0) {
-        this.$messageHandlerHandler._scrollToUnread(this)
-      }
     },
     resizeHandler() {
       // 調整聊天視窗大小
       // 手機轉橫
-      if (window.innerHeight < 415) {
-        this.$refs.msgContent.style.height = window.innerHeight / 2 + 'px'
-        return false
+      if (this.$refs.msgContent) {
+        if (window.innerHeight < 415) {
+          this.$refs.msgContent.style.height = window.innerHeight / 2 + 'px'
+          return false
+        }
+        // 平板
+        if (window.innerWidth > 415) {
+          this.$refs.msgContent.style.height = '354px'
+          return false
+        }
+        // 手機
+        this.$refs.msgContent.style.height = '80%'
       }
-      // 平板
-      if (window.innerWidth > 415) {
-        this.$refs.msgContent.style.height = '354px'
-        return false
-      }
-      // 手機
-      this.$refs.msgContent.style.height = '80%'
     },
     async userJoin() {
       // 已經開啟過對話框 不重複執行登入
@@ -295,7 +291,8 @@ export default {
         formatTime: this.$moment()
           .tz('Asia/Taipei')
           .format('lll'),
-        showUnreadTag: false
+        showUnreadTag: false,
+        isSend: false
       }
       this.$messageHandler._sendMessage(this, socket, msgInfo)
     }
