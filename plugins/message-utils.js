@@ -226,8 +226,13 @@ Vue.prototype.$messageHandler = {
         })
       })
       // 預設顯示第一個使用者
-      self.currentUserMsg.titleArea = friendList[0]
+      // self.currentUserMsg.titleArea = friendList[0]
+      // userList 排序
+      this._sortUserList()
     }
+  },
+  async _sortUserList() {
+    // 有未讀訊息的排前面
   },
   _scrollToBottom(vm) {
     vm.$nextTick(() => {
