@@ -129,6 +129,13 @@ router.post('/allHistoryMessage', async (req, res) => {
   return res.send({ allMsg, msg: '查無歷史訊息', retCode: -1 })
 })
 
+// 獲取最新一則訊息
+router.post('/getLastestMsg', async (req, res) => {
+  const lastestMsg = await Messages.findOne().sort({ createAt: -1 })
+  if (lastestMsg.length !== 0) return res.send({ lastestMsg, retCode: 0 })
+  return res.send({ msg: '查無最後一則訊息', retCode: -1 })
+})
+
 // 更新使用者登入時間
 router.post('/upadatLoginTime', async (req, res) => {
   const { userId, loginTime } = req.body

@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import _orderby from 'lodash.orderby'
 
 Vue.prototype.$messageHandler = {
   // this 指向$messageHandler
@@ -81,7 +82,39 @@ Vue.prototype.$messageHandler = {
       }
     }
   },
-  _getAllHistoryMessage(vm) {},
+  async _getAllHistoryMessage(vm, adminId) {
+    const self = vm
+    const {
+      status: getMsgStatus,
+      data: { allMsg, retCode: retCode1 }
+    } = await self.$axios.post('/allHistoryMessage', { adminId })
+    if (getMsgStatus === 200 && retCode1 === 0) {
+      self.allMsg = allMsg
+    }
+
+    // 預設顯示上次互動的使用者
+    const {
+      status: getLastStatus,
+      data: { lastestMsg, retCode: retCode2 }
+    } = await self.$axios.post('/getlastestMsg')
+
+    if (getLastStatus === 200 && retCode2 === 0) {
+      // 判斷最後一則訊息是否已讀
+      if (lastestMsg.unread === '0') {
+        // 整理使用者列表格式
+        this._sortUserList(vm)
+        return false
+      }
+
+      // 預設顯示最後一次對話使用者的訊息
+      const lastMsgContent = allMsg.find(msg => msg.userId === lastestMsg.from)
+      self.currentUserMsg.msgContent = lastMsgContent || {}
+    } else {
+      self.currentUserMsg.msgContent = {}
+      // 整理使用者列表格式
+      this._sortUserList(vm)
+    }
+  },
   _outPutMessage(vm, currentUserId, msg) {
     // 渲染發送訊息用
     const userMsgIndex = vm.allMsg.findIndex(message => {
@@ -99,47 +132,6 @@ Vue.prototype.$messageHandler = {
       vm.allMsg.push(mdgObj)
     }
   },
-  // _outPutMessage(vm, currentUserId, msg) {
-  //   // 渲染歷史訊息用
-  //   if (!vm.hasHistoryMsg && vm.allMsg.length === 0) {
-  //     // 沒有歷史訊息
-  //     const msgObj = {}
-  //     Object.defineProperty(msgObj, currentUserId, {
-  //       enumerable: true,
-  //       configurable: true,
-  //       writable: true
-  //     })
-  //     msgObj[currentUserId] = {
-  //       msg: [msg]
-  //     }
-  //     vm.allMsg.push(msgObj)
-
-  //     this._scrollToBottom(vm)
-  //     return false
-  //   }
-
-  //   // 渲染發送訊息用
-  //   const userMsgIndex = vm.allMsg.findIndex(message => {
-  //     return Object.keys(message)[0] === currentUserId
-  //   })
-
-  //   if (userMsgIndex !== -1) {
-  //     vm.allMsg[userMsgIndex][currentUserId].msg.push(msg)
-  //   } else {
-  //     const msgObj = {}
-  //     Object.defineProperty(msgObj, currentUserId, {
-  //       enumerable: true,
-  //       configurable: true,
-  //       writable: true
-  //     })
-  //     msgObj[currentUserId] = {
-  //       msg: [msg]
-  //     }
-  //     vm.allMsg.push(msgObj)
-  //   }
-
-  //   this._scrollToBottom(vm)
-  // },
   async _saveMessage(vm, id) {
     await vm.$axios.post('/addChatMessage', { tempMsg: vm.tempMsg })
 
@@ -203,16 +195,18 @@ Vue.prototype.$messageHandler = {
   async _getAllFriends(vm) {
     const self = vm
     const {
-      status,
-      data: { friends, retCode }
+      status: allFriendsStatus,
+      data: { friends, retCode: retCode1 }
     } = await self.$axios.get('/allFriends')
-    if (status === 200 && retCode === 0) {
+    if (allFriendsStatus === 200 && retCode1 === 0) {
       const friendList = friends.map(friend => {
         return {
           username: friend.friendId.name,
           userId: friend.friendId._id,
           socketId: '',
           loginTime: friend.loginTime,
+          lastestMsg: '',
+          lastMsgTime: '',
           unread: 0
         }
       })
@@ -225,14 +219,44 @@ Vue.prototype.$messageHandler = {
           }
         })
       })
-      // 預設顯示第一個使用者
-      // self.currentUserMsg.titleArea = friendList[0]
-      // userList 排序
-      this._sortUserList()
+      // 預設顯示上次互動的使用者
+      const {
+        status: lastMsgStatus,
+        data: { lastestMsg, retCode: retCode2 }
+      } = await self.$axios.post('/getLastestMsg')
+      if (lastMsgStatus === 200 && retCode2 === 0) {
+        // 判斷最後一則訊息是否已讀
+        if (lastestMsg.unread === '0') return false
+
+        const lastUser = friendList.find(friend => friend.userId === lastestMsg.from)
+        self.currentUserMsg.titleArea = lastUser || {}
+        self.currentUserId = lastUser.userId
+        // 整理使用者列表格式
+        this._sortUserList(vm)
+      } else {
+        self.friendList = []
+      }
+    } else {
+      self.friendList = []
     }
   },
-  async _sortUserList() {
+  _sortUserList(vm) {
     // 有未讀訊息的排前面
+    vm.allMsg.forEach(msg => {
+      vm.friendList.forEach(friend => {
+        if (msg.userId === friend.userId) {
+          msg.messages.forEach(item => {
+            if (item.unread === '0') {
+              friend.unread++
+            }
+          })
+          friend.lastestMsg = msg.messages[msg.messages.length - 1].message
+          friend.lastMsgTime = msg.messages[msg.messages.length - 1].createAt
+        }
+      })
+    })
+
+    vm.friendList = _orderby(vm.friendList, ['lastMsgTime', 'unread'], ['desc', 'desc'])
   },
   _scrollToBottom(vm) {
     vm.$nextTick(() => {
@@ -257,7 +281,6 @@ Vue.prototype.$messageHandler = {
       }
     })
   },
-  _formatTime() {},
   _throttleApiFn(vm, from, to) {
     if (vm.throttleTimer) return
     const self = this

@@ -13,7 +13,11 @@ const Messages = new Schema({
   formatTime: { type: Number, required: true },
   showUnreadTag: { type: Boolean, required: true },
   // 判斷訊息送出的顯示勾勾
-  isSend: { type: Boolean, required: true }
+  isSend: { type: Boolean, required: true },
+  meta: {
+    updateAt: { type: Date, default: Date.now() },
+    createAt: { type: Date, default: Date.now() }
+  }
 })
 
 module.exports = mongoose.model('Messages', Messages)

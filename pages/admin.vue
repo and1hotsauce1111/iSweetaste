@@ -11,18 +11,26 @@
             <input type="text" placeholder="搜尋使用者" autocomplete="off" />
           </span>
         </div>
-        <div class="chatRoom__userList_list">
+        <div v-if="friendList.length !== 0" class="chatRoom__userList_list">
           <ul>
             <li v-for="friend in friendList" :key="friend.userId">
-              <div class="chatRoom__userList_list_user" @click="openChat(friend.userId)">
+              <div
+                :class="['chatRoom__userList_list_user', { 'unread': friend.unread > 0 , 'selected':currentUserId === friend.userId && friend.unread === 0 }]"
+                @click="openChat(friend.userId)"
+              >
                 <div class="chatRoom__userList_list_user_img">
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
                 <div class="chatRoom__userList_list_user_message">
                   <div class="chatRoom__userList_list_user_message_name">{{ friend.username }}</div>
                   <div class="chatRoom__userList_list_user_message_content">
-                    <p class="msg">Lorem ipsum dolor sit amet.</p>
-                    <span class="time">9:30 PM</span>
+                    <p
+                      class="msg"
+                    >{{ friend.userId !== adminId ? '' : '你 : ' }}{{ friend.lastestMsg }}</p>
+                    <span class="dot">·</span>
+                    <span
+                      class="time"
+                    >{{ parseInt(friend.lastMsgTime) | formatTime($moment, 'title') }}</span>
                   </div>
                 </div>
                 <span class="chatRoom__userList_list_user_notify"></span>
@@ -31,9 +39,9 @@
           </ul>
         </div>
       </div>
-      <div ref="chatArea" class="chatRoom__userMessage_container">
+      <div v-if="allMsg.length !== 0" ref="chatArea" class="chatRoom__userMessage_container">
         <!-- 現在對話的對象標頭 -->
-        <div class="chatRoom__userMessage_currentUser">
+        <div v-if="currentUserId" class="chatRoom__userMessage_currentUser">
           <div class="chatRoom__userMessage_currentUser_back" @click="backToUserList">
             <fa :icon="['fas', 'chevron-left']" />
           </div>
@@ -50,11 +58,20 @@
           </div>
         </div>
 
+        <div v-if="!currentUserId" class="chatRoom__userMessage_noChat">———尚未選擇聊天室———</div>
+
         <!-- 訊息主體 -->
         <div class="chatRoom__userMessage_content">
-          <div class="chatRoom__userMessage_content_wrapper">
-            <div class="chatRoom__userMessage_content_container other_container">
-              <div class="unread">
+          <div
+            v-for="msg in currentUserMsg.msgContent.messages"
+            :key="msg._id"
+            class="chatRoom__userMessage_content_wrapper"
+          >
+            <div
+              v-if="msg.from._id !== adminId"
+              class="chatRoom__userMessage_content_container other_container"
+            >
+              <div v-if="msg.showUnreadTag" class="unread">
                 <fa :icon="['fas', 'tag']" />&nbsp;
                 <span>以下為尚未閱讀的訊息</span>
               </div>
@@ -65,31 +82,31 @@
                 <el-tooltip
                   class="chatRoom__userMessage_content_message content_other"
                   effect="dark"
-                  content="9:35 AM"
+                  :content="parseInt(msg.createAt) | formatTime($moment, 'msg')"
                   placement="left-start"
                 >
-                  <p class="text">Hello</p>
+                  <p class="text">{{ msg.message }}</p>
                 </el-tooltip>
                 <div class="chatRoom__userMessage_content_userReadImg">
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
               </div>
             </div>
-            <div class="chatRoom__userMessage_content_container self_container">
+            <div v-else class="chatRoom__userMessage_content_container self_container">
               <el-tooltip
                 class="chatRoom__userMessage_content_message content_self"
                 effect="dark"
-                content="9:35 AM"
+                :content="parseInt(msg.createAt) | formatTime($moment, 'msg')"
                 placement="right-start"
               >
-                <p class="text">Hellllllo</p>
+                <p class="text">{{ msg.message }}</p>
               </el-tooltip>
               <fa class="unsend_msg" :icon="['far', 'check-circle']" />
             </div>
           </div>
         </div>
         <!-- 輸入框 -->
-        <div class="chatRoom__input_container">
+        <div v-if="currentUserId" class="chatRoom__input_container">
           <div id="chatRoom__input_form">
             <input
               id="send_msg"
@@ -176,6 +193,9 @@ export default {
 
     // 已加入的所有使用者
     this.$messageHandler._getAllFriends(this)
+    // 獲取所有歷史訊息
+    this.$messageHandler._getAllHistoryMessage(this, this.adminId)
+    // 處理朋友列表的顯示
 
     // 獲取所有在線的使用者
     socket.on('getAllUser', (users, offlineUser) => {
@@ -205,16 +225,14 @@ export default {
       })
 
       const currentFriend = this.friendList.find(friend => friend.userId === userId)
-      const currentMsg = this.allMsg.find(msg => msg.useId === userId)
+      const currentMsg = this.allMsg.find(msg => msg.userId === userId)
 
       this.currentUserMsg.titleArea = currentFriend
       this.currentUserMsg.msgContent = currentMsg
 
-      // console.log(this.$formatTime(this.$moment, currentFriend.loginTime))
+      // 更新所有訊息為已讀
 
-      setTimeout(() => {
-        loadingInstance.close()
-      }, 3000)
+      loadingInstance.close()
     },
     backToUserList() {
       this.$refs.chatArea.classList.remove('open')
