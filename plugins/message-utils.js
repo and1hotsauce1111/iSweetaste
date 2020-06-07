@@ -3,35 +3,58 @@ import _orderby from 'lodash.orderby'
 
 Vue.prototype.$messageHandler = {
   // this 指向$messageHandler
-  _sendMessage(vm, socket, msgInfo) {
+  // 送出訊息
+  _sendMessage(vm, socket, msgInfo, type) {
     // 判斷當前用戶是否在線
     const currentUser = vm.allUsers.find(user => user.userId !== vm.currentUserId)
 
     if (vm.sendMsg !== '') {
       if (currentUser && currentUser.socketId !== '') {
         // 使用者在線
-        socket.emit('sendToAdmin', msgInfo)
+        if (type === 'user') {
+          socket.emit('sendToAdmin', msgInfo)
+        }
+        if (type === 'admin') {
+          socket.emit('sendToUser', msgInfo)
+        }
 
         // 記錄到待送訊息區
         vm.tempMsg.push(msgInfo)
         this._outPutMessage(vm, vm.currentUserId, msgInfo)
         // 存一份到localstorage
-        window.localStorage.setItem(msgInfo.from, vm.tempMsg)
+        window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
         // 存進DB
-        this._throttleApiFn(vm, msgInfo.from, msgInfo.to)
+        this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
         // 清空輸入框
         vm.sendMsg = ''
         this._scrollToBottom(vm)
+        if (type === 'admin') {
+          // 更新使用者列表
+          const currentFriend = vm.friendList.find(
+            friend => friend.userId === msgInfo.to._id
+          )
+          currentFriend.lastestMsg = msgInfo.message
+          currentFriend.lastMsgTime = msgInfo.createAt
+        }
       } else {
         vm.tempMsg.push(msgInfo)
         this._outPutMessage(vm, vm.currentUserId, msgInfo)
-        window.localStorage.setItem(msgInfo.from, vm.tempMsg)
-        this._throttleApiFn(vm, msgInfo.from, msgInfo.to)
+        window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
+        this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
         vm.sendMsg = ''
         this._scrollToBottom(vm)
+        if (type === 'admin') {
+          // 更新使用者列表
+          const currentFriend = vm.friendList.find(
+            friend => friend.userId === msgInfo.to._id
+          )
+          currentFriend.lastestMsg = msgInfo.message
+          currentFriend.lastMsgTime = msgInfo.createAt
+        }
       }
     }
   },
+  // 取得歷史訊息
   async _getHistoryMessage(vm) {
     const self = vm
     if (self.adminInfo.length === 0) return false
@@ -39,8 +62,8 @@ Vue.prototype.$messageHandler = {
       status,
       data: { allMsg, retCode }
     } = await self.$axios.post('/historyMessage', {
-      from: self.currentUserId,
-      to: self.adminInfo[0]._id
+      from: self.adminInfo[0]._id,
+      to: self.currentUserId
     })
 
     // 查無歷史訊息
@@ -78,7 +101,7 @@ Vue.prototype.$messageHandler = {
         })
 
         // 未讀訊息
-        this._findLastMessage(vm, self.currentUserId)
+        this._findLastMessage(vm, self.loginId, self.currentUserId)
       }
     }
   },
@@ -88,8 +111,16 @@ Vue.prototype.$messageHandler = {
       status: getMsgStatus,
       data: { allMsg, retCode: retCode1 }
     } = await self.$axios.post('/allHistoryMessage', { adminId })
+
+    // 查無歷史訊息
+    if (getMsgStatus === 200 && allMsg.length === 0 && retCode1 === -1) return false
     if (getMsgStatus === 200 && retCode1 === 0) {
       self.allMsg = allMsg
+
+      // 顯示未讀訊息tag
+      self.allMsg.forEach(msg => {
+        this._findLastMessage(vm, vm.loginId, msg.userId)
+      })
     }
 
     // 預設顯示上次互動的使用者
@@ -100,21 +131,24 @@ Vue.prototype.$messageHandler = {
 
     if (getLastStatus === 200 && retCode2 === 0) {
       // 判斷最後一則訊息是否已讀
-      if (lastestMsg.unread === '0') {
+      // 若為他人訊息且未讀則return
+      if (lastestMsg.from !== vm.adminId && lastestMsg.unread === '0') {
         // 整理使用者列表格式
         this._sortUserList(vm)
         return false
       }
 
       // 預設顯示最後一次對話使用者的訊息
-      const lastMsgContent = allMsg.find(msg => msg.userId === lastestMsg.from)
+      const filter = lastestMsg.from === vm.adminId ? lastestMsg.to : lastestMsg.from
+      const lastMsgContent = allMsg.find(msg => msg.userId === filter)
+
       self.currentUserMsg.msgContent = lastMsgContent || {}
-    } else {
-      self.currentUserMsg.msgContent = {}
-      // 整理使用者列表格式
       this._sortUserList(vm)
+    } else if (getLastStatus === 200 && retCode2 === -1) {
+      self.currentUserMsg.msgContent = {}
     }
   },
+  // 格式化送出訊息
   _outPutMessage(vm, currentUserId, msg) {
     // 渲染發送訊息用
     const userMsgIndex = vm.allMsg.findIndex(message => {
@@ -139,26 +173,32 @@ Vue.prototype.$messageHandler = {
     vm.tempMsg = []
     window.localStorage.removeItem(id)
   },
-  _findLastMessage(vm, userId) {
+  // 找出最後一則訊息
+  _findLastMessage(vm, selfId, otherId) {
     // 第一種： 在線即時訊息
     // 第二種： 歷史訊息
-    const findUserMsg = vm.allMsg.find(msg => msg.userId === userId)
+    const findUserMsg = vm.allMsg.find(msg => msg.userId === otherId)
 
     const currentUserMsg = findUserMsg.msg
 
     // 管理者 使用者 尚未有任何互動
     if (currentUserMsg.length === 0) return false
 
+    // 即時傳送的from(string) 與 DB讀出的from(ObjectId)不同
     // 找出自己發送最後一筆訊息的時間
-    const selfMsg = currentUserMsg.filter(msg => msg.from._id === userId)
+    const selfMsg = currentUserMsg.filter(msg => msg.from._id === selfId)
 
-    const selfLastMsgTime = selfMsg[selfMsg.length - 1].createAt
-    vm.userLastMsgTime = parseInt(selfLastMsgTime)
+    // 若自己尚未發出任何訊息則為0
+    let selfLastMsgTime = 0
+    if (selfMsg.length !== 0) {
+      selfLastMsgTime = selfMsg[selfMsg.length - 1].createAt
+      vm.userLastMsgTime = parseInt(selfLastMsgTime)
+    }
 
     // 未讀訊息
     const unreadMsg = currentUserMsg.filter(msg => {
       return (
-        msg.from._id !== userId &&
+        msg.from._id === otherId &&
         parseInt(msg.createAt) >= selfLastMsgTime &&
         msg.unread === '0'
       )
@@ -168,18 +208,20 @@ Vue.prototype.$messageHandler = {
       // 顯示當前使用者未讀訊息數
       for (let i = 0; i < vm.allUsers.length; i++) {
         for (let j = 0; j < unreadMsg.length; j++) {
-          if (vm.allUsers[i].userId === unreadMsg[j].to) {
+          if (vm.allUsers[i].userId === otherId) {
             vm.allUsers[i].unread++
           }
         }
       }
       unreadMsg[0].showUnreadTag = true
-      // 移動捲軸到相對應位置
+
       this._scrollToUnread(vm)
-    } else {
-      this._scrollToBottom(vm)
+      return false
     }
+
+    this._scrollToBottom(vm)
   },
+  // 未讀訊息數（顯示小紅點)
   async _getUserUnreadMsgCount(vm, from, to) {
     const self = vm
     const {
@@ -192,6 +234,7 @@ Vue.prototype.$messageHandler = {
       return false
     }
   },
+  // 顯示朋友列表
   async _getAllFriends(vm) {
     const self = vm
     const {
@@ -222,42 +265,52 @@ Vue.prototype.$messageHandler = {
       // 預設顯示上次互動的使用者
       const {
         status: lastMsgStatus,
-        data: { lastestMsg, retCode: retCode2 }
+        data: { lastestMsg, msg, retCode: retCode2 }
       } = await self.$axios.post('/getLastestMsg')
       if (lastMsgStatus === 200 && retCode2 === 0) {
         // 判斷最後一則訊息是否已讀
-        if (lastestMsg.unread === '0') return false
+        if (lastestMsg.from !== vm.adminId && lastestMsg.unread === '0') return false
 
-        const lastUser = friendList.find(friend => friend.userId === lastestMsg.from)
+        const filter = lastestMsg.from === vm.adminId ? lastestMsg.to : lastestMsg.from
+        const lastUser = friendList.find(friend => friend.userId === filter)
         self.currentUserMsg.titleArea = lastUser || {}
         self.currentUserId = lastUser.userId
-        // 整理使用者列表格式
-        this._sortUserList(vm)
       } else {
-        self.friendList = []
+        console.log(msg)
       }
     } else {
       self.friendList = []
     }
   },
+  // 朋友列表排序
   _sortUserList(vm) {
     // 有未讀訊息的排前面
+    console.log('sort friend', vm.allMsg)
+
     vm.allMsg.forEach(msg => {
       vm.friendList.forEach(friend => {
-        if (msg.userId === friend.userId) {
-          msg.messages.forEach(item => {
-            if (item.unread === '0') {
-              friend.unread++
-            }
-          })
-          friend.lastestMsg = msg.messages[msg.messages.length - 1].message
-          friend.lastMsgTime = msg.messages[msg.messages.length - 1].createAt
+        if (msg.msg.length !== 0) {
+          if (msg.userId === friend.userId) {
+            msg.msg.forEach(item => {
+              // 有未讀訊息且對話框未開啟
+              if (
+                item.unread === '0' &&
+                vm.currentUserId !== msg.userId &&
+                item.from._id !== vm.adminId
+              ) {
+                friend.unread++
+              }
+            })
+
+            friend.lastestMsg = msg.msg[msg.msg.length - 1].message
+            friend.lastMsgTime = msg.msg[msg.msg.length - 1].createAt
+          }
         }
       })
     })
-
     vm.friendList = _orderby(vm.friendList, ['lastMsgTime', 'unread'], ['desc', 'desc'])
   },
+  // 送出消息後移至底部
   _scrollToBottom(vm) {
     vm.$nextTick(() => {
       // scroll to bottom
@@ -268,10 +321,11 @@ Vue.prototype.$messageHandler = {
       }
     })
   },
+  // 開啟對話框後移至未讀區域
   _scrollToUnread(vm) {
     vm.$nextTick(() => {
       const unreadTag = vm.$refs.unread
-      const chatMessageWrapper = this.$refs.msgContent
+      const chatMessageWrapper = vm.$refs.msgContent
 
       if (unreadTag && chatMessageWrapper) {
         chatMessageWrapper.scrollTo(
@@ -281,19 +335,34 @@ Vue.prototype.$messageHandler = {
       }
     })
   },
-  _throttleApiFn(vm, from, to) {
+  // 儲存訊息節流函數
+  _throttleApiFn(vm, from, to, type) {
     if (vm.throttleTimer) return
     const self = this
 
     vm.throttleTimer = setTimeout(async () => {
+      console.log('save msg')
+
       self._saveMessage(vm, from)
       vm.throttleTimer = null
       // 更改訊息為實心勾勾
-      vm.allMsg[0].msg.forEach(msg => {
-        if (msg.from === from) {
-          msg.isSend = true
-        }
-      })
+      if (type === 'user') {
+        vm.allMsg[0].msg.forEach(msg => {
+          if (msg.from._id === from) {
+            msg.isSend = true
+          }
+        })
+      }
+
+      if (type === 'admin') {
+        vm.allMsg.forEach(msg => {
+          if (msg.userId === to) {
+            msg.msg.forEach(item => {
+              item.isSend = true
+            })
+          }
+        })
+      }
 
       await vm.$axios.post('/sendMsgSucceed', { from, to })
     }, 2000)

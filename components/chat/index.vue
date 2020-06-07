@@ -39,7 +39,7 @@
             class="customer-service-chat-room-messages-wrapper"
           >
             <div
-              v-if="msg.to === currentUserId"
+              v-if="msg.from._id === adminId"
               class="customer-service-chat-room-messages-other-container"
             >
               <div v-if="msg.showUnreadTag" ref="unread" class="unread">
@@ -53,7 +53,7 @@
                 <el-tooltip
                   class="customer-service-chat-room-messages-other_msg"
                   effect="dark"
-                  :content="msg.formatTime"
+                  :content="msg.createAt | formatTime($moment, 'msg')"
                   placement="left-start"
                 >
                   <p class="text">{{ msg.message }}</p>
@@ -65,7 +65,11 @@
             </div>
             <div v-else ref="selfMsg" class="customer-service-chat-room-messages-self-container">
               <div class="customer-service-chat-room-messages-self">
-                <el-tooltip effect="dark" :content="msg.formatTime" placement="right-start">
+                <el-tooltip
+                  effect="dark"
+                  :content="msg.createAt | formatTime($moment, 'msg')"
+                  placement="right-start"
+                >
                   <p class="text">{{ msg.message }}</p>
                 </el-tooltip>
               </div>
@@ -127,6 +131,9 @@ export default {
     loginUser() {
       return decodeURIComponent(this.$store.state.user.user.name)
     },
+    loginId() {
+      return this.$store.state.user.user.id
+    },
     currentUserId() {
       return this.$store.state.user.user.id
     },
@@ -174,6 +181,12 @@ export default {
       this.userJoin()
       this.isJoin = true
       this.isOpenChat = !this.isOpenChat
+
+      if (this.unreadMsgCount > 0) {
+        this.$messageHandler._scrollToUnread(this)
+      } else {
+        this.$messageHandler._scrollToBottom(this)
+      }
     },
     resizeHandler() {
       // 調整聊天視窗大小
@@ -259,7 +272,8 @@ export default {
               .tz('Asia/Taipei')
               .format('lll'),
             showUnreadTag: false,
-            isSend: false
+            isSend: false,
+            isHeadShot: false
           }
           self.allMsg.push({
             userId: self.currentUserId,
@@ -308,8 +322,8 @@ export default {
     },
     sendMessage() {
       const msgInfo = {
-        from: this.currentUserId,
-        to: this.adminId,
+        from: { _id: this.currentUserId },
+        to: { _id: this.adminId },
         message: this.sendMsg,
         unread: '0',
         createAt: this.$moment()
@@ -319,9 +333,10 @@ export default {
           .tz('Asia/Taipei')
           .format('lll'),
         showUnreadTag: false,
-        isSend: false
+        isSend: false,
+        isHeadShot: false
       }
-      this.$messageHandler._sendMessage(this, socket, msgInfo)
+      this.$messageHandler._sendMessage(this, socket, msgInfo, 'user')
     }
   }
 }

@@ -69,7 +69,7 @@ router.post('/addChatMessage', async (req, res) => {
   })
 
   // 批次添加
-  Messages.collection.insert(addMsg, function(err, docs) {
+  Messages.insertMany(addMsg, function(err, docs) {
     if (err) return res.send({ msg: '紀錄聊天訊息失敗', retCode: -1 })
     return res.send({ msg: '成功添加聊天訊息', retCode: 0 })
   })
@@ -89,7 +89,7 @@ router.post('/historyMessage', async (req, res) => {
 
     const allMsg = [
       {
-        userId: from,
+        userId: to,
         msg: allMessages
       }
     ]
@@ -108,6 +108,7 @@ router.post('/allHistoryMessage', async (req, res) => {
   const adminId = req.body.adminId
   const allMsg = []
   if (allUsers.length === 0) return res.send({ msg: '尚未添加使用者', retCode: -1 })
+
   for await (user of allUsers) {
     const messages = await Messages.find()
       .or([
@@ -120,7 +121,7 @@ router.post('/allHistoryMessage', async (req, res) => {
     if (messages) {
       allMsg.push({
         userId: user.friendId,
-        messages
+        msg: messages
       })
     }
   }
@@ -132,7 +133,7 @@ router.post('/allHistoryMessage', async (req, res) => {
 // 獲取最新一則訊息
 router.post('/getLastestMsg', async (req, res) => {
   const lastestMsg = await Messages.findOne().sort({ createAt: -1 })
-  if (lastestMsg.length !== 0) return res.send({ lastestMsg, retCode: 0 })
+  if (lastestMsg) return res.send({ lastestMsg, retCode: 0 })
   return res.send({ msg: '查無最後一則訊息', retCode: -1 })
 })
 
@@ -153,12 +154,31 @@ router.post('/upadatLoginTime', async (req, res) => {
 
 // 更新聊天訊息為已讀
 router.post('/readMessage', async (req, res) => {
+  console.log('updat unread')
   const { to, from } = req.body
-  const updateReadMsg = await Messages.updateMany({ to: to, from: from }, { unread: '1' })
-  const updateSucceedNum = updateReadMsg.n
-  if (updateSucceedNum > 0)
-    return res.send({ updateSucceedNum, msg: '成功更改為已讀訊息', retCode: 0 })
-  return res.send({ updateSucceedNum, msg: '更改已讀訊息失敗', retCode: -1 })
+  const allMessages = await Messages.find().or([
+    { $and: [{ from: from }, { to: to }] },
+    { $and: [{ from: to }, { to: from }] }
+  ])
+
+  if (allMessages) {
+    allMessages.forEach(msg => {
+      msg.unread = '1'
+      msg.save()
+    })
+    return res.send({ msg: '成功更改為已讀訊息', retCode: 0 })
+  }
+
+  return res.send({ msg: '更改已讀訊息失敗', retCode: -1 })
+
+  // const updateReadMsg = await Messages.updateMany(
+  //   [{ $or: [{ from: from }, { to: to }] }, { $or: [{ from: to }, { to: from }] }],
+  //   { unread: '1' }
+  // )
+  // const updateSucceedNum = updateReadMsg.n
+  // if (updateSucceedNum > 0)
+  //   return res.send({ updateSucceedNum, msg: '成功更改為已讀訊息', retCode: 0 })
+  // return res.send({ updateSucceedNum, msg: '更改已讀訊息失敗', retCode: -1 })
 })
 
 // 更新發送訊息狀態

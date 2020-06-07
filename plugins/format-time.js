@@ -7,14 +7,16 @@ Vue.prototype.$formatTime = (moment, time) => {
 }
 
 Vue.filter('formatTime', (value, moment, type) => {
+  const parseIntValue = parseInt(value)
+
   if (type === 'title') {
-    return moment(value)
+    return moment(parseIntValue)
       .fromNow()
       .replace(/\s*/g, '')
   }
 
   if (type === 'msg') {
-    return moment(value)
+    return moment(parseIntValue)
       .tz('Asia/Taipei')
       .format('lll')
   }

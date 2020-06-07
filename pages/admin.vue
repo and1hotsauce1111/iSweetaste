@@ -25,15 +25,23 @@
                   <div class="chatRoom__userList_list_user_message_name">{{ friend.username }}</div>
                   <div class="chatRoom__userList_list_user_message_content">
                     <p
+                      v-if="friend.lastestMsg !== ''"
                       class="msg"
                     >{{ friend.userId !== adminId ? '' : '你 : ' }}{{ friend.lastestMsg }}</p>
-                    <span class="dot">·</span>
+                    <span v-if="friend.lastestMsg !== ''" class="dot">·</span>
                     <span
+                      v-if="friend.lastestMsg !== ''"
                       class="time"
                     >{{ parseInt(friend.lastMsgTime) | formatTime($moment, 'title') }}</span>
                   </div>
                 </div>
-                <span class="chatRoom__userList_list_user_notify"></span>
+                <span v-if="friend.unread > 0" class="chatRoom__userList_list_user_notify"></span>
+                <div
+                  v-if="friend.unread === 0 && friend.userId === adminId"
+                  class="chatRoom__userList_list_user_notify_img"
+                >
+                  <img src="~assets/img/icons/user.png" alt />
+                </div>
               </div>
             </li>
           </ul>
@@ -63,12 +71,12 @@
         <!-- 訊息主體 -->
         <div class="chatRoom__userMessage_content">
           <div
-            v-for="msg in currentUserMsg.msgContent.messages"
+            v-for="msg in currentUserMsg.msgContent.msg"
             :key="msg._id"
             class="chatRoom__userMessage_content_wrapper"
           >
             <div
-              v-if="msg.from._id !== adminId"
+              v-if="msg.from._id === currentUserId"
               class="chatRoom__userMessage_content_container other_container"
             >
               <div v-if="msg.showUnreadTag" class="unread">
@@ -76,7 +84,7 @@
                 <span>以下為尚未閱讀的訊息</span>
               </div>
               <div class="chatRoom__userMessage_content_message_wrap">
-                <div class="chatRoom__userMessage_content_userImg">
+                <div v-if="msg.isHeadShot" class="chatRoom__userMessage_content_userImg">
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
                 <el-tooltip
@@ -87,7 +95,7 @@
                 >
                   <p class="text">{{ msg.message }}</p>
                 </el-tooltip>
-                <div class="chatRoom__userMessage_content_userReadImg">
+                <div v-if="msg.isHeadShot" class="chatRoom__userMessage_content_userReadImg">
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
               </div>
@@ -101,7 +109,16 @@
               >
                 <p class="text">{{ msg.message }}</p>
               </el-tooltip>
-              <fa class="unsend_msg" :icon="['far', 'check-circle']" />
+              <fa
+                v-if="!msg.isSend && msg.unread === '0'"
+                class="unsend_msg"
+                :icon="['far', 'check-circle']"
+              />
+              <fa
+                v-if="msg.isSend && msg.unread === '0'"
+                class="unsend_msg"
+                :icon="['fas', 'check-circle']"
+              />
             </div>
           </div>
         </div>
@@ -142,6 +159,7 @@ export default {
         msgContent: []
       }, // 顯示當前對話者的訊息內容
       allMsg: [],
+      tempMsg: [], // 發送訊息暫存區
       hasHistoryMsg: false,
       userLastMsgTime: 0, // 管理者最後一則訊息的時間
       showUnreadTag: false,
@@ -149,6 +167,9 @@ export default {
     }
   },
   computed: {
+    loginId() {
+      return this.$store.state.user.user.id
+    },
     adminId() {
       return this.$store.state.chat.admin.id
     },
@@ -207,16 +228,18 @@ export default {
     })
 
     // 監聽使用者傳來的訊息
-    socket.on('msgFromUser', ({ userId, msg }) => {
+    socket.on('msgFromUser', ({ msg }) => {
       console.log('receive msg')
       console.log(msg)
+      this.$messageHandler._outPutMessage(this, msg.from._id, msg)
+      this.updateFriendList(msg)
     })
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler)
   },
   methods: {
-    openChat(userId) {
+    async openChat(userId) {
       this.$refs.chatArea.classList.add('open')
       this.currentUserId = userId
       // 顯示laoding
@@ -230,7 +253,21 @@ export default {
       this.currentUserMsg.titleArea = currentFriend
       this.currentUserMsg.msgContent = currentMsg
 
+      // 移動至未讀區域或至底
+      const currentUser = this.friendList.find(
+        friend => friend.userId === this.currentUserId
+      )
+      const unread = currentUser.unread
+
+      if (unread > 0) {
+        this.$messageHandler._scrollToUnread(this)
+      } else {
+        this.$messageHandler._scrollToBottom(this)
+      }
+
       // 更新所有訊息為已讀
+      await this.$axios.post('/readMessage', { from: userId, to: this.adminId })
+      this.friendList.find(friend => friend.userId === userId).unread = 0
 
       loadingInstance.close()
     },
@@ -245,11 +282,40 @@ export default {
       this.$refs.chatArea.style.height = window.innerHeight / 2 + 'px'
     },
     sendMessage() {
-      socket.emit('sendToUser', {
-        id: '5eaf9f9619e26b3afb08b3a7',
-        msg: this.sendMsg
-      })
-      this.sendMsg = ''
+      const msgInfo = {
+        from: { _id: this.adminId },
+        to: { _id: this.currentUserId },
+        message: this.sendMsg,
+        unread: '0',
+        createAt: this.$moment()
+          .tz('Asia/Taipei')
+          .format('x'),
+        formatTime: this.$moment()
+          .tz('Asia/Taipei')
+          .format('lll'),
+        showUnreadTag: false,
+        isSend: false,
+        isHeadShot: false
+      }
+      this.$messageHandler._sendMessage(this, socket, msgInfo, 'admin')
+    },
+    // 即時更新使用者列表顯示
+    async updateFriendList(msg) {
+      // 若對話框開啟下 直接顯示為已讀
+      const msgFrom = msg.from._id
+
+      const updateFriend = this.friendList.find(friend => friend.userId === msgFrom)
+      updateFriend.lastMsgTime = msg.createAt
+      updateFriend.lastestMsg = msg.message
+      if (this.currentUserId === msgFrom) {
+        updateFriend.unread = 0
+        // 更新已讀到DB
+        await this.$axios.post('/readMessage', { from: msgFrom, to: this.loginId })
+      } else {
+        this.$messageHandler._findLastMessage(this, this.loginId, msgFrom)
+      }
+      // 更新列表排序
+      this.$messageHandler._sortUserList(this)
     }
   }
 }

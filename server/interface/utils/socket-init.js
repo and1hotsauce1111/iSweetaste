@@ -36,7 +36,6 @@ module.exports = {
         io.to(id).emit('msgFromUser', {
           msg: msgInfo
           // socketId: socket.id,
-          // userId
         })
       })
 

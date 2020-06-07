@@ -113,12 +113,17 @@
             }
           }
           .chatRoom__userList_list_user_notify {
-            opacity: 0;
+            // opacity: 0;
             display: inline-block;
             width: 0.75rem;
             height: 0.75rem;
             background: rgb(0, 153, 255);
             border-radius: 50%;
+          }
+          .chatRoom__userList_list_user_notify_img {
+            width: 0.75rem;
+            height: 0.75rem;
+            display: block;
           }
         }
 
@@ -133,17 +138,20 @@
               }
             }
           }
-          .chatRoom__userList_list_user_notify {
-            opacity: 1;
-          }
+          // .chatRoom__userList_list_user_notify {
+          //   opacity: 1;
+          // }
+          // .chatRoom__userList_list_user_notify_img {
+          //   display: none;
+          // }
         }
 
         .chatRoom__userList_list_user.selected {
           background: rgba(0, 0, 0, 0.05);
 
-          .chatRoom__userList_list_user_notify {
-            opacity: 0;
-          }
+          // .chatRoom__userList_list_user_notify {
+          //   opacity: 0;
+          // }
         }
       }
     }
