@@ -120,19 +120,17 @@ export default {
       userInfo: [], // 使用者資料
       isJoin: false, // 已登入線上
       isOpenChat: false, // 是否開啟對話框，判斷是否要顯示小紅點
+      unreadMsgCount: 0, // 小紅點
       hasHistoryMsg: false,
       userLastMsgTime: '', // 使用者最後一則訊息的時間
-      unreadMsgCount: 0, // 未讀訊息小紅點
       showUnreadTag: false, // 顯示對話框中未讀訊息tag
-      throttleTimer: null // 節流函數計時器
+      throttleTimer: null, // 節流函數計時器
+      clearTagTimer: null // 清除unread Tag
     }
   },
   computed: {
     loginUser() {
       return decodeURIComponent(this.$store.state.user.user.name)
-    },
-    loginId() {
-      return this.$store.state.user.user.id
     },
     currentUserId() {
       return this.$store.state.user.user.id
@@ -152,6 +150,18 @@ export default {
       return []
     }
   },
+  watch: {
+    allUsers: {
+      handler(newVal, oldVal) {
+        const user = this.allUsers.find(user => user.userId === this.adminId)
+
+        if (user) {
+          this.unreadMsgCount = user.unread
+        }
+      },
+      deep: true
+    }
+  },
   mounted() {
     window.addEventListener('resize', this.resizeHandler)
 
@@ -163,30 +173,61 @@ export default {
     })
     // 接收來自admin的訊息
     socket.on('msgFromAdmin', msg => {
-      console.log('receive msg')
-      console.log(msg)
       this.$messageHandler._outPutMessage(this, this.currentUserId, msg)
       if (!this.isOpenChat) {
         // 未開啟對話框才判斷顯示未讀
-        this.$messageHandler._findLastMessage(this, this.currentUserId)
+        this.$messageHandler._findLastMessage(this, this.currentUserId, this.adminId)
+      } else {
+        // 開啟直接都顯示已讀
+        this.readMsg()
+        this.$messageHandler._scrollToBottom(this)
       }
     })
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler)
+    clearInterval(this.clearTagTimer)
+    this.clearTagTimer = null
   },
   methods: {
-    toggleChat() {
+    async toggleChat() {
       this.$refs.chatContainer.classList.toggle('show')
-      this.userJoin()
+      await this.userJoin()
       this.isJoin = true
       this.isOpenChat = !this.isOpenChat
 
+      // 建立socket連線，尚未取得使用者列表
+      if (this.allUsers.length === 0) {
+        if (this.unreadMsgCount > 0) {
+          this.unreadMsgCount = 0
+          // 更新已讀到DB
+          await this.$axios.post('/readMessage', {
+            from: this.adminId,
+            to: this.currentUserId
+          })
+          this.$messageHandler._scrollToUnread(this)
+        } else {
+          this.$messageHandler._scrollToBottom(this)
+        }
+        // 設定定時清除unread tag
+        this.clearTagTimer = setInterval(() => {
+          this.clearTag()
+        }, 5 * 60 * 1000)
+
+        return false
+      }
+
       if (this.unreadMsgCount > 0) {
+        this.readMsg()
         this.$messageHandler._scrollToUnread(this)
       } else {
         this.$messageHandler._scrollToBottom(this)
       }
+
+      // 設定定時清除unread tag
+      this.clearTagTimer = setInterval(() => {
+        this.clearTag()
+      }, 5 * 60 * 1000)
     },
     resizeHandler() {
       // 調整聊天視窗大小
@@ -332,11 +373,31 @@ export default {
         formatTime: this.$moment()
           .tz('Asia/Taipei')
           .format('lll'),
+        diffTime: 0,
         showUnreadTag: false,
         isSend: false,
         isHeadShot: false
       }
       this.$messageHandler._sendMessage(this, socket, msgInfo, 'user')
+    },
+    async readMsg() {
+      // 小紅點歸0
+      const user = this.allUsers.find(user => user.userId === this.adminId)
+      user.unread = 0
+      // 所有訊息歸0
+      this.allMsg[0].msg.forEach(msg => {
+        msg.unread = '1'
+      })
+      // 更新已讀到DB
+      await this.$axios.post('/readMessage', {
+        from: this.adminId,
+        to: this.currentUserId
+      })
+    },
+    clearTag() {
+      this.renderMsg.forEach(msg => {
+        msg.showUnreadTag = false
+      })
     }
   }
 }

@@ -43,7 +43,7 @@ module.exports = {
       socket.on('sendToUser', msgInfo => {
         console.log('send to user')
 
-        const user = getCurrentUser(msgInfo.to)
+        const user = getCurrentUser(msgInfo.to._id)
         // console.log(user)
 
         if (!user) return false

@@ -143,7 +143,7 @@ router.post('/upadatLoginTime', async (req, res) => {
 
   try {
     if (userId) {
-      await Friend.update({ friendId: userId }, { loginTime })
+      await Friend.updateOne({ friendId: userId }, { loginTime })
       return res.send({ msg: '成功更新登入時間', retCode: 0 })
     }
   } catch (e) {
@@ -197,22 +197,27 @@ router.post('/sendMsgSucceed', async (req, res) => {
 // 獲取未讀訊息小紅點
 router.post('/getUnreadMsgCount', async (req, res) => {
   const { from, to } = req.body
+  console.log('from', from)
+  console.log('to', to)
+
   if (from && to) {
     try {
-      const allMessages = await Messages.find()
-        .or([
-          { $and: [{ from: from }, { to: to }] },
-          { $and: [{ from: to }, { to: from }] }
-        ])
+      // const allMessages = await Messages.find()
+      //   .or([
+      //     { $and: [{ from: from }, { to: to }, { unread: '0' }] },
+      //     { $and: [{ from: to }, { to: from }, { unread: '0' }] }
+      //   ])
+      //   .populate('from to')
+      //   .sort([['createAt', 1]])
+
+      const allMessages = await Messages.find({ from, to, unread: '0' })
         .populate('from to')
         .sort([['createAt', 1]])
 
-      if (allMessages.length !== 0) {
-        const unreadAdminMessage = allMessages.filter(msg => {
-          return msg.username === 'admin' && msg.unread === '0'
-        })
+      console.log(allMessages)
 
-        const unreadAdminMessageCount = unreadAdminMessage.length
+      if (allMessages.length !== 0) {
+        const unreadAdminMessageCount = allMessages.length
 
         if (unreadAdminMessageCount === 0)
           return res.send({ msg: '查無未讀訊息', retCode: -1 })

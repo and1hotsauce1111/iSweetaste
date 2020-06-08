@@ -32,7 +32,7 @@
                     <span
                       v-if="friend.lastestMsg !== ''"
                       class="time"
-                    >{{ parseInt(friend.lastMsgTime) | formatTime($moment, 'title') }}</span>
+                    >{{ friend.lastMsgTime | formatTime($moment, 'title') }}</span>
                   </div>
                 </div>
                 <span v-if="friend.unread > 0" class="chatRoom__userList_list_user_notify"></span>
@@ -69,7 +69,7 @@
         <div v-if="!currentUserId" class="chatRoom__userMessage_noChat">———尚未選擇聊天室———</div>
 
         <!-- 訊息主體 -->
-        <div class="chatRoom__userMessage_content">
+        <div ref="msgContent" class="chatRoom__userMessage_content">
           <div
             v-for="msg in currentUserMsg.msgContent.msg"
             :key="msg._id"
@@ -90,7 +90,7 @@
                 <el-tooltip
                   class="chatRoom__userMessage_content_message content_other"
                   effect="dark"
-                  :content="parseInt(msg.createAt) | formatTime($moment, 'msg')"
+                  :content="msg.createAt | formatTime($moment, 'msg')"
                   placement="left-start"
                 >
                   <p class="text">{{ msg.message }}</p>
@@ -104,7 +104,7 @@
               <el-tooltip
                 class="chatRoom__userMessage_content_message content_self"
                 effect="dark"
-                :content="parseInt(msg.createAt) | formatTime($moment, 'msg')"
+                :content="msg.createAt | formatTime($moment, 'msg')"
                 placement="right-start"
               >
                 <p class="text">{{ msg.message }}</p>
@@ -142,7 +142,7 @@
 </template>
 
 <script>
-// import groupBy from 'lodash/groupBy'
+// import _orderby from 'lodash/orderby'
 import { Loading } from 'element-ui'
 import socket from '@/plugins/socket-io'
 
@@ -163,7 +163,8 @@ export default {
       hasHistoryMsg: false,
       userLastMsgTime: 0, // 管理者最後一則訊息的時間
       showUnreadTag: false,
-      throttleTimer: null // 節流函數計時器
+      throttleTimer: null, // 節流函數計時器
+      clearTagTimer: null // 清除unread Tag
     }
   },
   computed: {
@@ -220,7 +221,6 @@ export default {
 
     // 獲取所有在線的使用者
     socket.on('getAllUser', (users, offlineUser) => {
-      console.log('getAllUser')
       if (offlineUser) {
         this.offlineUser = offlineUser
       }
@@ -229,14 +229,14 @@ export default {
 
     // 監聽使用者傳來的訊息
     socket.on('msgFromUser', ({ msg }) => {
-      console.log('receive msg')
-      console.log(msg)
       this.$messageHandler._outPutMessage(this, msg.from._id, msg)
       this.updateFriendList(msg)
     })
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler)
+    clearInterval(this.clearTagTimer)
+    this.clearTagTimer = null
   },
   methods: {
     async openChat(userId) {
@@ -270,6 +270,11 @@ export default {
       this.friendList.find(friend => friend.userId === userId).unread = 0
 
       loadingInstance.close()
+
+      // 設定定時清除unread tag
+      this.clearTagTimer = setInterval(() => {
+        this.clearTag()
+      }, 5 * 60 * 1000)
     },
     backToUserList() {
       this.$refs.chatArea.classList.remove('open')
@@ -293,6 +298,7 @@ export default {
         formatTime: this.$moment()
           .tz('Asia/Taipei')
           .format('lll'),
+        diffTime: 0,
         showUnreadTag: false,
         isSend: false,
         isHeadShot: false
@@ -311,11 +317,17 @@ export default {
         updateFriend.unread = 0
         // 更新已讀到DB
         await this.$axios.post('/readMessage', { from: msgFrom, to: this.loginId })
+        this.$messageHandler._scrollToBottom(this)
       } else {
         this.$messageHandler._findLastMessage(this, this.loginId, msgFrom)
       }
       // 更新列表排序
       this.$messageHandler._sortUserList(this)
+    },
+    clearTag() {
+      this.currentUserMsg.msgContent.msg.forEach(msg => {
+        msg.showUnreadTag = false
+      })
     }
   }
 }

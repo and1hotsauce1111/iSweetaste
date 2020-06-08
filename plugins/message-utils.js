@@ -6,7 +6,7 @@ Vue.prototype.$messageHandler = {
   // 送出訊息
   _sendMessage(vm, socket, msgInfo, type) {
     // 判斷當前用戶是否在線
-    const currentUser = vm.allUsers.find(user => user.userId !== vm.currentUserId)
+    const currentUser = vm.allUsers.find(user => user.userId === vm.currentUserId)
 
     if (vm.sendMsg !== '') {
       if (currentUser && currentUser.socketId !== '') {
@@ -14,6 +14,7 @@ Vue.prototype.$messageHandler = {
         if (type === 'user') {
           socket.emit('sendToAdmin', msgInfo)
         }
+
         if (type === 'admin') {
           socket.emit('sendToUser', msgInfo)
         }
@@ -35,6 +36,8 @@ Vue.prototype.$messageHandler = {
           )
           currentFriend.lastestMsg = msgInfo.message
           currentFriend.lastMsgTime = msgInfo.createAt
+          // 更新使用者列表
+          vm.friendList = _orderby(vm.friendList, ['lastMsgTime'], ['desc'])
         }
       } else {
         vm.tempMsg.push(msgInfo)
@@ -50,6 +53,8 @@ Vue.prototype.$messageHandler = {
           )
           currentFriend.lastestMsg = msgInfo.message
           currentFriend.lastMsgTime = msgInfo.createAt
+          // 更新使用者列表
+          vm.friendList = _orderby(vm.friendList, ['lastMsgTime'], ['desc'])
         }
       }
     }
@@ -85,23 +90,10 @@ Vue.prototype.$messageHandler = {
           message.msg.forEach(msg => {
             this._outPutMessage(vm, message.userId, msg)
           })
-
-          // 顯示小紅點
-          // const unreadMessage = message.msg.filter(msg => {
-          //   return msg.from !== self.currentUserId && msg.unread === '0'
-          // })
-
-          // for (let i = 0; i < unreadMessage.length; i++) {
-          //   for (let j = 0; j < self.allUsers.length; j++) {
-          //     if (unreadMessage[i].to === self.allUsers[j].userId) {
-          //       self.allUsers[j].unread++
-          //     }
-          //   }
-          // }
         })
 
-        // 未讀訊息
-        this._findLastMessage(vm, self.loginId, self.currentUserId)
+        this._findLastMessage(vm, self.currentUserId, self.adminInfo[0]._id)
+        // self.readMsg()
       }
     }
   },
@@ -131,7 +123,7 @@ Vue.prototype.$messageHandler = {
 
     if (getLastStatus === 200 && retCode2 === 0) {
       // 判斷最後一則訊息是否已讀
-      // 若為他人訊息且未讀則return
+      // 若為他人訊息且未讀則return 避免直接已讀
       if (lastestMsg.from !== vm.adminId && lastestMsg.unread === '0') {
         // 整理使用者列表格式
         this._sortUserList(vm)
@@ -144,6 +136,7 @@ Vue.prototype.$messageHandler = {
 
       self.currentUserMsg.msgContent = lastMsgContent || {}
       this._sortUserList(vm)
+      this._scrollToBottom(vm)
     } else if (getLastStatus === 200 && retCode2 === -1) {
       self.currentUserMsg.msgContent = {}
     }
@@ -177,7 +170,9 @@ Vue.prototype.$messageHandler = {
   _findLastMessage(vm, selfId, otherId) {
     // 第一種： 在線即時訊息
     // 第二種： 歷史訊息
-    const findUserMsg = vm.allMsg.find(msg => msg.userId === otherId)
+    const findUserMsg =
+      vm.allMsg.find(msg => msg.userId === otherId) ||
+      vm.allMsg.find(msg => msg.userId === selfId)
 
     const currentUserMsg = findUserMsg.msg
 
@@ -192,6 +187,7 @@ Vue.prototype.$messageHandler = {
     let selfLastMsgTime = 0
     if (selfMsg.length !== 0) {
       selfLastMsgTime = selfMsg[selfMsg.length - 1].createAt
+
       vm.userLastMsgTime = parseInt(selfLastMsgTime)
     }
 
@@ -209,10 +205,11 @@ Vue.prototype.$messageHandler = {
       for (let i = 0; i < vm.allUsers.length; i++) {
         for (let j = 0; j < unreadMsg.length; j++) {
           if (vm.allUsers[i].userId === otherId) {
-            vm.allUsers[i].unread++
+            vm.allUsers[i].unread = unreadMsg.length
           }
         }
       }
+
       unreadMsg[0].showUnreadTag = true
 
       this._scrollToUnread(vm)
@@ -285,8 +282,6 @@ Vue.prototype.$messageHandler = {
   // 朋友列表排序
   _sortUserList(vm) {
     // 有未讀訊息的排前面
-    console.log('sort friend', vm.allMsg)
-
     vm.allMsg.forEach(msg => {
       vm.friendList.forEach(friend => {
         if (msg.msg.length !== 0) {
@@ -308,6 +303,7 @@ Vue.prototype.$messageHandler = {
         }
       })
     })
+
     vm.friendList = _orderby(vm.friendList, ['lastMsgTime', 'unread'], ['desc', 'desc'])
   },
   // 送出消息後移至底部
@@ -341,8 +337,6 @@ Vue.prototype.$messageHandler = {
     const self = this
 
     vm.throttleTimer = setTimeout(async () => {
-      console.log('save msg')
-
       self._saveMessage(vm, from)
       vm.throttleTimer = null
       // 更改訊息為實心勾勾
