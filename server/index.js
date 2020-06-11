@@ -40,7 +40,11 @@ const chat = require('./interface/Chat')
 // connect to mongoDB
 const db = process.env.MONGODB_CONNECT
 mongoose
-  .connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(db, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false
+  })
   .then(() => {
     console.log('Connected to MongoDB...')
   })

@@ -36,8 +36,6 @@ Vue.prototype.$messageHandler = {
           )
           currentFriend.lastestMsg = msgInfo.message
           currentFriend.lastMsgTime = msgInfo.createAt
-          // 更新使用者列表
-          vm.friendList = _orderby(vm.friendList, ['lastMsgTime'], ['desc'])
         }
       } else {
         vm.tempMsg.push(msgInfo)
@@ -53,8 +51,6 @@ Vue.prototype.$messageHandler = {
           )
           currentFriend.lastestMsg = msgInfo.message
           currentFriend.lastMsgTime = msgInfo.createAt
-          // 更新使用者列表
-          vm.friendList = _orderby(vm.friendList, ['lastMsgTime'], ['desc'])
         }
       }
     }
@@ -70,7 +66,6 @@ Vue.prototype.$messageHandler = {
       from: self.adminInfo[0]._id,
       to: self.currentUserId
     })
-
     // 查無歷史訊息
     if (status === 200 && allMsg.length === 0 && retCode === -1) return false
 
@@ -86,11 +81,11 @@ Vue.prototype.$messageHandler = {
           self.allMsg[userMsgIndex][self.currentUserId].msg = []
         }
 
-        allMsg.forEach(message => {
-          message.msg.forEach(msg => {
-            this._outPutMessage(vm, message.userId, msg)
-          })
-        })
+        for (let i = 0; i < allMsg.length; i++) {
+          for (let j = 0; j < allMsg[i].msg.length; j++) {
+            this._outPutMessage(vm, allMsg[i].userId, allMsg[i].msg[j])
+          }
+        }
 
         this._findLastMessage(vm, self.currentUserId, self.adminInfo[0]._id)
         // self.readMsg()
@@ -104,11 +99,22 @@ Vue.prototype.$messageHandler = {
       data: { allMsg, retCode: retCode1 }
     } = await self.$axios.post('/allHistoryMessage', { adminId })
 
-    // 查無歷史訊息
-    if (getMsgStatus === 200 && allMsg.length === 0 && retCode1 === -1) return false
-    if (getMsgStatus === 200 && retCode1 === 0) {
-      self.allMsg = allMsg
+    self.allMsg = allMsg
 
+    console.log(self.allMsg)
+
+    let hasHistoryMsg = 0
+    allMsg.forEach(msg => {
+      if (msg.msg.length !== 0) {
+        hasHistoryMsg++
+      }
+    })
+
+    // 查無歷史訊息
+    if (getMsgStatus === 200 && hasHistoryMsg === 0 && retCode1 === -1) return false
+    if (getMsgStatus === 200 && hasHistoryMsg > 0 && retCode1 === 0) {
+      self.allMsg = allMsg
+      self.hasHistoryMsg = true
       // 顯示未讀訊息tag
       self.allMsg.forEach(msg => {
         this._findLastMessage(vm, vm.loginId, msg.userId)
@@ -137,6 +143,7 @@ Vue.prototype.$messageHandler = {
       self.currentUserMsg.msgContent = lastMsgContent || {}
       this._sortUserList(vm)
       this._scrollToBottom(vm)
+      // vm.updateHeadShot()
     } else if (getLastStatus === 200 && retCode2 === -1) {
       self.currentUserMsg.msgContent = {}
     }
@@ -159,12 +166,48 @@ Vue.prototype.$messageHandler = {
       vm.allMsg.push(mdgObj)
     }
   },
-  async _saveMessage(vm, id) {
-    await vm.$axios.post('/addChatMessage', { tempMsg: vm.tempMsg })
+  async _saveMessage(vm, from, to, type) {
+    console.log('save msg')
+
+    const {
+      data: { msg }
+    } = await vm.$axios.post('/addChatMessage', { tempMsg: vm.tempMsg })
+    console.log(msg)
+
+    // 若開啟對話框下 更新為已讀
+    if (vm.currentUserId === from) {
+      console.log('auto read')
+
+      // 更新已讀
+      vm.readMsg(vm.currentUserId, vm.adminId)
+    }
+
+    // 更改訊息為實心勾勾
+    if (type === 'user') {
+      vm.allMsg[0].msg.forEach(msg => {
+        if (msg.from._id === from) {
+          msg.isSend = true
+        }
+      })
+    }
+
+    if (type === 'admin') {
+      vm.allMsg.forEach(msg => {
+        if (msg.userId === to) {
+          msg.msg.forEach(item => {
+            if (item.from._id === from) {
+              item.isSend = true
+            }
+          })
+        }
+      })
+    }
+
+    await vm.$axios.post('/sendMsgStatus', { from, to })
 
     // 清空暫存資料
     vm.tempMsg = []
-    window.localStorage.removeItem(id)
+    window.localStorage.removeItem(from)
   },
   // 找出最後一則訊息
   _findLastMessage(vm, selfId, otherId) {
@@ -209,8 +252,10 @@ Vue.prototype.$messageHandler = {
           }
         }
       }
-
-      unreadMsg[0].showUnreadTag = true
+      // 未存在unread tag才添加
+      if (!vm.$refs.unread) {
+        unreadMsg[0].showUnreadTag = true
+      }
 
       this._scrollToUnread(vm)
       return false
@@ -238,6 +283,7 @@ Vue.prototype.$messageHandler = {
       status: allFriendsStatus,
       data: { friends, retCode: retCode1 }
     } = await self.$axios.get('/allFriends')
+
     if (allFriendsStatus === 200 && retCode1 === 0) {
       const friendList = friends.map(friend => {
         return {
@@ -247,6 +293,7 @@ Vue.prototype.$messageHandler = {
           loginTime: friend.loginTime,
           lastestMsg: '',
           lastMsgTime: '',
+          lastMsgFrom: '',
           unread: 0
         }
       })
@@ -264,6 +311,7 @@ Vue.prototype.$messageHandler = {
         status: lastMsgStatus,
         data: { lastestMsg, msg, retCode: retCode2 }
       } = await self.$axios.post('/getLastestMsg')
+
       if (lastMsgStatus === 200 && retCode2 === 0) {
         // 判斷最後一則訊息是否已讀
         if (lastestMsg.from !== vm.adminId && lastestMsg.unread === '0') return false
@@ -281,6 +329,8 @@ Vue.prototype.$messageHandler = {
   },
   // 朋友列表排序
   _sortUserList(vm) {
+    console.log('sort friend')
+
     // 有未讀訊息的排前面
     vm.allMsg.forEach(msg => {
       vm.friendList.forEach(friend => {
@@ -290,15 +340,18 @@ Vue.prototype.$messageHandler = {
               // 有未讀訊息且對話框未開啟
               if (
                 item.unread === '0' &&
-                vm.currentUserId !== msg.userId &&
+                vm.currentUserId !== item.from._id &&
                 item.from._id !== vm.adminId
               ) {
+                console.log('add unread')
+
                 friend.unread++
               }
             })
 
             friend.lastestMsg = msg.msg[msg.msg.length - 1].message
             friend.lastMsgTime = msg.msg[msg.msg.length - 1].createAt
+            friend.lastMsgFrom = msg.msg[msg.msg.length - 1].from._id
           }
         }
       })
@@ -323,7 +376,12 @@ Vue.prototype.$messageHandler = {
       const unreadTag = vm.$refs.unread
       const chatMessageWrapper = vm.$refs.msgContent
 
+      console.log('unread', unreadTag)
+      console.log('chatMessageWrapper', chatMessageWrapper)
+
       if (unreadTag && chatMessageWrapper) {
+        console.log('in')
+
         chatMessageWrapper.scrollTo(
           0,
           unreadTag[0].offsetTop - chatMessageWrapper.offsetTop - 50
@@ -336,29 +394,9 @@ Vue.prototype.$messageHandler = {
     if (vm.throttleTimer) return
     const self = this
 
-    vm.throttleTimer = setTimeout(async () => {
-      self._saveMessage(vm, from)
+    vm.throttleTimer = setTimeout(() => {
+      self._saveMessage(vm, from, to, type)
       vm.throttleTimer = null
-      // 更改訊息為實心勾勾
-      if (type === 'user') {
-        vm.allMsg[0].msg.forEach(msg => {
-          if (msg.from._id === from) {
-            msg.isSend = true
-          }
-        })
-      }
-
-      if (type === 'admin') {
-        vm.allMsg.forEach(msg => {
-          if (msg.userId === to) {
-            msg.msg.forEach(item => {
-              item.isSend = true
-            })
-          }
-        })
-      }
-
-      await vm.$axios.post('/sendMsgSucceed', { from, to })
     }, 2000)
   }
 }

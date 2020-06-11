@@ -27,7 +27,7 @@
                     <p
                       v-if="friend.lastestMsg !== ''"
                       class="msg"
-                    >{{ friend.userId !== adminId ? '' : '你 : ' }}{{ friend.lastestMsg }}</p>
+                    >{{ friend.lastMsgFrom !== adminId ? '' : '你 : ' }}{{ friend.lastestMsg }}</p>
                     <span v-if="friend.lastestMsg !== ''" class="dot">·</span>
                     <span
                       v-if="friend.lastestMsg !== ''"
@@ -61,7 +61,7 @@
             <span
               v-if="showLastLoginTime"
               class="chatRoom__userMessage_currentUser_userInfo_lastOnline"
-            >{{ updateOnlineTime || formatOnlineTime }}上線</span>
+            >{{ lastLoginTime }}上線</span>
             <span v-else class="chatRoom__userMessage_currentUser_userInfo_lastOnline">上線中</span>
           </div>
         </div>
@@ -79,12 +79,12 @@
               v-if="msg.from._id === currentUserId"
               class="chatRoom__userMessage_content_container other_container"
             >
-              <div v-if="msg.showUnreadTag" class="unread">
+              <div v-if="msg.showUnreadTag" ref="unread" class="unread">
                 <fa :icon="['fas', 'tag']" />&nbsp;
                 <span>以下為尚未閱讀的訊息</span>
               </div>
               <div class="chatRoom__userMessage_content_message_wrap">
-                <div v-if="msg.isHeadShot" class="chatRoom__userMessage_content_userImg">
+                <div :class="['chatRoom__userMessage_content_userImg', { 'show' : msg.isHeadShot}]">
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
                 <el-tooltip
@@ -95,12 +95,20 @@
                 >
                   <p class="text">{{ msg.message }}</p>
                 </el-tooltip>
-                <div v-if="msg.isHeadShot" class="chatRoom__userMessage_content_userReadImg">
+                <div
+                  v-if="msg.isSend"
+                  ref="otherMsgIcon"
+                  class="chatRoom__userMessage_content_userReadImg"
+                >
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
               </div>
             </div>
-            <div v-else class="chatRoom__userMessage_content_container self_container">
+            <div
+              v-else
+              ref="selfMsg"
+              class="chatRoom__userMessage_content_container self_container"
+            >
               <el-tooltip
                 class="chatRoom__userMessage_content_message content_self"
                 effect="dark"
@@ -110,15 +118,22 @@
                 <p class="text">{{ msg.message }}</p>
               </el-tooltip>
               <fa
-                v-if="!msg.isSend && msg.unread === '0'"
-                class="unsend_msg"
+                v-if="!msg.isSend && !msg.isHide"
+                class="send_msg send_no"
                 :icon="['far', 'check-circle']"
               />
               <fa
-                v-if="msg.isSend && msg.unread === '0'"
-                class="unsend_msg"
+                v-if="msg.isSend && !msg.isHide"
+                class="send_msg send_yes"
                 :icon="['fas', 'check-circle']"
               />
+              <div
+                v-if="msg.isRead"
+                ref="selfMsgIcon"
+                class="chatRoom__userMessage_content_otheruserReadImg"
+              >
+                <img src="~assets/img/icons/user.png" alt />
+              </div>
             </div>
           </div>
         </div>
@@ -142,7 +157,7 @@
 </template>
 
 <script>
-// import _orderby from 'lodash/orderby'
+// import _groupBy from 'lodash/groupby'
 import { Loading } from 'element-ui'
 import socket from '@/plugins/socket-io'
 
@@ -153,7 +168,7 @@ export default {
       allUsers: [], // 在線的使用者
       friendList: [], // 已加入的所有使用者
       currentUserId: '', // 當前選中的使用者
-      offlineUser: null, // 離線使用者
+      dynamicUser: null, // 動態使用者（登入/離線)
       currentUserMsg: {
         titleArea: {},
         msgContent: []
@@ -162,9 +177,10 @@ export default {
       tempMsg: [], // 發送訊息暫存區
       hasHistoryMsg: false,
       userLastMsgTime: 0, // 管理者最後一則訊息的時間
-      showUnreadTag: false,
+      // showUnreadTag: false,
       throttleTimer: null, // 節流函數計時器
-      clearTagTimer: null // 清除unread Tag
+      clearTagTimer: null, // 清除unread Tag
+      calculateTimer: null // 實時更新顯示時間
     }
   },
   computed: {
@@ -182,19 +198,21 @@ export default {
       if (existUser !== -1) return false
       return true
     },
-    // 格式化上線時間
-    formatOnlineTime() {
-      const existUser = this.friendList.findIndex(
-        friend => friend.userId === this.currentUserMsg.titleArea.userId
-      )
-      if (existUser !== -1)
-        return this.$formatTime(this.$moment, this.currentUserMsg.titleArea.loginTime)
+    lastLoginTime() {
+      // 上次登入時間
+      const friend = this.friendList.find(friend => friend.userId === this.currentUserId)
+      if (friend) {
+        return this.$formatTime(this.$moment, parseInt(friend.loginTime))
+      }
       return ''
     },
     // socket 即時更新上線時間
     updateOnlineTime() {
-      if (this.offlineUser !== null) {
-        return this.$formatTime(this.$moment, parseInt(this.offlineUser.loginTime))
+      if (this.dynamicUser !== null) {
+        const friend = this.friendList.find(
+          friend => friend.userId === this.currentUserId
+        )
+        friend.loginTime = this.dynamicUser.loginTime
       }
       return false
     }
@@ -220,10 +238,8 @@ export default {
     // 處理朋友列表的顯示
 
     // 獲取所有在線的使用者
-    socket.on('getAllUser', (users, offlineUser) => {
-      if (offlineUser) {
-        this.offlineUser = offlineUser
-      }
+    socket.on('getAllUser', (users, user) => {
+      this.dynamicUser = user
       this.allUsers = users.filter(user => user.username !== 'admin')
     })
 
@@ -231,6 +247,31 @@ export default {
     socket.on('msgFromUser', ({ msg }) => {
       this.$messageHandler._outPutMessage(this, msg.from._id, msg)
       this.updateFriendList(msg)
+      // 開啟對話框的情況
+      if (msg.from._id === this.currentUserId) {
+        console.log('update headshot')
+
+        // 更新對方訊息頭像顯示
+        this.updateHeadShot()
+        return false
+      }
+    })
+
+    // 監聽對方已讀事件
+    socket.on('readFromUser', from => {
+      // 開啟對話框的情況
+      if (this.currentUserId === from) {
+        console.log('readFromUser')
+        // 因為儲存訊息節流函數延遲2000
+        setTimeout(() => {
+          this.readAnim()
+        }, 2500)
+
+        return false
+      }
+      // 未開啟對話框
+      // 直接更新顯示icon
+      this.notOpenToggleIconHandler(from)
     })
   },
   beforeDestroy() {
@@ -239,7 +280,7 @@ export default {
     this.clearTagTimer = null
   },
   methods: {
-    async openChat(userId) {
+    openChat(userId) {
       this.$refs.chatArea.classList.add('open')
       this.currentUserId = userId
       // 顯示laoding
@@ -253,28 +294,36 @@ export default {
       this.currentUserMsg.titleArea = currentFriend
       this.currentUserMsg.msgContent = currentMsg
 
-      // 移動至未讀區域或至底
-      const currentUser = this.friendList.find(
-        friend => friend.userId === this.currentUserId
-      )
-      const unread = currentUser.unread
-
-      if (unread > 0) {
-        this.$messageHandler._scrollToUnread(this)
-      } else {
-        this.$messageHandler._scrollToBottom(this)
+      // 沒有歷史訊息 return
+      if (!this.hasHistoryMsg && currentMsg.msg.length === 0) {
+        // this.updateHeadShot()
+        loadingInstance.close()
+        return false
       }
 
-      // 更新所有訊息為已讀
-      await this.$axios.post('/readMessage', { from: userId, to: this.adminId })
-      this.friendList.find(friend => friend.userId === userId).unread = 0
+      // 移動至未讀區域或至底
+      this.$nextTick(() => {
+        const currentUser = this.friendList.find(
+          friend => friend.userId === this.currentUserId
+        )
+        const unread = currentUser.unread
 
-      loadingInstance.close()
+        if (unread > 0) {
+          this.updateHeadShot()
+          this.$messageHandler._scrollToUnread(this)
+          // 更新所有對方訊息為已讀
+          this.readMsg(userId, this.adminId)
+        } else {
+          this.$messageHandler._scrollToBottom(this)
+        }
 
-      // 設定定時清除unread tag
-      this.clearTagTimer = setInterval(() => {
-        this.clearTag()
-      }, 5 * 60 * 1000)
+        loadingInstance.close()
+
+        // 設定定時清除unread tag
+        this.clearTagTimer = setInterval(() => {
+          this.clearTag()
+        }, 5 * 60 * 1000)
+      })
     },
     backToUserList() {
       this.$refs.chatArea.classList.remove('open')
@@ -301,9 +350,12 @@ export default {
         diffTime: 0,
         showUnreadTag: false,
         isSend: false,
-        isHeadShot: false
+        isHeadShot: false,
+        isRead: false,
+        isHide: false
       }
       this.$messageHandler._sendMessage(this, socket, msgInfo, 'admin')
+      this.$messageHandler._sortUserList(this)
     },
     // 即時更新使用者列表顯示
     async updateFriendList(msg) {
@@ -313,16 +365,329 @@ export default {
       const updateFriend = this.friendList.find(friend => friend.userId === msgFrom)
       updateFriend.lastMsgTime = msg.createAt
       updateFriend.lastestMsg = msg.message
+      updateFriend.lastMsgFrom = msgFrom
+
       if (this.currentUserId === msgFrom) {
-        updateFriend.unread = 0
         // 更新已讀到DB
         await this.$axios.post('/readMessage', { from: msgFrom, to: this.loginId })
+        updateFriend.unread = 0
         this.$messageHandler._scrollToBottom(this)
       } else {
         this.$messageHandler._findLastMessage(this, this.loginId, msgFrom)
       }
       // 更新列表排序
       this.$messageHandler._sortUserList(this)
+    },
+    async updateHeadShot() {
+      // 需要改寫 訊息量多效能會很差 而且會有閃爍再出現的問題
+
+      // if (this.currentUserMsg.msgContent.msg.length === 0) return false
+      const currentUserMsg = this.currentUserMsg.msgContent.msg
+      // 自己的訊息
+      const selfMsg = currentUserMsg.filter(msg => msg.from._id === this.adminId)
+
+      // 尚無自己的訊息
+      if (selfMsg.length === 0) {
+        console.log('no admin msg')
+
+        // update last otehr msg headshot
+        const otherMsg = currentUserMsg.filter(msg => msg.from._id === this.currentUserId)
+        if (otherMsg.length !== 0) {
+          // 隱藏headshot isSend
+
+          for (let i = 0; i < otherMsg.length; i++) {
+            otherMsg[i].isHeadShot = false
+            otherMsg[i].isSend = false
+
+            await this.$axios.post('/updateHeadShot', {
+              from: this.currentUserId,
+              to: this.adminId,
+              createAt: otherMsg[i].createAt,
+              status: false
+            })
+            await this.$axios.post('/updateOtherMsgSendImg', {
+              from: this.currentUserId,
+              to: this.adminId,
+              createAt: otherMsg[i].createAt,
+              status: false
+            })
+          }
+
+          const lastOtherMsg = otherMsg[otherMsg.length - 1]
+          lastOtherMsg.isHeadShot = true
+          lastOtherMsg.isSend = true
+
+          await this.$axios.post('/updateHeadShot', {
+            from: this.currentUserId,
+            to: this.adminId,
+            createAt: lastOtherMsg.createAt,
+            status: true
+          })
+          await this.$axios.post('/updateOtherMsgSendImg', {
+            from: this.currentUserId,
+            to: this.adminId,
+            createAt: lastOtherMsg.createAt,
+            status: true
+          })
+        }
+
+        return false
+      }
+
+      // 自己訊息的最後一則img icon隱藏
+      const lastSelfMsg = selfMsg[selfMsg.length - 1]
+      if (selfMsg.length !== 0) {
+        lastSelfMsg.isRead = false
+        await this.$axios.post('/updateReadMsgImg', {
+          from: this.adminId,
+          to: this.currentUserId,
+          createAt: lastSelfMsg.createAt,
+          status: false
+        })
+      }
+
+      // 只專注更新自己最後一則訊息以後的headshot
+      // 自己最後一則訊息的index
+      const lastSelfMsgIndex = currentUserMsg.findIndex(
+        msg => msg.from._id === this.adminId && msg.isRead
+      )
+      // 需要跑更新的訊息區塊
+      const targetUpdatMsg = currentUserMsg.filter(
+        (msg, index) => msg.from._id === this.currentUserId && index > lastSelfMsgIndex
+      )
+
+      // 先隱藏全部大頭像 img icon 並更新db
+      if (targetUpdatMsg.length !== 0) {
+        for (let i = 0; i < targetUpdatMsg.length; i++) {
+          if (targetUpdatMsg[i].from._id === this.currentUserId) {
+            targetUpdatMsg[i].isSend = false
+            targetUpdatMsg[i].isHeadShot = false
+            // 更新到db
+            await this.$axios.post('/updateHeadShot', {
+              from: this.currentUserId,
+              to: this.adminId,
+              createAt: targetUpdatMsg[i].createAt,
+              status: false
+            })
+            await this.$axios.post('/updateOtherMsgSendImg', {
+              from: this.currentUserId,
+              to: this.adminId,
+              createAt: targetUpdatMsg[i].createAt,
+              status: false
+            })
+            console.log('hide all headshot')
+          }
+        }
+      }
+
+      // 判斷別人訊息的下一則訊息若為自己的訊息 該則別人訊息添加頭像
+      for (let i = 0; i < targetUpdatMsg.length; i++) {
+        if (targetUpdatMsg[i].from._id === this.currentUserId) {
+          const nextMsg = targetUpdatMsg[i + 1]
+          if (nextMsg && nextMsg.from._id === this.adminId) {
+            console.log('update headshot')
+            targetUpdatMsg[i].isHeadShot = true
+            // 更新顯示flag到db
+            await this.$axios.post('/updateHeadShot', {
+              from: this.currentUserId,
+              to: this.adminId,
+              createAt: targetUpdatMsg[i].createAt,
+              status: true
+            })
+          }
+        }
+      }
+
+      // 若所有訊息的最後一則為他人訊息 則添加isSend
+      // 最後一則訊息index
+      const lastMsgIndex = currentUserMsg.length - 1
+      if (
+        lastMsgIndex !== -1 &&
+        currentUserMsg[lastMsgIndex].from._id === this.currentUserId
+      ) {
+        currentUserMsg[lastMsgIndex].isHeadShot = true
+        currentUserMsg[lastMsgIndex].isSend = true
+        // // 更新到db
+        await this.$axios.post('/updateHeadShot', {
+          from: this.currentUserId,
+          to: this.adminId,
+          createAt: currentUserMsg[lastMsgIndex].createAt,
+          status: true
+        })
+        await this.$axios.post('/updateOtherMsgSendImg', {
+          from: this.currentUserId,
+          to: this.adminId,
+          createAt: currentUserMsg[lastMsgIndex].createAt,
+          status: true
+        })
+        console.log('no admin msg')
+      }
+    },
+    async readMsg(from, to) {
+      console.log('read msg')
+
+      // 更新自身訊息為已讀
+      await this.$axios.post('/readMessage', { from, to })
+      this.friendList.find(friend => friend.userId === from).unread = 0
+      // 打出已讀socket事件
+      socket.emit('adminReadMsg', this.adminId, this.currentUserId)
+    },
+    // 處理對方已讀img icon動畫
+    readAnim() {
+      console.log('readAnim')
+
+      // 第一種: 對方未讀訊息 img icon顯示在對方訊息後
+      // 第三種: 對方開啟對話框(已讀) 自己發送新訊息 img icon顯示在自己最後一則訊息後
+      this.$nextTick(async () => {
+        const otherMsgIcon = this.$refs.otherMsgIcon // 別人訊息img icon
+        const selfMsgIcon = this.$refs.selfMsgIcon // 自己訊息img icon
+        // const selfMsgCheck = this.$refs.selfMsgCheck // 自己訊息已送達勾勾
+        const targetOtherMsg = this.currentUserMsg.msgContent.msg.find(
+          msg => msg.isSend === true && msg.from._id === this.currentUserId
+        ) // 別人訊息有img icon的
+        // const targetOtherMsgIndex = this.currentUserMsg.msgContent.msg.findIndex(
+        //   msg => msg.isSend === true && msg.from._id === this.currentUserId
+        // )
+        const targetSelfMsg = this.currentUserMsg.msgContent.msg.filter(
+          msg =>
+            msg.from._id === this.adminId && msg.isSend === true && msg.isHide === false
+        ) // 自己訊息有勾勾的
+        const targetSelfMsgIcon = this.currentUserMsg.msgContent.msg.find(
+          msg => msg.from._id === this.adminId && msg.isRead === true
+        ) // 自己訊息有img icon
+
+        if (targetSelfMsg.length === 0) return false
+
+        const targetSelfMsgDOM = this.$refs.selfMsg
+        // console.dir(targetSelfMsgDOM[3].children[1].classList[1] === 'send_yes')
+
+        // const targetSelfMsgIndex = this.currentUserMsg.msgContent.msg.findIndex(
+        //   msg => msg.isRead === true && msg.from === this.adminId
+        // ) // 自己訊息有img icon的
+
+        // 第一種
+        if (targetOtherMsg || targetSelfMsg) {
+          // 計算出需要移動的距離 所有自己訊息的offsetHeight
+          let moveY = 0
+          targetSelfMsgDOM.forEach(msg => {
+            if (msg.children[1] && msg.children[1].classList[1] === 'send_yes') {
+              moveY += msg.offsetHeight
+            }
+          })
+          console.log('moveY', moveY)
+
+          // 清除畫面上的訊息送出勾勾
+          targetSelfMsg.forEach(msg => {
+            msg.isHide = true
+          })
+          // 移動到該位置
+          if (typeof otherMsgIcon !== 'undefined') {
+            // 可能為空陣列
+            if (otherMsgIcon[0]) {
+              otherMsgIcon[0].style.transform = `translateY(${moveY}px)`
+            }
+          }
+
+          console.log(selfMsgIcon)
+
+          if (typeof selfMsgIcon !== 'undefined') {
+            // 可能為空陣列
+            if (selfMsgIcon[0]) {
+              console.log('in')
+
+              selfMsgIcon[0].style.transform = `translateY(${moveY}px)`
+
+              if (targetSelfMsgIcon) {
+                targetSelfMsgIcon.isRead = false
+
+                await this.$axios.post('/updateReadMsgImg', {
+                  from: this.adminId,
+                  to: this.currentUserId,
+                  createAt: targetSelfMsgIcon.createAt,
+                  status: false
+                })
+              }
+            }
+          }
+
+          // 顯示自己最後一則訊息img icon 其餘隱藏
+          const selfMsg = this.currentUserMsg.msgContent.msg.filter(
+            msg => msg.from._id === this.adminId
+          )
+          const selfLastMsg = selfMsg[selfMsg.length - 1]
+          // 配合儲存訊息節流函數延遲1500ms
+          selfLastMsg.isRead = true
+          // 更新顯示或隱藏flag到db
+          this.toggleIconHandler(selfLastMsg.createAt)
+          // 隱藏對方訊息img icon
+          selfLastMsg.isRead = true
+          // 更新顯示或隱藏flag到db
+          this.toggleIconHandler(selfLastMsg.createAt)
+          // 隱藏對方訊息img icon
+          if (targetOtherMsg) {
+            targetOtherMsg.isSend = false
+            await this.$axios.post('/updateOtherMsgSendImg', {
+              from: this.currentUserId,
+              to: this.adminId,
+              createAt: targetOtherMsg.createAt,
+              status: false
+            })
+          }
+        }
+      })
+    },
+    // 處理自己訊息img icon顯示或隱藏
+    async toggleIconHandler(msgTime) {
+      console.log('in2')
+
+      await this.$axios.post('/updateReadMsgImg', {
+        from: this.adminId,
+        to: this.currentUserId,
+        createAt: msgTime,
+        status: true
+      })
+
+      // 隱藏發送訊息勾勾
+      // 全部自己訊息的isHide更新為true
+      await this.$axios.post('/hideMsgCheck', {
+        from: this.adminId,
+        to: this.currentUserId
+      })
+    },
+    // 未開啟對話框時更新img icon顯示或隱藏
+    async notOpenToggleIconHandler(from) {
+      // 判斷有無對方訊息
+      const friend = this.allMsg.find(msg => msg.userId === from).msg
+      const fromMsg = friend.find(msg => msg.isSend === true && msg.from._id === from)
+      const selfMsg = friend.filter(msg => msg.from._id === this.adminId)
+      const lastSelfMsg = selfMsg[selfMsg.length - 1]
+      if (fromMsg) {
+        // 有對方訊息
+        fromMsg.isSend = false
+        await this.$axios.post('/updateOtherMsgSendImg', {
+          from,
+          to: this.adminId,
+          createAt: fromMsg.createAt,
+          status: false
+        })
+      }
+
+      // 顯示自己最後一則訊息 img icon
+      if (lastSelfMsg) {
+        lastSelfMsg.isRead = true
+        await this.$axios.post('/updateReadMsgImg', {
+          from: this.adminId,
+          to: from,
+          createAt: lastSelfMsg.createAt,
+          status: true
+        })
+        // 隱藏發送訊息勾勾
+        // 全部自己訊息的isHide更新為false
+        await this.$axios.post('/hideMsgCheck', {
+          from: this.adminId,
+          to: from
+        })
+      }
     },
     clearTag() {
       this.currentUserMsg.msgContent.msg.forEach(msg => {

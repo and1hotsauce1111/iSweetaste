@@ -59,100 +59,115 @@ router.post('/users/register', (req, res) => {
 // register username verify
 router.post('/users/verifyName', async (req, res) => {
   const userName = req.body.username
-  const existUserName = await User.find({ name: userName })
-  console.log(existUserName)
-
-  if (existUserName.length !== 0) return res.send({ msg: '該暱稱已被使用', retCode: -1 })
-  return res.send({ msg: '該暱稱可以使用', retCode: 0 })
+  try {
+    const existUserName = await User.find({ name: userName })
+    if (existUserName.length !== 0)
+      return res.send({ msg: '該暱稱已被使用', retCode: -1 })
+    return res.send({ msg: '該暱稱可以使用', retCode: 0 })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // register email verify
 router.post('/users/verifyEmail', async (req, res) => {
   const userEmail = req.body.email
-  const existUserEmail = await User.find({ email: userEmail })
-  console.log(existUserEmail)
+  try {
+    const existUserEmail = await User.find({ email: userEmail })
 
-  if (existUserEmail.length !== 0) return res.send({ msg: '該信箱已被使用', retCode: -1 })
-  return res.send({ msg: '該信箱可以使用', retCode: 0 })
+    if (existUserEmail.length !== 0)
+      return res.send({ msg: '該信箱已被使用', retCode: -1 })
+    return res.send({ msg: '該信箱可以使用', retCode: 0 })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // register verifyCode check
 router.post('/users/checkVerifyCode', (req, res) => {
   const verifyCode = req.body.code
-  RedisStore.hgetall('nodemail', (err, value) => {
-    if (err) return console.log(err)
+  try {
+    RedisStore.hgetall('nodemail', (err, value) => {
+      if (err) return console.log(err)
 
-    if (verifyCode) {
-      console.log('in')
+      if (verifyCode) {
+        console.log('in')
 
-      const saveCode = value.code
-      const saveExpire = value.expire
+        const saveCode = value.code
+        const saveExpire = value.expire
 
-      if (verifyCode === saveCode) {
-        //  比對code碼是否逾期
-        if (new Date().getTime() - saveExpire > 0) {
-          return res.send({ msg: '驗證碼已逾期，請重新註冊！', retCode: -1 })
+        if (verifyCode === saveCode) {
+          //  比對code碼是否逾期
+          if (new Date().getTime() - saveExpire > 0) {
+            return res.send({ msg: '驗證碼已逾期，請重新註冊！', retCode: -1 })
+          }
+          return res.send({ msg: '驗證碼成功！', retCode: 0 })
+        } else {
+          return res.send({ msg: '驗證碼錯誤！', retCode: -1 })
         }
-        return res.send({ msg: '驗證碼成功！', retCode: 0 })
       } else {
-        return res.send({ msg: '驗證碼錯誤！', retCode: -1 })
+        return res.send({ msg: '請輸入驗證碼', retCode: -1 })
       }
-    } else {
-      return res.send({ msg: '請輸入驗證碼', retCode: -1 })
-    }
-  })
+    })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // 發送email認證碼
 router.post('/users/verify', (req, res, next) => {
-  // 驗證碼是否逾期
-  RedisStore.hget('nodemail', 'expire', async (err, value) => {
-    if (err) return console.log(err)
-    if (value && new Date().getTime() - value < 0) {
-      return res.send({ msg: '驗證請求過於頻繁，限五分鐘內一次', code: -1 })
-    }
-    // 發送郵件setting
-    let transporter = nodeMailer.createTransport({
-      host: Email.smtp.host,
-      port: 587,
-      secure: false,
-      auth: {
-        user: Email.smtp.user,
-        pass: Email.smtp.pass
+  try {
+    // 驗證碼是否逾期
+    RedisStore.hget('nodemail', 'expire', async (err, value) => {
+      if (err) return console.log(err)
+      if (value && new Date().getTime() - value < 0) {
+        return res.send({ msg: '驗證請求過於頻繁，限五分鐘內一次', code: -1 })
       }
+      // 發送郵件setting
+      let transporter = nodeMailer.createTransport({
+        host: Email.smtp.host,
+        port: 587,
+        secure: false,
+        auth: {
+          user: Email.smtp.user,
+          pass: Email.smtp.pass
+        }
+      })
+
+      // 發送內容setting
+      let mailSetting = {
+        code: Email.smtp.code(),
+        expire: Email.smtp.expire(),
+        email: req.body.email,
+        user: req.body.username
+      }
+
+      // 信件主體 內容
+      let mailOptions = {
+        from: `"Sweetaste認證郵件" <${Email.smtp.user}>`,
+        to: mailSetting.email,
+        subject: '<< Sweetaste >> 驗證碼',
+        html: `您在<< Sweetaste >> 註冊，您的驗證碼是 ${mailSetting.code}`
+      }
+
+      await transporter.sendMail(mailOptions, (error, info) => {
+        if (error) return console.log('err', error)
+        // 存到redis
+        RedisStore.hmset(
+          `nodemail`,
+          'code',
+          mailSetting.code,
+          'expire',
+          mailSetting.expire,
+          'email',
+          mailSetting.email
+        )
+        return res.send({ msg: '驗證碼已成功發送', code: 0 })
+      })
     })
-
-    // 發送內容setting
-    let mailSetting = {
-      code: Email.smtp.code(),
-      expire: Email.smtp.expire(),
-      email: req.body.email,
-      user: req.body.username
-    }
-
-    // 信件主體 內容
-    let mailOptions = {
-      from: `"Sweetaste認證郵件" <${Email.smtp.user}>`,
-      to: mailSetting.email,
-      subject: '<< Sweetaste >> 驗證碼',
-      html: `您在<< Sweetaste >> 註冊，您的驗證碼是 ${mailSetting.code}`
-    }
-
-    await transporter.sendMail(mailOptions, (error, info) => {
-      if (error) return console.log('err', error)
-      // 存到redis
-      RedisStore.hmset(
-        `nodemail`,
-        'code',
-        mailSetting.code,
-        'expire',
-        mailSetting.expire,
-        'email',
-        mailSetting.email
-      )
-      return res.send({ msg: '驗證碼已成功發送', code: 0 })
-    })
-  })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // user login
@@ -186,9 +201,13 @@ router.get('/users/getUser', (req, res, next) => {
 
 // 取得管理者
 router.get('/users/getAdmin', async (req, res) => {
-  const admin = await User.find({ name: 'admin' })
-  if (admin.length !== 0) {
-    return res.send({ admin: admin[0], msg: '獲得管理者', retCode: 0 })
+  try {
+    const admin = await User.find({ name: 'admin' })
+    if (admin.length !== 0) {
+      return res.send({ admin: admin[0], msg: '獲得管理者', retCode: 0 })
+    }
+  } catch (e) {
+    console.log(e)
   }
 })
 

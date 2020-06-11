@@ -30,10 +30,6 @@ Vue.filter('formatTime', (value, moment, type) => {
     if (diffDay > 0 && diffDay < 7) {
       return moment(parseIntValue).format('ddd')
     }
-    // 訊息時間為昨天
-    if (calendarTime === '昨天') {
-      return calendarTime
-    }
 
     return moment(parseIntValue)
       .fromNow()

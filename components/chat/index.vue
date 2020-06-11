@@ -123,7 +123,6 @@ export default {
       unreadMsgCount: 0, // 小紅點
       hasHistoryMsg: false,
       userLastMsgTime: '', // 使用者最後一則訊息的時間
-      showUnreadTag: false, // 顯示對話框中未讀訊息tag
       throttleTimer: null, // 節流函數計時器
       clearTagTimer: null // 清除unread Tag
     }
@@ -171,6 +170,9 @@ export default {
     socket.on('getAllUser', users => {
       this.allUsers = users
     })
+
+    this.userJoin()
+
     // 接收來自admin的訊息
     socket.on('msgFromAdmin', msg => {
       this.$messageHandler._outPutMessage(this, this.currentUserId, msg)
@@ -183,6 +185,11 @@ export default {
         this.$messageHandler._scrollToBottom(this)
       }
     })
+    // 監聽admin已讀事件
+    socket.on('readFromAdmin', () => {
+      // 更新已讀
+      console.log('update unread')
+    })
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler)
@@ -190,34 +197,33 @@ export default {
     this.clearTagTimer = null
   },
   methods: {
-    async toggleChat() {
+    toggleChat() {
       this.$refs.chatContainer.classList.toggle('show')
-      await this.userJoin()
+      // await this.userJoin()
       this.isJoin = true
       this.isOpenChat = !this.isOpenChat
 
       // 建立socket連線，尚未取得使用者列表
-      if (this.allUsers.length === 0) {
-        if (this.unreadMsgCount > 0) {
-          this.unreadMsgCount = 0
-          // 更新已讀到DB
-          await this.$axios.post('/readMessage', {
-            from: this.adminId,
-            to: this.currentUserId
-          })
-          this.$messageHandler._scrollToUnread(this)
-        } else {
-          this.$messageHandler._scrollToBottom(this)
-        }
-        // 設定定時清除unread tag
-        this.clearTagTimer = setInterval(() => {
-          this.clearTag()
-        }, 5 * 60 * 1000)
+      // if (this.allUsers.length === 0) {
+      //   if (this.unreadMsgCount > 0) {
+      //     console.log('in')
 
-        return false
-      }
+      //     this.unreadMsgCount = 0
+      //     this.readMsg()
+      //     this.$messageHandler._scrollToUnread(this)
+      //   } else {
+      //     this.$messageHandler._scrollToBottom(this)
+      //   }
+      //   // 設定定時清除unread tag
+      //   this.clearTagTimer = setInterval(() => {
+      //     this.clearTag()
+      //   }, 5 * 60 * 1000)
+
+      //   return false
+      // }
 
       if (this.unreadMsgCount > 0) {
+        console.log('in')
         this.readMsg()
         this.$messageHandler._scrollToUnread(this)
       } else {
@@ -247,6 +253,7 @@ export default {
       }
     },
     async userJoin() {
+      if (this.loginUser === '') return false
       // 已經開啟過對話框 不重複執行登入
       if (this.isJoin) return false
       // 顯示laoding
@@ -300,8 +307,8 @@ export default {
         if (addFriendStatus === 200 && addFriendRetCode === 0) {
           // 首次登入歡迎提示
           const obj = {
-            from: self.adminId,
-            to: self.currentUserId,
+            from: { _id: self.adminId },
+            to: { _id: self.currentUserId },
             message: '歡迎來到Sweetaste',
             unread: '0',
             createAt: self
@@ -376,7 +383,9 @@ export default {
         diffTime: 0,
         showUnreadTag: false,
         isSend: false,
-        isHeadShot: false
+        isHeadShot: false,
+        isRead: false,
+        isHide: false
       }
       this.$messageHandler._sendMessage(this, socket, msgInfo, 'user')
     },
@@ -393,6 +402,9 @@ export default {
         from: this.adminId,
         to: this.currentUserId
       })
+      // 打出已讀socket事件
+      console.log('userReadMsg')
+      socket.emit('userReadMsg', this.currentUserId, this.adminId)
     },
     clearTag() {
       this.renderMsg.forEach(msg => {

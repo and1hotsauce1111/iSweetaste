@@ -51,6 +51,25 @@ module.exports = {
         io.to(socketId).emit('msgFromAdmin', msgInfo)
       })
 
+      // 監聽已讀訊息事件
+      socket.on('userReadMsg', (from, to) => {
+        const user = getCurrentUser(to)
+        // console.log(user)
+
+        if (!user) return false
+        let socketId = user.socketId
+        io.to(socketId).emit('readFromUser', from)
+      })
+
+      socket.on('adminReadMsg', (from, to) => {
+        const user = getCurrentUser(to)
+        // console.log(user)
+
+        if (!user) return false
+        let socketId = user.socketId
+        io.to(socketId).emit('readFromAdmin', from)
+      })
+
       // user disconnect
       socket.on('disconnect', () => {
         console.log('disconnect')

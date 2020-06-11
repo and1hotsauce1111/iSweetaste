@@ -289,6 +289,8 @@
               position: relative;
 
               .chatRoom__userMessage_content_userImg {
+                opacity: 0;
+
                 img {
                   margin-right: 0.3rem;
                   width: 1.75rem;
@@ -297,14 +299,19 @@
                   border: 0;
                 }
               }
+              .chatRoom__userMessage_content_userImg.show {
+                opacity: 1;
+              }
+
               .chatRoom__userMessage_content_userReadImg {
                 position: absolute;
-                right: 0;
+                right: -0.1rem;
                 bottom: 0.5rem;
+                transition: all 1s 1s;
 
                 img {
-                  width: 1rem;
-                  height: 1rem;
+                  width: 0.85rem;
+                  height: 0.85rem;
                   display: block;
                   border: 0;
                   float: right;
@@ -313,11 +320,12 @@
             }
           }
 
-          .unsend_msg {
+          .send_msg {
             position: absolute;
             font-size: 0.6rem;
             right: 0;
             bottom: 0.6rem;
+            transition: all 0.5s 1s;
           }
 
           .self_container {
@@ -327,6 +335,20 @@
               float: right;
               clear: right;
               background-color: $limeGreen;
+            }
+
+            .chatRoom__userMessage_content_otheruserReadImg {
+              position: absolute;
+              right: 0;
+              bottom: 0.6rem;
+
+              img {
+                width: 0.7rem;
+                height: 0.7rem;
+                display: block;
+                border: 0;
+                float: right;
+              }
             }
           }
 

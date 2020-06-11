@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const mongoose = require('mongoose')
 // momentjs
 const moment = require('moment-timezone')
 moment.locale('zh-tw')
@@ -22,7 +23,7 @@ router.get('/admin', isAdmin, (req, res, next) => {
 router.post('/addFriend', async (req, res) => {
   const { selfId, friendId, loginTime } = req.body
   // 判斷是否重複添加
-  const existFriend = await Friend.find({ friendId })
+  const existFriend = await Friend.find({ friendId: mongoose.Types.ObjectId(friendId) })
   if (existFriend.length !== 0)
     return res.send({ friend: existFriend, msg: '使用者已存在', retCode: -1 })
   const new_friend = new Friend({
@@ -32,7 +33,7 @@ router.post('/addFriend', async (req, res) => {
   })
   try {
     new_friend.save().then(async () => {
-      const newFriend = await Friend.find({ friendId })
+      const newFriend = await Friend.find({ friendId: mongoose.Types.ObjectId(friendId) })
       return res.send({ friend: newFriend, msg: '成功添加使用者列表', retCode: 0 })
     })
   } catch (e) {
@@ -43,21 +44,29 @@ router.post('/addFriend', async (req, res) => {
 // 取得使用者列表
 router.get('/allFriends', async (req, res) => {
   // populate填充欄位friendId
-  const friends = await Friend.find({ selfId: 'admin' }).populate('friendId')
-  if (friends.length !== 0) {
-    return res.send({ friends, msg: '成功獲取使用者列表', retCode: 0 })
+  try {
+    const friends = await Friend.find({ selfId: 'admin' }).populate('friendId')
+    if (friends.length !== 0) {
+      return res.send({ friends, msg: '成功獲取使用者列表', retCode: 0 })
+    }
+    return res.send({ friends, msg: '獲取使用者列表失敗', retCode: -1 })
+  } catch (e) {
+    console.log(e)
   }
-  return res.send({ friends, msg: '獲取使用者列表失敗', retCode: -1 })
 })
 
 // 取得單一使用者 / 管理者
 router.post('/oneFriend', async (req, res) => {
   const friendId = req.body.friendId
-  const friend = await Friend.find({ friendId })
-  const admin = await User.find({ name: 'admin' })
-  if (friend.length === 0)
-    return res.send({ friend, admin, msg: '查無使用者', retCode: -1 })
-  return res.send({ friend, admin, msg: '成功獲取使用者', retCode: 0 })
+  try {
+    const friend = await Friend.find({ friendId: mongoose.Types.ObjectId(friendId) })
+    const admin = await User.find({ name: 'admin' })
+    if (friend.length === 0)
+      return res.send({ friend, admin, msg: '查無使用者', retCode: -1 })
+    return res.send({ friend, admin, msg: '成功獲取使用者', retCode: 0 })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // 記錄聊天訊息
@@ -68,73 +77,113 @@ router.post('/addChatMessage', async (req, res) => {
     addMsg.push(new Messages(msg))
   })
 
-  // 批次添加
-  Messages.insertMany(addMsg, function(err, docs) {
-    if (err) return res.send({ msg: '紀錄聊天訊息失敗', retCode: -1 })
-    return res.send({ msg: '成功添加聊天訊息', retCode: 0 })
-  })
+  try {
+    // 批次添加
+    Messages.insertMany(addMsg, function(err, docs) {
+      if (err) return res.send({ msg: '紀錄聊天訊息失敗', retCode: -1 })
+      return res.send({ msg: '成功添加聊天訊息', retCode: 0 })
+    })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // 獲取個別聊天訊息
 router.post('/historyMessage', async (req, res) => {
   const { from, to } = req.body
-  if (from && to) {
-    const allMessages = await Messages.find()
-      .or([
-        { $and: [{ from: from }, { to: to }] },
-        { $and: [{ from: to }, { to: from }] }
-      ])
-      .populate('from to')
-      .sort([['createAt', 1]])
+  try {
+    if (from && to) {
+      const allMessages = await Messages.find()
+        .or([
+          {
+            $and: [
+              { from: mongoose.Types.ObjectId(from) },
+              { to: mongoose.Types.ObjectId(to) }
+            ]
+          },
+          {
+            $and: [
+              { from: mongoose.Types.ObjectId(to) },
+              { to: mongoose.Types.ObjectId(from) }
+            ]
+          }
+        ])
+        .populate('from to')
+        .sort([['createAt', 1]])
 
-    const allMsg = [
-      {
-        userId: to,
-        msg: allMessages
-      }
-    ]
+      const allMsg = [
+        {
+          userId: to,
+          msg: allMessages
+        }
+      ]
 
-    if (allMessages.length !== 0)
-      return res.send({ allMsg, msg: '成功獲取歷史訊息', retCode: 0 })
+      if (allMessages.length !== 0)
+        return res.send({ allMsg, msg: '成功獲取歷史訊息', retCode: 0 })
 
-    return res.send({ allMsg, msg: '尚無歷史訊息', retCode: -1 })
+      return res.send({ allMsg, msg: '尚無歷史訊息', retCode: -1 })
+    }
+    return res.send({ allMsg, msg: '查詢資料不完整', retCode: -1 })
+  } catch (e) {
+    console.log(e)
   }
-  return res.send({ allMsg, msg: '查詢資料不完整', retCode: -1 })
 })
 
 // 獲取所有聊天訊息
 router.post('/allHistoryMessage', async (req, res) => {
   const allUsers = await Friend.find()
-  const adminId = req.body.adminId
   const allMsg = []
+  const adminId = req.body.adminId
   if (allUsers.length === 0) return res.send({ msg: '尚未添加使用者', retCode: -1 })
 
-  for await (user of allUsers) {
-    const messages = await Messages.find()
-      .or([
-        { $and: [{ from: user.friendId }, { to: adminId }] },
-        { $and: [{ from: adminId }, { to: user.friendId }] }
-      ])
-      .populate('from to')
-      .sort([['createAt', 1]])
+  try {
+    for await (user of allUsers) {
+      const messages = await Messages.find()
+        .or([
+          {
+            $and: [
+              { from: mongoose.Types.ObjectId(user.friendId) },
+              { to: mongoose.Types.ObjectId(adminId) }
+            ]
+          },
+          {
+            $and: [
+              { from: mongoose.Types.ObjectId(adminId) },
+              { to: mongoose.Types.ObjectId(user.friendId) }
+            ]
+          }
+        ])
+        .populate('from to')
+        .sort([['createAt', 1]])
 
-    if (messages) {
-      allMsg.push({
-        userId: user.friendId,
-        msg: messages
-      })
+      // console.log('messages', messages)
+
+      if (messages) {
+        allMsg.push({
+          userId: user.friendId,
+          msg: messages
+        })
+      }
     }
+    // console.log('allMsg', allMsg[0].msg[0])
+
+    if (allMsg.length !== 0)
+      return res.send({ allMsg, msg: '成功獲取所有歷史訊息', retCode: 0 })
+    return res.send({ allMsg, msg: '查無歷史訊息', retCode: -1 })
+  } catch (e) {
+    console.log(e)
   }
-  if (allMsg.length !== 0)
-    return res.send({ allMsg, msg: '成功獲取所有歷史訊息', retCode: 0 })
-  return res.send({ allMsg, msg: '查無歷史訊息', retCode: -1 })
 })
 
 // 獲取最新一則訊息
 router.post('/getLastestMsg', async (req, res) => {
-  const lastestMsg = await Messages.findOne().sort({ createAt: -1 })
-  if (lastestMsg) return res.send({ lastestMsg, retCode: 0 })
-  return res.send({ msg: '查無最後一則訊息', retCode: -1 })
+  try {
+    const lastestMsg = await Messages.findOne().sort({ createAt: -1 })
+    if (lastestMsg) return res.send({ lastestMsg, retCode: 0 })
+    return res.send({ msg: '查無最後一則訊息', retCode: -1 })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // 更新使用者登入時間
@@ -154,51 +203,135 @@ router.post('/upadatLoginTime', async (req, res) => {
 
 // 更新聊天訊息為已讀
 router.post('/readMessage', async (req, res) => {
-  console.log('updat unread')
-  const { to, from } = req.body
-  const allMessages = await Messages.find().or([
-    { $and: [{ from: from }, { to: to }] },
-    { $and: [{ from: to }, { to: from }] }
-  ])
+  console.log('update read msg')
 
-  if (allMessages) {
-    allMessages.forEach(msg => {
-      msg.unread = '1'
-      msg.save()
-    })
-    return res.send({ msg: '成功更改為已讀訊息', retCode: 0 })
+  const { from, to } = req.body
+
+  try {
+    const allMessages = await Messages.find({ from: mongoose.Types.ObjectId(from) })
+
+    // console.log('messages', messages)
+
+    console.log('allMessages', allMessages)
+
+    if (allMessages) {
+      for (let i = 0; i < allMessages.length; i++) {
+        allMessages[i].unread = '1'
+        allMessages[i].save()
+      }
+      return res.send({ msg: '成功更改為已讀訊息', retCode: 0 })
+    }
+
+    return res.send({ msg: '更改已讀訊息失敗', retCode: -1 })
+  } catch (e) {
+    console.log(e)
   }
-
-  return res.send({ msg: '更改已讀訊息失敗', retCode: -1 })
-
-  // const updateReadMsg = await Messages.updateMany(
-  //   [{ $or: [{ from: from }, { to: to }] }, { $or: [{ from: to }, { to: from }] }],
-  //   { unread: '1' }
-  // )
-  // const updateSucceedNum = updateReadMsg.n
-  // if (updateSucceedNum > 0)
-  //   return res.send({ updateSucceedNum, msg: '成功更改為已讀訊息', retCode: 0 })
-  // return res.send({ updateSucceedNum, msg: '更改已讀訊息失敗', retCode: -1 })
 })
 
 // 更新發送訊息狀態
-router.post('/sendMsgSucceed', async (req, res) => {
+router.post('/sendMsgStatus', async (req, res) => {
   const { to, from } = req.body
-  const updateSendMsg = await Messages.updateMany(
-    { to: to, from: from },
-    { isSend: true }
-  )
-  const updateSendMsgNum = updateSendMsg.n
-  if (updateSendMsgNum > 0)
-    return res.send({ updateSendMsgNum, msg: '成功更改發送訊息狀態', retCode: 0 })
-  return res.send({ updateSendMsgNum, msg: '更改發送訊息失敗', retCode: -1 })
+  try {
+    const updateSendMsg = await Messages.updateMany(
+      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to) },
+      { isSend: true },
+      { multi: true }
+    )
+    const updateSendMsgNum = updateSendMsg.n
+    if (updateSendMsgNum > 0)
+      return res.send({ updateSendMsgNum, msg: '成功更改發送訊息狀態', retCode: 0 })
+    return res.send({ updateSendMsgNum, msg: '更改發送訊息失敗', retCode: -1 })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+// 更新已讀頭像(自己訊息)
+router.post('/updateReadMsgImg', async (req, res) => {
+  const { from, to, createAt, status } = req.body
+
+  try {
+    const updateReadMsgImg = await Messages.findOneAndUpdate(
+      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to), createAt },
+      { isRead: status },
+      { new: true }
+    )
+    // console.log('updateReadMsgImg', updateReadMsgImg)
+
+    if (updateReadMsgImg)
+      return res.send({ updateReadMsgImg, msg: '成功更改已讀頭像', retCode: 0 })
+    return res.send({ updateReadMsgImg, msg: '更改已讀頭像失敗', retCode: -1 })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+// 更新對方訊息已送出img icon
+router.post('/updateOtherMsgSendImg', async (req, res) => {
+  const { from, to, createAt, status } = req.body
+
+  try {
+    const updateReadMsgImg = await Messages.findOneAndUpdate(
+      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to), createAt },
+      { isSend: status },
+      { new: true }
+    )
+    // console.log('updateOtherMsgSendImg', updateReadMsgImg)
+
+    if (updateReadMsgImg)
+      return res.send({ updateReadMsgImg, msg: '成功更改已讀頭像', retCode: 0 })
+    return res.send({ updateReadMsgImg, msg: '更改已讀頭像失敗', retCode: -1 })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+// 更新對方訊息headshot
+router.post('/updateHeadShot', async (req, res) => {
+  const { from, to, createAt, status } = req.body
+  try {
+    const allMessages = await Messages.findOneAndUpdate(
+      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to), createAt },
+      { isHeadShot: status },
+      { new: true }
+    )
+
+    if (allMessages) {
+      return res.send({ msg: '成功隱藏發送訊息勾勾', retCode: 0 })
+    }
+
+    return res.send({ msg: '隱藏發送訊息勾勾失敗', retCode: -1 })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+// 隱藏發送訊息勾勾
+router.post('/hideMsgCheck', async (req, res) => {
+  const { from, to } = req.body
+  try {
+    const allMessages = await Messages.find(
+      { from: mongoose.Types.ObjectId(from) },
+      { to: mongoose.Types.ObjectId(to) }
+    )
+
+    if (allMessages) {
+      allMessages.forEach(msg => {
+        msg.isHide = true
+        msg.save()
+      })
+      return res.send({ msg: '成功隱藏發送訊息勾勾', retCode: 0 })
+    }
+
+    return res.send({ msg: '隱藏發送訊息勾勾失敗', retCode: -1 })
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // 獲取未讀訊息小紅點
 router.post('/getUnreadMsgCount', async (req, res) => {
   const { from, to } = req.body
-  console.log('from', from)
-  console.log('to', to)
 
   if (from && to) {
     try {
@@ -210,11 +343,15 @@ router.post('/getUnreadMsgCount', async (req, res) => {
       //   .populate('from to')
       //   .sort([['createAt', 1]])
 
-      const allMessages = await Messages.find({ from, to, unread: '0' })
+      const allMessages = await Messages.find({
+        from: mongoose.Types.ObjectId(from),
+        to: mongoose.Types.ObjectId(to),
+        unread: '0'
+      })
         .populate('from to')
         .sort([['createAt', 1]])
 
-      console.log(allMessages)
+      // console.log(allMessages)
 
       if (allMessages.length !== 0) {
         const unreadAdminMessageCount = allMessages.length
