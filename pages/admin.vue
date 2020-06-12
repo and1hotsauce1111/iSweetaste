@@ -552,13 +552,21 @@ export default {
       })
 
       selfMsg.forEach(msg => {
-        msg.isHide = true
+        if (msg.unread === '0') {
+          msg.isSend = true
+        } else {
+          msg.isHide = true
+        }
       })
 
       // 判斷最後一則訊息
       const lastMsg = msgContent[msgContent.length - 1]
       if (lastMsg && lastMsg.from._id === this.adminId) {
-        lastMsg.isRead = true
+        if (lastMsg.unread === '0') {
+          lastMsg.isRead = false
+        } else {
+          lastMsg.isRead = true
+        }
       }
       if (lastMsg && lastMsg.from._id === this.currentUserId) {
         lastMsg.isHeadShot = true
