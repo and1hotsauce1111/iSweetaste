@@ -178,9 +178,9 @@ export default {
       hasHistoryMsg: false,
       userLastMsgTime: 0, // 管理者最後一則訊息的時間
       // showUnreadTag: false,
-      throttleTimer: null, // 節流函數計時器
+      // throttleTimer: null, // 節流函數計時器
       clearTagTimer: null, // 清除unread Tag
-      calculateTimer: null // 實時更新顯示時間
+      lastSelfMsgIndex: 0 // 暫存最後一則訊息index updateHeadShot用
     }
   },
   computed: {
@@ -245,33 +245,27 @@ export default {
 
     // 監聽使用者傳來的訊息
     socket.on('msgFromUser', ({ msg }) => {
-      this.$messageHandler._outPutMessage(this, msg.from._id, msg)
-      this.updateFriendList(msg)
-      // 開啟對話框的情況
-      if (msg.from._id === this.currentUserId) {
-        console.log('update headshot')
-
-        // 更新對方訊息頭像顯示
-        this.updateHeadShot()
-        return false
-      }
+      const vm = this
+      setTimeout(() => {
+        this.$messageHandler._outPutMessage(vm, msg.from._id, msg)
+        this.updateFriendList(msg)
+        // 開啟對話框的情況
+        if (msg.from._id === vm.currentUserId) {
+          vm.readMsg(msg.from._id, vm.adminId)
+          // 更新對方訊息頭像顯示
+          vm.updateHeadShot()
+        }
+      }, 1500)
     })
 
     // 監聽對方已讀事件
     socket.on('readFromUser', from => {
       // 開啟對話框的情況
       if (this.currentUserId === from) {
-        console.log('readFromUser')
         // 因為儲存訊息節流函數延遲2000
-        setTimeout(() => {
-          this.readAnim()
-        }, 2500)
-
+        this.readAnim()
         return false
       }
-      // 未開啟對話框
-      // 直接更新顯示icon
-      this.notOpenToggleIconHandler(from)
     })
   },
   beforeDestroy() {
@@ -296,7 +290,6 @@ export default {
 
       // 沒有歷史訊息 return
       if (!this.hasHistoryMsg && currentMsg.msg.length === 0) {
-        // this.updateHeadShot()
         loadingInstance.close()
         return false
       }
@@ -378,72 +371,37 @@ export default {
       // 更新列表排序
       this.$messageHandler._sortUserList(this)
     },
-    async updateHeadShot() {
-      // 需要改寫 訊息量多效能會很差 而且會有閃爍再出現的問題
-
-      // if (this.currentUserMsg.msgContent.msg.length === 0) return false
+    updateHeadShot() {
       const currentUserMsg = this.currentUserMsg.msgContent.msg
       // 自己的訊息
       const selfMsg = currentUserMsg.filter(msg => msg.from._id === this.adminId)
+      // 別人的訊息
+      const otherMsg = currentUserMsg.filter(msg => msg.from._id === this.currentUserId)
 
       // 尚無自己的訊息
+
       if (selfMsg.length === 0) {
-        console.log('no admin msg')
-
-        // update last otehr msg headshot
-        const otherMsg = currentUserMsg.filter(msg => msg.from._id === this.currentUserId)
         if (otherMsg.length !== 0) {
-          // 隱藏headshot isSend
+          // 顯示 隱藏headshot isSend
+          // 從 isSend isHeadShot都為true的開始往下找
+          const startIndex = otherMsg.findIndex(msg => msg.isHeadShot && msg.isSend)
 
-          for (let i = 0; i < otherMsg.length; i++) {
-            otherMsg[i].isHeadShot = false
-            otherMsg[i].isSend = false
+          // 需要迴圈判斷的msg
+          const loopMsg = otherMsg.slice(startIndex, otherMsg.length - 1)
 
-            await this.$axios.post('/updateHeadShot', {
-              from: this.currentUserId,
-              to: this.adminId,
-              createAt: otherMsg[i].createAt,
-              status: false
-            })
-            await this.$axios.post('/updateOtherMsgSendImg', {
-              from: this.currentUserId,
-              to: this.adminId,
-              createAt: otherMsg[i].createAt,
-              status: false
-            })
+          if (loopMsg.length !== 0) {
+            for (let i = 0; i < loopMsg.length; i++) {
+              loopMsg[i].isHeadShot = false
+              loopMsg[i].isSend = false
+            }
           }
 
           const lastOtherMsg = otherMsg[otherMsg.length - 1]
           lastOtherMsg.isHeadShot = true
           lastOtherMsg.isSend = true
-
-          await this.$axios.post('/updateHeadShot', {
-            from: this.currentUserId,
-            to: this.adminId,
-            createAt: lastOtherMsg.createAt,
-            status: true
-          })
-          await this.$axios.post('/updateOtherMsgSendImg', {
-            from: this.currentUserId,
-            to: this.adminId,
-            createAt: lastOtherMsg.createAt,
-            status: true
-          })
         }
 
         return false
-      }
-
-      // 自己訊息的最後一則img icon隱藏
-      const lastSelfMsg = selfMsg[selfMsg.length - 1]
-      if (selfMsg.length !== 0) {
-        lastSelfMsg.isRead = false
-        await this.$axios.post('/updateReadMsgImg', {
-          from: this.adminId,
-          to: this.currentUserId,
-          createAt: lastSelfMsg.createAt,
-          status: false
-        })
       }
 
       // 只專注更新自己最後一則訊息以後的headshot
@@ -451,10 +409,17 @@ export default {
       const lastSelfMsgIndex = currentUserMsg.findIndex(
         msg => msg.from._id === this.adminId && msg.isRead
       )
+
+      if (lastSelfMsgIndex !== -1) {
+        this.lastSelfMsgIndex = lastSelfMsgIndex
+      }
+
+      // 自己訊息的最後一則img icon隱藏
+      const lastSelfMsg = selfMsg[selfMsg.length - 1]
+      lastSelfMsg.isRead = false
+
       // 需要跑更新的訊息區塊
-      const targetUpdatMsg = currentUserMsg.filter(
-        (msg, index) => msg.from._id === this.currentUserId && index > lastSelfMsgIndex
-      )
+      const targetUpdatMsg = currentUserMsg.slice(this.lastSelfMsgIndex)
 
       // 先隱藏全部大頭像 img icon 並更新db
       if (targetUpdatMsg.length !== 0) {
@@ -462,20 +427,6 @@ export default {
           if (targetUpdatMsg[i].from._id === this.currentUserId) {
             targetUpdatMsg[i].isSend = false
             targetUpdatMsg[i].isHeadShot = false
-            // 更新到db
-            await this.$axios.post('/updateHeadShot', {
-              from: this.currentUserId,
-              to: this.adminId,
-              createAt: targetUpdatMsg[i].createAt,
-              status: false
-            })
-            await this.$axios.post('/updateOtherMsgSendImg', {
-              from: this.currentUserId,
-              to: this.adminId,
-              createAt: targetUpdatMsg[i].createAt,
-              status: false
-            })
-            console.log('hide all headshot')
           }
         }
       }
@@ -485,15 +436,7 @@ export default {
         if (targetUpdatMsg[i].from._id === this.currentUserId) {
           const nextMsg = targetUpdatMsg[i + 1]
           if (nextMsg && nextMsg.from._id === this.adminId) {
-            console.log('update headshot')
             targetUpdatMsg[i].isHeadShot = true
-            // 更新顯示flag到db
-            await this.$axios.post('/updateHeadShot', {
-              from: this.currentUserId,
-              to: this.adminId,
-              createAt: targetUpdatMsg[i].createAt,
-              status: true
-            })
           }
         }
       }
@@ -507,25 +450,9 @@ export default {
       ) {
         currentUserMsg[lastMsgIndex].isHeadShot = true
         currentUserMsg[lastMsgIndex].isSend = true
-        // // 更新到db
-        await this.$axios.post('/updateHeadShot', {
-          from: this.currentUserId,
-          to: this.adminId,
-          createAt: currentUserMsg[lastMsgIndex].createAt,
-          status: true
-        })
-        await this.$axios.post('/updateOtherMsgSendImg', {
-          from: this.currentUserId,
-          to: this.adminId,
-          createAt: currentUserMsg[lastMsgIndex].createAt,
-          status: true
-        })
-        console.log('no admin msg')
       }
     },
     async readMsg(from, to) {
-      console.log('read msg')
-
       // 更新自身訊息為已讀
       await this.$axios.post('/readMessage', { from, to })
       this.friendList.find(friend => friend.userId === from).unread = 0
@@ -534,20 +461,14 @@ export default {
     },
     // 處理對方已讀img icon動畫
     readAnim() {
-      console.log('readAnim')
-
       // 第一種: 對方未讀訊息 img icon顯示在對方訊息後
-      // 第三種: 對方開啟對話框(已讀) 自己發送新訊息 img icon顯示在自己最後一則訊息後
-      this.$nextTick(async () => {
+      // 第二種: 對方開啟對話框(已讀) 自己發送新訊息 img icon顯示在自己最後一則訊息後
+      this.$nextTick(() => {
         const otherMsgIcon = this.$refs.otherMsgIcon // 別人訊息img icon
         const selfMsgIcon = this.$refs.selfMsgIcon // 自己訊息img icon
-        // const selfMsgCheck = this.$refs.selfMsgCheck // 自己訊息已送達勾勾
         const targetOtherMsg = this.currentUserMsg.msgContent.msg.find(
           msg => msg.isSend === true && msg.from._id === this.currentUserId
         ) // 別人訊息有img icon的
-        // const targetOtherMsgIndex = this.currentUserMsg.msgContent.msg.findIndex(
-        //   msg => msg.isSend === true && msg.from._id === this.currentUserId
-        // )
         const targetSelfMsg = this.currentUserMsg.msgContent.msg.filter(
           msg =>
             msg.from._id === this.adminId && msg.isSend === true && msg.isHide === false
@@ -559,13 +480,7 @@ export default {
         if (targetSelfMsg.length === 0) return false
 
         const targetSelfMsgDOM = this.$refs.selfMsg
-        // console.dir(targetSelfMsgDOM[3].children[1].classList[1] === 'send_yes')
 
-        // const targetSelfMsgIndex = this.currentUserMsg.msgContent.msg.findIndex(
-        //   msg => msg.isRead === true && msg.from === this.adminId
-        // ) // 自己訊息有img icon的
-
-        // 第一種
         if (targetOtherMsg || targetSelfMsg) {
           // 計算出需要移動的距離 所有自己訊息的offsetHeight
           let moveY = 0
@@ -574,7 +489,6 @@ export default {
               moveY += msg.offsetHeight
             }
           })
-          console.log('moveY', moveY)
 
           // 清除畫面上的訊息送出勾勾
           targetSelfMsg.forEach(msg => {
@@ -588,24 +502,13 @@ export default {
             }
           }
 
-          console.log(selfMsgIcon)
-
           if (typeof selfMsgIcon !== 'undefined') {
             // 可能為空陣列
             if (selfMsgIcon[0]) {
-              console.log('in')
-
               selfMsgIcon[0].style.transform = `translateY(${moveY}px)`
 
               if (targetSelfMsgIcon) {
                 targetSelfMsgIcon.isRead = false
-
-                await this.$axios.post('/updateReadMsgImg', {
-                  from: this.adminId,
-                  to: this.currentUserId,
-                  createAt: targetSelfMsgIcon.createAt,
-                  status: false
-                })
               }
             }
           }
@@ -615,78 +518,51 @@ export default {
             msg => msg.from._id === this.adminId
           )
           const selfLastMsg = selfMsg[selfMsg.length - 1]
-          // 配合儲存訊息節流函數延遲1500ms
           selfLastMsg.isRead = true
           // 更新顯示或隱藏flag到db
-          this.toggleIconHandler(selfLastMsg.createAt)
           // 隱藏對方訊息img icon
           selfLastMsg.isRead = true
           // 更新顯示或隱藏flag到db
-          this.toggleIconHandler(selfLastMsg.createAt)
           // 隱藏對方訊息img icon
           if (targetOtherMsg) {
             targetOtherMsg.isSend = false
-            await this.$axios.post('/updateOtherMsgSendImg', {
-              from: this.currentUserId,
-              to: this.adminId,
-              createAt: targetOtherMsg.createAt,
-              status: false
-            })
           }
         }
       })
     },
-    // 處理自己訊息img icon顯示或隱藏
-    async toggleIconHandler(msgTime) {
-      console.log('in2')
+    // mounted 時更新img icon顯示
+    upadteImgIcon() {
+      const msgContent = this.currentUserMsg.msgContent.msg
+      // const otherMsg = msgContent.filter(msg => msg.from._id === this.currentUserId)
+      const selfMsg = msgContent.filter(msg => msg.from._id === this.adminId)
 
-      await this.$axios.post('/updateReadMsgImg', {
-        from: this.adminId,
-        to: this.currentUserId,
-        createAt: msgTime,
-        status: true
+      msgContent.forEach((msg, index) => {
+        const nextMsg = msgContent[index + 1]
+        if (
+          nextMsg &&
+          nextMsg.from._id === this.adminId &&
+          msg.from._id === this.currentUserId
+        ) {
+          msg.isHeadShot = true
+          msg.isSend = false
+        } else {
+          msg.isHeadShot = false
+          msg.isSend = false
+        }
       })
 
-      // 隱藏發送訊息勾勾
-      // 全部自己訊息的isHide更新為true
-      await this.$axios.post('/hideMsgCheck', {
-        from: this.adminId,
-        to: this.currentUserId
+      selfMsg.forEach(msg => {
+        msg.isHide = true
       })
-    },
-    // 未開啟對話框時更新img icon顯示或隱藏
-    async notOpenToggleIconHandler(from) {
-      // 判斷有無對方訊息
-      const friend = this.allMsg.find(msg => msg.userId === from).msg
-      const fromMsg = friend.find(msg => msg.isSend === true && msg.from._id === from)
-      const selfMsg = friend.filter(msg => msg.from._id === this.adminId)
-      const lastSelfMsg = selfMsg[selfMsg.length - 1]
-      if (fromMsg) {
-        // 有對方訊息
-        fromMsg.isSend = false
-        await this.$axios.post('/updateOtherMsgSendImg', {
-          from,
-          to: this.adminId,
-          createAt: fromMsg.createAt,
-          status: false
-        })
+
+      // 判斷最後一則訊息
+      const lastMsg = msgContent[msgContent.length - 1]
+      if (lastMsg && lastMsg.from._id === this.adminId) {
+        lastMsg.isRead = true
       }
-
-      // 顯示自己最後一則訊息 img icon
-      if (lastSelfMsg) {
-        lastSelfMsg.isRead = true
-        await this.$axios.post('/updateReadMsgImg', {
-          from: this.adminId,
-          to: from,
-          createAt: lastSelfMsg.createAt,
-          status: true
-        })
-        // 隱藏發送訊息勾勾
-        // 全部自己訊息的isHide更新為false
-        await this.$axios.post('/hideMsgCheck', {
-          from: this.adminId,
-          to: from
-        })
+      if (lastMsg && lastMsg.from._id === this.currentUserId) {
+        lastMsg.isHeadShot = true
+        lastMsg.isSend = true
       }
     },
     clearTag() {

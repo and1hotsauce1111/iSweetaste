@@ -124,6 +124,7 @@ export default {
       hasHistoryMsg: false,
       userLastMsgTime: '', // 使用者最後一則訊息的時間
       throttleTimer: null, // 節流函數計時器
+      debounceTimer: null, // 防抖函數計時器
       clearTagTimer: null // 清除unread Tag
     }
   },
@@ -171,18 +172,25 @@ export default {
       this.allUsers = users
     })
 
-    this.userJoin()
+    // 非管理者則執行userJoin
+    if (this.currentUserId !== this.adminId) {
+      this.userJoin()
+    }
 
     // 接收來自admin的訊息
     socket.on('msgFromAdmin', msg => {
-      this.$messageHandler._outPutMessage(this, this.currentUserId, msg)
-      if (!this.isOpenChat) {
+      const vm = this
+      this.$messageHandler._outPutMessage(vm, vm.currentUserId, msg)
+      if (!vm.isOpenChat) {
         // 未開啟對話框才判斷顯示未讀
-        this.$messageHandler._findLastMessage(this, this.currentUserId, this.adminId)
+        vm.$messageHandler._findLastMessage(vm, vm.currentUserId, vm.adminId)
       } else {
         // 開啟直接都顯示已讀
-        this.readMsg()
-        this.$messageHandler._scrollToBottom(this)
+        // 配合節流函數
+        setTimeout(() => {
+          vm.readMsg()
+        }, 2000)
+        vm.$messageHandler._scrollToBottom(vm)
       }
     })
     // 監聽admin已讀事件

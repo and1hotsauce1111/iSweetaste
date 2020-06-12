@@ -208,21 +208,15 @@ router.post('/readMessage', async (req, res) => {
   const { from, to } = req.body
 
   try {
-    const allMessages = await Messages.find({ from: mongoose.Types.ObjectId(from) })
-
-    // console.log('messages', messages)
-
-    console.log('allMessages', allMessages)
-
-    if (allMessages) {
-      for (let i = 0; i < allMessages.length; i++) {
-        allMessages[i].unread = '1'
-        allMessages[i].save()
-      }
-      return res.send({ msg: '成功更改為已讀訊息', retCode: 0 })
-    }
-
-    return res.send({ msg: '更改已讀訊息失敗', retCode: -1 })
+    const updateReadMsg = await Messages.updateMany(
+      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to) },
+      { unread: '1' },
+      { multi: true }
+    )
+    const updateReadMsgNum = updateReadMsg.n
+    if (updateReadMsgNum > 0)
+      return res.send({ updateReadMsgNum, msg: '成功已讀訊息狀態', retCode: 0 })
+    return res.send({ updateReadMsgNum, msg: '更改已讀訊息失敗', retCode: -1 })
   } catch (e) {
     console.log(e)
   }
@@ -241,89 +235,6 @@ router.post('/sendMsgStatus', async (req, res) => {
     if (updateSendMsgNum > 0)
       return res.send({ updateSendMsgNum, msg: '成功更改發送訊息狀態', retCode: 0 })
     return res.send({ updateSendMsgNum, msg: '更改發送訊息失敗', retCode: -1 })
-  } catch (e) {
-    console.log(e)
-  }
-})
-
-// 更新已讀頭像(自己訊息)
-router.post('/updateReadMsgImg', async (req, res) => {
-  const { from, to, createAt, status } = req.body
-
-  try {
-    const updateReadMsgImg = await Messages.findOneAndUpdate(
-      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to), createAt },
-      { isRead: status },
-      { new: true }
-    )
-    // console.log('updateReadMsgImg', updateReadMsgImg)
-
-    if (updateReadMsgImg)
-      return res.send({ updateReadMsgImg, msg: '成功更改已讀頭像', retCode: 0 })
-    return res.send({ updateReadMsgImg, msg: '更改已讀頭像失敗', retCode: -1 })
-  } catch (e) {
-    console.log(e)
-  }
-})
-
-// 更新對方訊息已送出img icon
-router.post('/updateOtherMsgSendImg', async (req, res) => {
-  const { from, to, createAt, status } = req.body
-
-  try {
-    const updateReadMsgImg = await Messages.findOneAndUpdate(
-      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to), createAt },
-      { isSend: status },
-      { new: true }
-    )
-    // console.log('updateOtherMsgSendImg', updateReadMsgImg)
-
-    if (updateReadMsgImg)
-      return res.send({ updateReadMsgImg, msg: '成功更改已讀頭像', retCode: 0 })
-    return res.send({ updateReadMsgImg, msg: '更改已讀頭像失敗', retCode: -1 })
-  } catch (e) {
-    console.log(e)
-  }
-})
-
-// 更新對方訊息headshot
-router.post('/updateHeadShot', async (req, res) => {
-  const { from, to, createAt, status } = req.body
-  try {
-    const allMessages = await Messages.findOneAndUpdate(
-      { from: mongoose.Types.ObjectId(from), to: mongoose.Types.ObjectId(to), createAt },
-      { isHeadShot: status },
-      { new: true }
-    )
-
-    if (allMessages) {
-      return res.send({ msg: '成功隱藏發送訊息勾勾', retCode: 0 })
-    }
-
-    return res.send({ msg: '隱藏發送訊息勾勾失敗', retCode: -1 })
-  } catch (e) {
-    console.log(e)
-  }
-})
-
-// 隱藏發送訊息勾勾
-router.post('/hideMsgCheck', async (req, res) => {
-  const { from, to } = req.body
-  try {
-    const allMessages = await Messages.find(
-      { from: mongoose.Types.ObjectId(from) },
-      { to: mongoose.Types.ObjectId(to) }
-    )
-
-    if (allMessages) {
-      allMessages.forEach(msg => {
-        msg.isHide = true
-        msg.save()
-      })
-      return res.send({ msg: '成功隱藏發送訊息勾勾', retCode: 0 })
-    }
-
-    return res.send({ msg: '隱藏發送訊息勾勾失敗', retCode: -1 })
   } catch (e) {
     console.log(e)
   }

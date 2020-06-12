@@ -25,7 +25,14 @@ Vue.prototype.$messageHandler = {
         // 存一份到localstorage
         window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
         // 存進DB
-        this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
+        // this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
+        this._debounceSengMsg(vm, this._saveMessage, 1500)(
+          vm,
+          msgInfo.from._id,
+          msgInfo.to._id,
+          type
+        )
+
         // 清空輸入框
         vm.sendMsg = ''
         this._scrollToBottom(vm)
@@ -41,7 +48,13 @@ Vue.prototype.$messageHandler = {
         vm.tempMsg.push(msgInfo)
         this._outPutMessage(vm, vm.currentUserId, msgInfo)
         window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
-        this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
+        // this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
+        this._debounceSengMsg(vm, this._saveMessage, 1500)(
+          vm,
+          msgInfo.from._id,
+          msgInfo.to._id,
+          type
+        )
         vm.sendMsg = ''
         this._scrollToBottom(vm)
         if (type === 'admin') {
@@ -101,7 +114,7 @@ Vue.prototype.$messageHandler = {
 
     self.allMsg = allMsg
 
-    console.log(self.allMsg)
+    // console.log(self.allMsg)
 
     let hasHistoryMsg = 0
     allMsg.forEach(msg => {
@@ -141,9 +154,10 @@ Vue.prototype.$messageHandler = {
       const lastMsgContent = allMsg.find(msg => msg.userId === filter)
 
       self.currentUserMsg.msgContent = lastMsgContent || {}
+      // 更新img icon顯示
+      self.upadteImgIcon()
       this._sortUserList(vm)
       this._scrollToBottom(vm)
-      // vm.updateHeadShot()
     } else if (getLastStatus === 200 && retCode2 === -1) {
       self.currentUserMsg.msgContent = {}
     }
@@ -167,20 +181,7 @@ Vue.prototype.$messageHandler = {
     }
   },
   async _saveMessage(vm, from, to, type) {
-    console.log('save msg')
-
-    const {
-      data: { msg }
-    } = await vm.$axios.post('/addChatMessage', { tempMsg: vm.tempMsg })
-    console.log(msg)
-
-    // 若開啟對話框下 更新為已讀
-    if (vm.currentUserId === from) {
-      console.log('auto read')
-
-      // 更新已讀
-      vm.readMsg(vm.currentUserId, vm.adminId)
-    }
+    await vm.$axios.post('/addChatMessage', { tempMsg: vm.tempMsg })
 
     // 更改訊息為實心勾勾
     if (type === 'user') {
@@ -329,7 +330,7 @@ Vue.prototype.$messageHandler = {
   },
   // 朋友列表排序
   _sortUserList(vm) {
-    console.log('sort friend')
+    // console.log('sort friend')
 
     // 有未讀訊息的排前面
     vm.allMsg.forEach(msg => {
@@ -343,7 +344,7 @@ Vue.prototype.$messageHandler = {
                 vm.currentUserId !== item.from._id &&
                 item.from._id !== vm.adminId
               ) {
-                console.log('add unread')
+                // console.log('add unread')
 
                 friend.unread++
               }
@@ -376,16 +377,25 @@ Vue.prototype.$messageHandler = {
       const unreadTag = vm.$refs.unread
       const chatMessageWrapper = vm.$refs.msgContent
 
-      console.log('unread', unreadTag)
-      console.log('chatMessageWrapper', chatMessageWrapper)
-
       if (unreadTag && chatMessageWrapper) {
-        console.log('in')
+        let moveY = 0
+        let userMsg = []
+        let unreadMsgIndex = 0
+        if (vm.currentUserMsg) {
+          userMsg = vm.currentUserMsg.msgContent.msg
+          unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)
+        } else {
+          userMsg = vm.allMsg[0].msg
+          unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)
+        }
 
-        chatMessageWrapper.scrollTo(
-          0,
-          unreadTag[0].offsetTop - chatMessageWrapper.offsetTop - 50
-        )
+        for (let i = 0; i < userMsg.length; i++) {
+          if (i < unreadMsgIndex) {
+            moveY += 44
+          }
+        }
+
+        chatMessageWrapper.scrollTo(0, moveY)
       }
     })
   },
@@ -398,5 +408,17 @@ Vue.prototype.$messageHandler = {
       self._saveMessage(vm, from, to, type)
       vm.throttleTimer = null
     }, 2000)
+  },
+  _debounceSengMsg(vm, fn, wait) {
+    const self = vm
+
+    return function() {
+      const ctx = this
+      const args = arguments
+      if (self.debounceTimer) clearTimeout(self.debounceTimer)
+      self.debounceTimer = setTimeout(() => {
+        fn.apply(ctx, args)
+      }, wait)
+    }
   }
 }
