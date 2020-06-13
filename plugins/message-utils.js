@@ -307,6 +307,8 @@ Vue.prototype.$messageHandler = {
           }
         })
       })
+      // 複製一份friendList做 filter用
+      self.copyFriendList = self.friendList
       // 預設顯示上次互動的使用者
       const {
         status: lastMsgStatus,
@@ -381,6 +383,7 @@ Vue.prototype.$messageHandler = {
         let moveY = 0
         let userMsg = []
         let unreadMsgIndex = 0
+        // 區分來源是管理者或使用者
         if (vm.currentUserMsg) {
           userMsg = vm.currentUserMsg.msgContent.msg
           unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)

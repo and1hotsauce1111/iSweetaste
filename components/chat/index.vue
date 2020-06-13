@@ -388,12 +388,15 @@ export default {
         formatTime: this.$moment()
           .tz('Asia/Taipei')
           .format('lll'),
-        diffTime: 0,
+        groupByTime: this.$moment()
+          .tz('Asia/Taipei')
+          .format('ll'),
         showUnreadTag: false,
         isSend: false,
         isHeadShot: false,
         isRead: false,
-        isHide: false
+        isHide: false,
+        isTime: false
       }
       this.$messageHandler._sendMessage(this, socket, msgInfo, 'user')
     },

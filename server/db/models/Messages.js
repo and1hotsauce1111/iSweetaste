@@ -12,7 +12,7 @@ const Messages = new Schema({
   },
   unread: { type: String, required: true },
   createAt: { type: String, required: true },
-  diffTime: { type: Number, required: true },
+  groupByTime: { type: String, required: true },
   formatTime: { type: String, required: true },
   showUnreadTag: { type: Boolean, required: true },
   // 判斷訊息送出的顯示勾勾
@@ -23,6 +23,8 @@ const Messages = new Schema({
   isRead: { type: Boolean, required: true },
   // 隱藏所有勾勾icon
   isHide: { type: Boolean, required: true },
+  // 顯示訊息時間區隔
+  isTime: { type: Boolean, required: true },
   meta: {
     updateAt: { type: Date, default: Date.now() },
     createAt: { type: Date, default: Date.now() }

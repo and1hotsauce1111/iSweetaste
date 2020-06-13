@@ -219,17 +219,17 @@
         max-height: 800px;
         min-height: 500px;
         overflow-y: auto;
-        padding: 1rem 0.5rem;
+        padding: 0.5rem;
         overscroll-behavior: contain;
 
         .chatRoom__userMessage_content_wrapper {
           .unread {
             position: relative;
             text-align: center;
-            font-size: 10px;
+            font-size: $font-s;
             padding: 3px 0;
             margin: 5px 0;
-            background: rgb(164, 210, 228);
+            background: rgb(127, 170, 187);
             border-radius: 3px;
             color: #fff;
 
@@ -248,7 +248,23 @@
               float: left;
               top: 30%;
               left: 5%;
+              font-size: 0.6rem;
               transform: translate(-30%, -5%);
+            }
+          }
+
+          .msg_time {
+            text-align: center;
+            margin: 0 auto;
+
+            span {
+              display: inline-block;
+              max-width: 30%;
+              padding: 0.5rem;
+              background: rgb(127, 170, 187);
+              color: #fff;
+              font-size: $font-s;
+              border-radius: 5px;
             }
           }
 

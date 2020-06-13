@@ -8,7 +8,13 @@
         <div class="chatRoom__userList_search">
           <span class="search_container">
             <fa :icon="['fas', 'search']" />
-            <input type="text" placeholder="搜尋使用者" autocomplete="off" />
+            <input
+              v-model="searchUserName"
+              type="text"
+              placeholder="搜尋使用者"
+              autocomplete="off"
+              @keyup="searchUser"
+            />
           </span>
         </div>
         <div v-if="friendList.length !== 0" class="chatRoom__userList_list">
@@ -79,6 +85,9 @@
               v-if="msg.from._id === currentUserId"
               class="chatRoom__userMessage_content_container other_container"
             >
+              <div v-if="msg.isTime" class="msg_time">
+                <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
+              </div>
               <div v-if="msg.showUnreadTag" ref="unread" class="unread">
                 <fa :icon="['fas', 'tag']" />&nbsp;
                 <span>以下為尚未閱讀的訊息</span>
@@ -109,6 +118,9 @@
               ref="selfMsg"
               class="chatRoom__userMessage_content_container self_container"
             >
+              <div v-if="msg.isTime" class="msg_time">
+                <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
+              </div>
               <el-tooltip
                 class="chatRoom__userMessage_content_message content_self"
                 effect="dark"
@@ -157,16 +169,18 @@
 </template>
 
 <script>
-// import _groupBy from 'lodash/groupby'
+import _groupBy from 'lodash/groupby'
 import { Loading } from 'element-ui'
 import socket from '@/plugins/socket-io'
 
 export default {
   data() {
     return {
+      searchUserName: '', // 搜尋使用者名稱
       sendMsg: '',
       allUsers: [], // 在線的使用者
       friendList: [], // 已加入的所有使用者
+      copyFriendList: [], // 篩選用使用者列表
       currentUserId: '', // 當前選中的使用者
       dynamicUser: null, // 動態使用者（登入/離線)
       currentUserMsg: {
@@ -294,6 +308,8 @@ export default {
         return false
       }
 
+      this.upadteImgIcon()
+
       // 移動至未讀區域或至底
       this.$nextTick(() => {
         const currentUser = this.friendList.find(
@@ -340,12 +356,15 @@ export default {
         formatTime: this.$moment()
           .tz('Asia/Taipei')
           .format('lll'),
-        diffTime: 0,
+        groupByTime: this.$moment()
+          .tz('Asia/Taipei')
+          .format('ll'),
         showUnreadTag: false,
         isSend: false,
         isHeadShot: false,
         isRead: false,
-        isHide: false
+        isHide: false,
+        isTime: false
       }
       this.$messageHandler._sendMessage(this, socket, msgInfo, 'admin')
       this.$messageHandler._sortUserList(this)
@@ -536,6 +555,11 @@ export default {
       // const otherMsg = msgContent.filter(msg => msg.from._id === this.currentUserId)
       const selfMsg = msgContent.filter(msg => msg.from._id === this.adminId)
 
+      // 顯示laoding
+      const loadingInstance = Loading.service({
+        target: '.chatRoom__userMessage_container'
+      })
+
       msgContent.forEach((msg, index) => {
         const nextMsg = msgContent[index + 1]
         if (
@@ -572,11 +596,30 @@ export default {
         lastMsg.isHeadShot = true
         lastMsg.isSend = true
       }
+
+      // groupby msg
+      const groupByTime = _groupBy(msgContent, 'groupByTime')
+      for (const day in groupByTime) {
+        groupByTime[day][0].isTime = true
+      }
+
+      loadingInstance.close()
     },
     clearTag() {
       this.currentUserMsg.msgContent.msg.forEach(msg => {
         msg.showUnreadTag = false
       })
+    },
+    searchUser() {
+      const userName = []
+      this.copyFriendList.forEach(friend => userName.push(friend.username))
+      // 顯示所有使用者
+      if (this.searchUserName === '') {
+        this.friendList = this.copyFriendList
+      }
+      this.friendList = this.copyFriendList.filter(friend =>
+        friend.username.match(this.searchUserName)
+      )
     }
   }
 }

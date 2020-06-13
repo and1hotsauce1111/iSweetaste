@@ -17,6 +17,10 @@ Vue.filter('formatTime', (value, moment, type) => {
     sameElse: 'lll'
   })
 
+  if (type === 'calendar') {
+    return calendarTime
+  }
+
   if (type === 'title') {
     // 訊息時間距離現在大於等於一年
     if (diffYear >= 1) {
@@ -60,7 +64,5 @@ Vue.filter('formatTime', (value, moment, type) => {
 
       return formatTime
     }
-
-    return calendarTime
   }
 })
