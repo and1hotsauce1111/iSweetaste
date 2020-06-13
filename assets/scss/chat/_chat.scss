@@ -56,7 +56,7 @@
         font-size: 10px;
         padding: 3px 0;
         margin: 0.5rem 0;
-        background: rgb(164, 210, 228);
+        background: rgb(127, 170, 187);
         border-radius: 3px;
         color: #fff;
 
@@ -76,6 +76,21 @@
           top: 30%;
           left: 5%;
           transform: translate(-30%, -5%);
+        }
+      }
+
+      .msg_time {
+        text-align: center;
+        margin: 0 auto;
+
+        span {
+          display: inline-block;
+          max-width: 30%;
+          padding: 0.5rem;
+          background: rgb(127, 170, 187);
+          color: #fff;
+          font-size: $font-s;
+          border-radius: 5px;
         }
       }
 
@@ -118,6 +133,20 @@
           right: -5%;
           bottom: 0.5rem;
         }
+
+        .user_imgIcon {
+          position: absolute;
+          right: -6%;
+          bottom: 0.6rem;
+
+          img {
+            width: 0.8rem;
+            height: 0.8rem;
+            display: block;
+            border: 0;
+            float: right;
+          }
+        }
       }
       .customer-service-chat-room-messages-other-container {
         margin-top: 5px;
@@ -158,13 +187,18 @@
           }
 
           .customer-service-chat-room-messages-other_userImg {
+            opacity: 0;
+
             img {
               margin-right: 0.3rem;
-              width: 1.75rem;
-              height: 1.75rem;
+              width: 1.5rem;
+              height: 1.5rem;
               display: block;
               border: 0;
             }
+          }
+          .customer-service-chat-room-messages-other_userImg.show {
+            opacity: 1;
           }
 
           .customer-service-chat-room-messages-other_userReadImg {

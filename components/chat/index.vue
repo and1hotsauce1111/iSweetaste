@@ -42,12 +42,17 @@
               v-if="msg.from._id === adminId"
               class="customer-service-chat-room-messages-other-container"
             >
+              <div v-if="msg.isTime" class="msg_time">
+                <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
+              </div>
               <div v-if="msg.showUnreadTag" ref="unread" class="unread">
                 <fa :icon="['fas', 'tag']" />&nbsp;
                 <span>以下為尚未閱讀的訊息</span>
               </div>
               <div class="customer-service-chat-room-messages-other">
-                <div class="customer-service-chat-room-messages-other_userImg">
+                <div
+                  :class="['customer-service-chat-room-messages-other_userImg',  { 'show' : msg.isHeadShot}]"
+                >
                   <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
                 </div>
                 <el-tooltip
@@ -58,12 +63,19 @@
                 >
                   <p class="text">{{ msg.message }}</p>
                 </el-tooltip>
-                <div class="customer-service-chat-room-messages-other_userReadImg">
+                <div
+                  v-if="msg.isSend"
+                  ref="otherMsgIcon"
+                  class="customer-service-chat-room-messages-other_userReadImg"
+                >
                   <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
                 </div>
               </div>
             </div>
             <div v-else ref="selfMsg" class="customer-service-chat-room-messages-self-container">
+              <div v-if="msg.isTime" class="msg_time">
+                <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
+              </div>
               <div class="customer-service-chat-room-messages-self">
                 <el-tooltip
                   effect="dark"
@@ -74,15 +86,18 @@
                 </el-tooltip>
               </div>
               <fa
-                v-if="!msg.isSend && msg.unread === '0'"
-                class="unsend_msg"
+                v-if="!msg.isSend && !msg.isHide"
+                class="unsend_msg send_no"
                 :icon="['far', 'check-circle']"
               />
               <fa
-                v-if="msg.isSend && msg.unread === '0'"
-                class="unsend_msg"
+                v-if="msg.isSend && !msg.isHide"
+                class="unsend_msg send_yes"
                 :icon="['fas', 'check-circle']"
               />
+              <div v-if="msg.isRead" ref="selfMsgIcon" class="user_imgIcon">
+                <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
+              </div>
             </div>
           </div>
         </div>
@@ -106,6 +121,7 @@
 </template>
 
 <script>
+import _groupBy from 'lodash/groupby'
 import { Loading } from 'element-ui'
 import socket from '@/plugins/socket-io'
 
@@ -180,23 +196,35 @@ export default {
     // 接收來自admin的訊息
     socket.on('msgFromAdmin', msg => {
       const vm = this
-      this.$messageHandler._outPutMessage(vm, vm.currentUserId, msg)
+
       if (!vm.isOpenChat) {
+        this.$messageHandler._outPutMessage(vm, vm.currentUserId, msg)
         // 未開啟對話框才判斷顯示未讀
         vm.$messageHandler._findLastMessage(vm, vm.currentUserId, vm.adminId)
+        vm.$messageHandler._scrollToBottom(vm)
       } else {
         // 開啟直接都顯示已讀
         // 配合節流函數
         setTimeout(() => {
+          this.$messageHandler._outPutMessage(vm, vm.currentUserId, msg)
           vm.readMsg()
+          // 更新對方訊息頭像顯示
+          vm.updateHeadShot()
+          vm.$messageHandler._scrollToBottom(vm)
         }, 2000)
-        vm.$messageHandler._scrollToBottom(vm)
       }
     })
     // 監聽admin已讀事件
-    socket.on('readFromAdmin', () => {
-      // 更新已讀
-      console.log('update unread')
+    socket.on('readFromAdmin', from => {
+      // 已讀動畫
+      const self = this
+      if (this.isOpenChat) {
+        // 因為儲存訊息節流函數延遲2000
+        setTimeout(() => {
+          self.readAnim()
+        }, 1500)
+        return false
+      }
     })
   },
   beforeDestroy() {
@@ -211,24 +239,7 @@ export default {
       this.isJoin = true
       this.isOpenChat = !this.isOpenChat
 
-      // 建立socket連線，尚未取得使用者列表
-      // if (this.allUsers.length === 0) {
-      //   if (this.unreadMsgCount > 0) {
-      //     console.log('in')
-
-      //     this.unreadMsgCount = 0
-      //     this.readMsg()
-      //     this.$messageHandler._scrollToUnread(this)
-      //   } else {
-      //     this.$messageHandler._scrollToBottom(this)
-      //   }
-      //   // 設定定時清除unread tag
-      //   this.clearTagTimer = setInterval(() => {
-      //     this.clearTag()
-      //   }, 5 * 60 * 1000)
-
-      //   return false
-      // }
+      this.updateImgIcon()
 
       if (this.unreadMsgCount > 0) {
         console.log('in')
@@ -421,6 +432,210 @@ export default {
       this.renderMsg.forEach(msg => {
         msg.showUnreadTag = false
       })
+    },
+    // 顯示對方已讀動畫
+    readAnim() {
+      console.log('in')
+
+      // 第一種: 對方未讀訊息 img icon顯示在對方訊息後
+      // 第二種: 對方開啟對話框(已讀) 自己發送新訊息 img icon顯示在自己最後一則訊息後
+      this.$nextTick(() => {
+        const otherMsgIcon = this.$refs.otherMsgIcon // 別人訊息img icon
+        const selfMsgIcon = this.$refs.selfMsgIcon // 自己訊息img icon
+        const targetOtherMsg = this.allMsg[0].msg.find(
+          msg => msg.isSend === true && msg.from._id === this.adminId
+        ) // 別人訊息有img icon的
+        const targetSelfMsg = this.allMsg[0].msg.filter(
+          msg =>
+            msg.from._id === this.currentUserId &&
+            msg.isSend === true &&
+            msg.isHide === false
+        ) // 自己訊息有勾勾的
+        const targetSelfMsgIcon = this.allMsg[0].msg.find(
+          msg => msg.from._id === this.currentUserId && msg.isRead === true
+        ) // 自己訊息有img icon
+
+        if (targetSelfMsg.length === 0) return false
+
+        const targetSelfMsgDOM = this.$refs.selfMsg
+
+        if (targetOtherMsg || targetSelfMsg) {
+          // 計算出需要移動的距離 所有自己訊息的offsetHeight
+          let moveY = 0
+          targetSelfMsgDOM.forEach(msg => {
+            if (msg.children[1] && msg.children[1].classList[1] === 'send_yes') {
+              moveY += msg.offsetHeight
+            }
+          })
+
+          // 清除畫面上的訊息送出勾勾
+          targetSelfMsg.forEach(msg => {
+            msg.isHide = true
+          })
+          // 移動到該位置
+          if (typeof otherMsgIcon !== 'undefined') {
+            // 可能為空陣列
+            if (otherMsgIcon[0]) {
+              otherMsgIcon[0].style.transform = `translateY(${moveY}px)`
+            }
+          }
+
+          if (typeof selfMsgIcon !== 'undefined') {
+            // 可能為空陣列
+            if (selfMsgIcon[0]) {
+              selfMsgIcon[0].style.transform = `translateY(${moveY}px)`
+
+              if (targetSelfMsgIcon) {
+                targetSelfMsgIcon.isRead = false
+              }
+            }
+          }
+
+          // 顯示自己最後一則訊息img icon 其餘隱藏
+          const selfMsg = this.allMsg[0].msg.filter(
+            msg => msg.from._id === this.currentUserId
+          )
+          const selfLastMsg = selfMsg[selfMsg.length - 1]
+          selfLastMsg.isRead = true
+
+          // 隱藏對方訊息img icon
+          if (targetOtherMsg) {
+            targetOtherMsg.isSend = false
+          }
+        }
+      })
+    },
+    // 顯示 隱藏img icon
+    updateImgIcon() {
+      const allMsg = this.allMsg[0].msg
+      // 別人的訊息
+      const otherMsg = allMsg.filter(msg => msg.from._id === this.adminId)
+      // 自己的訊息
+      const selfMsg = allMsg.filter(msg => msg.from._id === this.currentUserId)
+
+      // 顯示laoding
+      const loadingInstance = Loading.service({
+        target: '.customer-service-chat-room'
+      })
+
+      // 別人訊息的頭像
+      if (otherMsg.length !== 0) {
+        otherMsg.forEach(msg => {
+          msg.isHeadShot = false
+          msg.isSend = false
+        })
+      }
+
+      allMsg.forEach((msg, index) => {
+        const nextMsg = allMsg[index + 1]
+        if (
+          nextMsg &&
+          nextMsg.from._id === this.currentUserId &&
+          msg.from._id === this.adminId
+        ) {
+          msg.isHeadShot = true
+          msg.isSend = false
+          msg.isTime = false
+        } else {
+          msg.isHeadShot = false
+          msg.isSend = false
+          msg.isTime = false
+        }
+      })
+
+      // 自己的訊息頭像
+      if (selfMsg.length !== 0) {
+        selfMsg.forEach(msg => {
+          if (msg.unread === '0') {
+            msg.isSend = true
+          } else {
+            msg.isHide = true
+          }
+        })
+      }
+
+      // 判斷最後一則訊息
+      const lastMsg = allMsg[allMsg.length - 1]
+      if (lastMsg && lastMsg.from._id === this.currentUserId) {
+        if (lastMsg.unread === '0') {
+          lastMsg.isRead = false
+        } else {
+          lastMsg.isRead = true
+        }
+      }
+      if (lastMsg && lastMsg.from._id === this.adminId) {
+        console.log('in')
+
+        lastMsg.isHeadShot = true
+        lastMsg.isSend = true
+      }
+
+      // groupby msg
+      const groupByTime = _groupBy(allMsg, 'groupByTime')
+      console.log(groupByTime)
+
+      for (const day in groupByTime) {
+        groupByTime[day][0].isTime = true
+      }
+
+      loadingInstance.close()
+    },
+    updateHeadShot() {
+      const allMsg = this.allMsg[0].msg
+      // 別人的訊息
+      const otherMsg = allMsg.filter(msg => msg.from._id === this.adminId)
+      // 自己的訊息
+      const selfMsg = allMsg.filter(msg => msg.from._id === this.currentUserId)
+
+      // 別人訊息的頭像
+      if (otherMsg.length !== 0) {
+        otherMsg.forEach(msg => {
+          msg.isHeadShot = false
+          msg.isSend = false
+        })
+      }
+
+      allMsg.forEach((msg, index) => {
+        const nextMsg = allMsg[index + 1]
+        if (
+          nextMsg &&
+          nextMsg.from._id === this.currentUserId &&
+          msg.from._id === this.adminId
+        ) {
+          msg.isHeadShot = true
+          msg.isSend = false
+          msg.isTime = false
+        } else {
+          msg.isHeadShot = false
+          msg.isSend = false
+          msg.isTime = false
+        }
+      })
+
+      // 自己的訊息頭像
+      if (selfMsg.length !== 0) {
+        selfMsg.forEach(msg => {
+          if (msg.unread === '0') {
+            msg.isSend = true
+          } else {
+            msg.isHide = true
+          }
+        })
+      }
+
+      // 判斷最後一則訊息
+      const lastMsg = allMsg[allMsg.length - 1]
+      if (lastMsg && lastMsg.from._id === this.currentUserId) {
+        if (lastMsg.unread === '0') {
+          lastMsg.isRead = false
+        } else {
+          lastMsg.isRead = true
+        }
+      }
+      if (lastMsg && lastMsg.from._id === this.adminId) {
+        lastMsg.isHeadShot = true
+        lastMsg.isSend = true
+      }
     }
   }
 }

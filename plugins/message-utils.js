@@ -100,6 +100,8 @@ Vue.prototype.$messageHandler = {
           }
         }
 
+        // 更新img icon
+        self.updateImgIcon()
         this._findLastMessage(vm, self.currentUserId, self.adminInfo[0]._id)
         // self.readMsg()
       }

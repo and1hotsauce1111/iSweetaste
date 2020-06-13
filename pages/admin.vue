@@ -275,9 +275,11 @@ export default {
     // 監聽對方已讀事件
     socket.on('readFromUser', from => {
       // 開啟對話框的情況
+      const self = this
       if (this.currentUserId === from) {
-        // 因為儲存訊息節流函數延遲2000
-        this.readAnim()
+        setTimeout(() => {
+          self.readAnim()
+        }, 1500)
         return false
       }
     })
@@ -538,10 +540,7 @@ export default {
           )
           const selfLastMsg = selfMsg[selfMsg.length - 1]
           selfLastMsg.isRead = true
-          // 更新顯示或隱藏flag到db
-          // 隱藏對方訊息img icon
-          selfLastMsg.isRead = true
-          // 更新顯示或隱藏flag到db
+
           // 隱藏對方訊息img icon
           if (targetOtherMsg) {
             targetOtherMsg.isSend = false
@@ -575,13 +574,15 @@ export default {
         }
       })
 
-      selfMsg.forEach(msg => {
-        if (msg.unread === '0') {
-          msg.isSend = true
-        } else {
-          msg.isHide = true
-        }
-      })
+      if (selfMsg.length !== 0) {
+        selfMsg.forEach(msg => {
+          if (msg.unread === '0') {
+            msg.isSend = true
+          } else {
+            msg.isHide = true
+          }
+        })
+      }
 
       // 判斷最後一則訊息
       const lastMsg = msgContent[msgContent.length - 1]
