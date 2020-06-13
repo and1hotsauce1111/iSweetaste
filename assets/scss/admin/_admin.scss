@@ -96,7 +96,7 @@
                 min-width: 0;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                white-space: pre;
+                white-space: nowrap;
                 max-width: 10rem;
                 font-family: $font-title;
                 font-size: $font-m;

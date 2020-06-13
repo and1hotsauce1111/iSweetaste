@@ -1,13 +1,20 @@
 <template>
   <div v-if="loginUser !== 'admin' && currentUserId !== ''">
     <div class="customer-service" @click="toggleChat">
-      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">{{ unreadMsgCount }}</span>
+      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">{{
+        unreadMsgCount
+      }}</span>
     </div>
     <div class="customer-sevice-container">
       <div ref="chatContainer" class="customer-service-chat-room">
         <div class="customer-service-chat-room-header">
           <div class="customer-service-chat-room-header-title">
-            <img src="~assets/img/logo/desktop/logo-light.svg" alt width="26" height="26" />&nbsp; Sweetaste
+            <img
+              src="~assets/img/logo/desktop/logo-light.svg"
+              alt
+              width="26"
+              height="26"
+            />&nbsp; Sweetaste
           </div>
           <div class="customer-service-chat-room-header-close" @click="toggleChat">
             <svg height="26px" width="26px" viewBox="-4 -4 24 24">
@@ -51,7 +58,10 @@
               </div>
               <div class="customer-service-chat-room-messages-other">
                 <div
-                  :class="['customer-service-chat-room-messages-other_userImg',  { 'show' : msg.isHeadShot}]"
+                  :class="[
+                    'customer-service-chat-room-messages-other_userImg',
+                    { show: msg.isHeadShot }
+                  ]"
                 >
                   <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
                 </div>
@@ -72,7 +82,11 @@
                 </div>
               </div>
             </div>
-            <div v-else ref="selfMsg" class="customer-service-chat-room-messages-self-container">
+            <div
+              v-else
+              ref="selfMsg"
+              class="customer-service-chat-room-messages-self-container"
+            >
               <div v-if="msg.isTime" class="msg_time">
                 <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
               </div>
@@ -121,7 +135,7 @@
 </template>
 
 <script>
-import _groupBy from 'lodash/groupby'
+import _groupBy from 'lodash.groupby'
 import { Loading } from 'element-ui'
 import socket from '@/plugins/socket-io'
 
