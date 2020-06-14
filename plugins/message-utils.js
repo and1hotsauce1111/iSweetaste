@@ -383,7 +383,7 @@ Vue.prototype.$messageHandler = {
 
         // 區分來源是管理者或使用者
         if (vm.currentUserMsg) {
-          userMsg = vm.allMsg.find(msg => msg.userId === from).msg
+          userMsg = vm.allMsg.find(msg => msg.userId === vm.currentUserId).msg
           unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)
           otherMsgDOM = vm.$refs.otherMsg
           selfMsgDOM = vm.$refs.selfMsg

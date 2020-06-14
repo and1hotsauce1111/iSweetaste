@@ -1,11 +1,7 @@
 <template>
   <div v-if="loginUser !== 'admin' && currentUserId !== ''">
     <div class="customer-service" @click="toggleChat">
-      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">
-        {{
-        unreadMsgCount
-        }}
-      </span>
+      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">{{ unreadMsgCount }}</span>
     </div>
     <div class="customer-sevice-container">
       <div ref="chatContainer" class="customer-service-chat-room">
