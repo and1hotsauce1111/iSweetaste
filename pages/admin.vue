@@ -83,6 +83,7 @@
           >
             <div
               v-if="msg.from._id === currentUserId"
+              ref="otherMsg"
               class="chatRoom__userMessage_content_container other_container"
             >
               <div v-if="msg.isTime" class="msg_time">
@@ -232,7 +233,10 @@ export default {
     }
   },
   mounted() {
+    // 判斷手機轉橫
     window.addEventListener('resize', this.resizeHandler)
+    // 監聽scroll事件
+    window.addEventListener('scroll', this.scrollHandler)
 
     // admin join
     socket.emit('userJoin', {
@@ -269,7 +273,7 @@ export default {
           // 更新對方訊息頭像顯示
           vm.updateHeadShot()
         }
-      }, 1500)
+      }, 1000)
     })
 
     // 監聽對方已讀事件
@@ -279,13 +283,27 @@ export default {
       if (this.currentUserId === from) {
         setTimeout(() => {
           self.readAnim()
-        }, 1500)
+        }, 1000)
         return false
       }
+    })
+
+    // socket重新連結
+    socket.on('reconnect', () => {
+      socket.emit('userJoin', {
+        userId: this.adminId,
+        username: 'admin',
+        room: 'admin',
+        unread: 0,
+        loginTime: this.$moment()
+          .tz('Asia/Taipei')
+          .format('x')
+      })
     })
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler)
+    window.removeEventListener('scroll', this.scrollHandler)
     clearInterval(this.clearTagTimer)
     this.clearTagTimer = null
   },
@@ -297,6 +315,15 @@ export default {
       const loadingInstance = Loading.service({
         target: '.chatRoom__userMessage_container'
       })
+
+      const html = document.querySelector('html')
+      const body = document.querySelector('body')
+      if (this.currentUserId !== '' && window.innerWidth < 815) {
+        html.style.height = '100%'
+        body.style.height = '100%'
+        body.style.overflow = 'hidden'
+        body.style.overflow = 'hidden'
+      }
 
       const currentFriend = this.friendList.find(friend => friend.userId === userId)
       const currentMsg = this.allMsg.find(msg => msg.userId === userId)
@@ -321,7 +348,7 @@ export default {
 
         if (unread > 0) {
           this.updateHeadShot()
-          this.$messageHandler._scrollToUnread(this)
+          this.$messageHandler._scrollToUnread(this, this.currentUserId)
           // 更新所有對方訊息為已讀
           this.readMsg(userId, this.adminId)
         } else {
@@ -338,6 +365,15 @@ export default {
     },
     backToUserList() {
       this.$refs.chatArea.classList.remove('open')
+      // 清空選取使用者
+      this.currentUserId = ''
+      this.currentUserMsg.titleArea = {}
+      this.currentUserMsg.msgContent = []
+      // 恢復body滾動
+      const html = document.querySelector('html')
+      const body = document.querySelector('body')
+      body.style.overflow = 'auto'
+      html.style.overflow = 'auto'
     },
     resizeHandler() {
       if (window.innerHeight > 319) {
@@ -345,6 +381,10 @@ export default {
         return false
       }
       this.$refs.chatArea.style.height = window.innerHeight / 2 + 'px'
+    },
+    scrollHandler() {
+      if (this.currentUserId !== '') {
+      }
     },
     sendMessage() {
       const msgInfo = {
@@ -607,8 +647,17 @@ export default {
       loadingInstance.close()
     },
     clearTag() {
-      this.currentUserMsg.msgContent.msg.forEach(msg => {
-        msg.showUnreadTag = false
+      if (this.currentUserId !== '') {
+        this.currentUserMsg.msgContent.msg.forEach(msg => {
+          msg.showUnreadTag = false
+        })
+        return false
+      }
+
+      this.allMsg.forEach(msg => {
+        msg.msg.forEach(item => {
+          item.showUnreadTag = false
+        })
       })
     },
     searchUser() {

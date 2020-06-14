@@ -40,6 +40,7 @@
           >
             <div
               v-if="msg.from._id === adminId"
+              ref="otherMsg"
               class="customer-service-chat-room-messages-other-container"
             >
               <div v-if="msg.isTime" class="msg_time">
@@ -51,7 +52,7 @@
               </div>
               <div class="customer-service-chat-room-messages-other">
                 <div
-                  :class="['customer-service-chat-room-messages-other_userImg',  { 'show' : msg.isHeadShot}]"
+                  :class="['customer-service-chat-room-messages-other_userImg', {'show' : msg.isHeadShot}]"
                 >
                   <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
                 </div>
@@ -211,7 +212,7 @@ export default {
           // 更新對方訊息頭像顯示
           vm.updateHeadShot()
           vm.$messageHandler._scrollToBottom(vm)
-        }, 2000)
+        }, 1000)
       }
     })
     // 監聽admin已讀事件
@@ -222,9 +223,14 @@ export default {
         // 因為儲存訊息節流函數延遲2000
         setTimeout(() => {
           self.readAnim()
-        }, 1500)
+        }, 1000)
         return false
       }
+    })
+
+    // socket重新連結
+    socket.on('reconnect', () => {
+      this.userJoin()
     })
   },
   beforeDestroy() {
@@ -239,13 +245,26 @@ export default {
       this.isJoin = true
       this.isOpenChat = !this.isOpenChat
 
-      this.updateImgIcon()
+      // 手機介面時停止body滾動
+      const html = document.querySelector('html')
+      const body = document.querySelector('body')
+      if (this.isOpenChat && window.innerWidth < 815) {
+        html.style.height = '100%'
+        body.style.height = '100%'
+        body.style.overflow = 'hidden'
+        body.style.overflow = 'hidden'
+      } else {
+        body.style.overflow = 'auto'
+        html.style.overflow = 'auto'
+      }
 
       if (this.unreadMsgCount > 0) {
-        console.log('in')
         this.readMsg()
+        this.updateImgIcon()
+
         this.$messageHandler._scrollToUnread(this)
       } else {
+        this.updateImgIcon()
         this.$messageHandler._scrollToBottom(this)
       }
 
@@ -268,7 +287,7 @@ export default {
           return false
         }
         // 手機
-        this.$refs.msgContent.style.height = '80%'
+        this.$refs.msgContent.style.height = '81%'
       }
     },
     async userJoin() {
@@ -425,7 +444,6 @@ export default {
         to: this.currentUserId
       })
       // 打出已讀socket事件
-      console.log('userReadMsg')
       socket.emit('userReadMsg', this.currentUserId, this.adminId)
     },
     clearTag() {
@@ -435,8 +453,6 @@ export default {
     },
     // 顯示對方已讀動畫
     readAnim() {
-      console.log('in')
-
       // 第一種: 對方未讀訊息 img icon顯示在對方訊息後
       // 第二種: 對方開啟對話框(已讀) 自己發送新訊息 img icon顯示在自己最後一則訊息後
       this.$nextTick(() => {
@@ -468,6 +484,7 @@ export default {
             }
           })
 
+          // 自己訊息
           // 清除畫面上的訊息送出勾勾
           targetSelfMsg.forEach(msg => {
             msg.isHide = true
@@ -480,6 +497,7 @@ export default {
             }
           }
 
+          // 別人訊息
           if (typeof selfMsgIcon !== 'undefined') {
             // 可能為空陣列
             if (selfMsgIcon[0]) {
@@ -564,15 +582,12 @@ export default {
         }
       }
       if (lastMsg && lastMsg.from._id === this.adminId) {
-        console.log('in')
-
         lastMsg.isHeadShot = true
         lastMsg.isSend = true
       }
 
       // groupby msg
       const groupByTime = _groupBy(allMsg, 'groupByTime')
-      console.log(groupByTime)
 
       for (const day in groupByTime) {
         groupByTime[day][0].isTime = true
@@ -587,11 +602,19 @@ export default {
       // 自己的訊息
       const selfMsg = allMsg.filter(msg => msg.from._id === this.currentUserId)
 
-      // 別人訊息的頭像
+      // 隱藏別人訊息的頭像
       if (otherMsg.length !== 0) {
         otherMsg.forEach(msg => {
           msg.isHeadShot = false
           msg.isSend = false
+        })
+      }
+
+      // 隱藏自己訊息的頭像
+      if (selfMsg.length !== 0) {
+        selfMsg.forEach(msg => {
+          msg.isHide = true
+          msg.isRead = false
         })
       }
 
