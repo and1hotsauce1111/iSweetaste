@@ -25,8 +25,7 @@ Vue.prototype.$messageHandler = {
         // 存一份到localstorage
         window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
         // 存進DB
-        // this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
-        this._debounceSengMsg(vm, this._saveMessage, 1500)(
+        this._debounceSengMsg(vm, this._saveMessage, 1000)(
           vm,
           msgInfo.from._id,
           msgInfo.to._id,
@@ -48,8 +47,7 @@ Vue.prototype.$messageHandler = {
         vm.tempMsg.push(msgInfo)
         this._outPutMessage(vm, vm.currentUserId, msgInfo)
         window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
-        // this._throttleApiFn(vm, msgInfo.from._id, msgInfo.to._id, type)
-        this._debounceSengMsg(vm, this._saveMessage, 1500)(
+        this._debounceSengMsg(vm, this._saveMessage, 1000)(
           vm,
           msgInfo.from._id,
           msgInfo.to._id,
@@ -68,7 +66,7 @@ Vue.prototype.$messageHandler = {
       }
     }
   },
-  // 取得歷史訊息
+  // user取得歷史訊息
   async _getHistoryMessage(vm) {
     const self = vm
     if (self.adminInfo.length === 0) return false
@@ -107,6 +105,7 @@ Vue.prototype.$messageHandler = {
       }
     }
   },
+  // admin取得歷史訊息
   async _getAllHistoryMessage(vm, adminId) {
     const self = vm
     const {
@@ -115,8 +114,6 @@ Vue.prototype.$messageHandler = {
     } = await self.$axios.post('/allHistoryMessage', { adminId })
 
     self.allMsg = allMsg
-
-    // console.log(self.allMsg)
 
     let hasHistoryMsg = 0
     allMsg.forEach(msg => {
@@ -260,7 +257,7 @@ Vue.prototype.$messageHandler = {
         unreadMsg[0].showUnreadTag = true
       }
 
-      this._scrollToUnread(vm)
+      this._scrollToUnread(vm, selfId)
       return false
     }
 
@@ -334,8 +331,6 @@ Vue.prototype.$messageHandler = {
   },
   // 朋友列表排序
   _sortUserList(vm) {
-    // console.log('sort friend')
-
     // 有未讀訊息的排前面
     vm.allMsg.forEach(msg => {
       vm.friendList.forEach(friend => {
@@ -348,8 +343,6 @@ Vue.prototype.$messageHandler = {
                 vm.currentUserId !== item.from._id &&
                 item.from._id !== vm.adminId
               ) {
-                // console.log('add unread')
-
                 friend.unread++
               }
             })
@@ -376,7 +369,7 @@ Vue.prototype.$messageHandler = {
     })
   },
   // 開啟對話框後移至未讀區域
-  _scrollToUnread(vm) {
+  _scrollToUnread(vm, from) {
     vm.$nextTick(() => {
       const unreadTag = vm.$refs.unread
       const chatMessageWrapper = vm.$refs.msgContent
@@ -385,34 +378,56 @@ Vue.prototype.$messageHandler = {
         let moveY = 0
         let userMsg = []
         let unreadMsgIndex = 0
+        let otherMsgDOM = []
+        let selfMsgDOM = []
+
         // 區分來源是管理者或使用者
         if (vm.currentUserMsg) {
-          userMsg = vm.currentUserMsg.msgContent.msg
+          userMsg = vm.allMsg.find(msg => msg.userId === from).msg
           unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)
+          otherMsgDOM = vm.$refs.otherMsg
+          selfMsgDOM = vm.$refs.selfMsg
+
+          if (otherMsgDOM.length !== 0) {
+            for (let i = 0; i < otherMsgDOM.length; i++) {
+              if (i < unreadMsgIndex) {
+                moveY += otherMsgDOM[i].offsetHeight
+              }
+            }
+          }
+          if (selfMsgDOM.length !== 0) {
+            for (let i = 0; i < selfMsgDOM.length; i++) {
+              if (i < unreadMsgIndex) {
+                moveY += selfMsgDOM[i].offsetHeight
+              }
+            }
+          }
         } else {
           userMsg = vm.allMsg[0].msg
           unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)
-        }
+          otherMsgDOM = vm.$refs.otherMsg
+          selfMsgDOM = vm.$refs.selfMsg
 
-        for (let i = 0; i < userMsg.length; i++) {
-          if (i < unreadMsgIndex) {
-            moveY += 44
+          if (otherMsgDOM.length !== 0) {
+            for (let i = 0; i < otherMsgDOM.length; i++) {
+              if (i < unreadMsgIndex) {
+                moveY += otherMsgDOM[i].offsetHeight
+              }
+            }
+          }
+
+          if (selfMsgDOM.length !== 0) {
+            for (let i = 0; i < selfMsgDOM.length; i++) {
+              if (i < unreadMsgIndex) {
+                moveY += selfMsgDOM[i].offsetHeight
+              }
+            }
           }
         }
 
-        chatMessageWrapper.scrollTo(0, moveY)
+        chatMessageWrapper.scrollTo(0, moveY + 30)
       }
     })
-  },
-  // 儲存訊息節流函數
-  _throttleApiFn(vm, from, to, type) {
-    if (vm.throttleTimer) return
-    const self = this
-
-    vm.throttleTimer = setTimeout(() => {
-      self._saveMessage(vm, from, to, type)
-      vm.throttleTimer = null
-    }, 2000)
   },
   _debounceSengMsg(vm, fn, wait) {
     const self = vm

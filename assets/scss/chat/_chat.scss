@@ -81,7 +81,7 @@
 
       .msg_time {
         text-align: center;
-        margin: 0 auto;
+        margin: 0.5rem auto;
 
         span {
           display: inline-block;
@@ -129,8 +129,8 @@
 
         .unsend_msg {
           position: absolute;
-          font-size: 0.7rem;
-          right: -5%;
+          font-size: 0.8rem;
+          right: -6%;
           bottom: 0.5rem;
         }
 
@@ -190,6 +190,7 @@
             opacity: 0;
 
             img {
+              margin-top: 0.6rem;
               margin-right: 0.3rem;
               width: 1.5rem;
               height: 1.5rem;
@@ -203,12 +204,12 @@
 
           .customer-service-chat-room-messages-other_userReadImg {
             position: absolute;
-            right: 0;
+            right: -0.5%;
             bottom: 0;
 
             img {
-              width: 1rem;
-              height: 1rem;
+              width: 0.8rem;
+              height: 0.8rem;
               display: block;
               border: 0;
               float: right;
@@ -348,7 +349,7 @@
       margin: 0.5rem;
       width: 96%;
       .customer-service-chat-room-messages {
-        height: 80%;
+        height: 81%;
       }
     }
 
@@ -365,7 +366,7 @@
   .customer-sevice-container {
     .customer-service-chat-room {
       .customer-service-chat-room-messages {
-        height: 80%;
+        height: 81%;
       }
     }
   }
