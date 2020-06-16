@@ -381,7 +381,7 @@ export default {
       電話: ${shop.Phone}<br>`
         )
         .openOn(osmMap)
-      setTimeout(window.scrollTo(0, 0), 100)
+      window.scrollTop = 0
     }
   }
 }
