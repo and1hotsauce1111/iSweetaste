@@ -288,6 +288,10 @@ export default {
         // 手機
         this.$refs.msgContent.style.height = '81%'
       }
+      const html = document.querySelector('html')
+      const body = document.querySelector('body')
+      body.style.overflow = 'auto'
+      html.style.overflow = 'auto'
     },
     async userJoin() {
       if (this.loginUser === '') return false

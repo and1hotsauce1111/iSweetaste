@@ -406,6 +406,10 @@ export default {
         return false
       }
       this.$refs.chatArea.style.height = window.innerHeight / 2 + 'px'
+      const html = document.querySelector('html')
+      const body = document.querySelector('body')
+      body.style.overflow = 'auto'
+      html.style.overflow = 'auto'
     },
     scrollHandler() {
       if (this.currentUserId !== '') {
