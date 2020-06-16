@@ -28,7 +28,7 @@
                     selected: currentUserId === friend.userId && friend.unread === 0
                   }
                 ]"
-                @click="openChat(friend.userId)"
+                @click="openChat(friend.userId, friend.unread)"
               >
                 <div class="chatRoom__userList_list_user_img">
                   <img src="~assets/img/icons/user.png" alt />
@@ -92,10 +92,10 @@
               ref="otherMsg"
               class="chatRoom__userMessage_content_container other_container"
             >
-              <div v-if="msg.isTime" class="msg_time">
+              <div v-if="msg.isTime" ref="timeSection" class="msg_time">
                 <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
               </div>
-              <div v-if="msg.showUnreadTag" ref="unread" class="unread">
+              <div v-if="msg.showUnreadTag" id="unread" ref="unread" class="unread">
                 <fa :icon="['fas', 'tag']" />&nbsp;
                 <span>以下為尚未閱讀的訊息</span>
               </div>
@@ -160,7 +160,12 @@
               </div>
             </div>
           </div>
+          <!-- fixed show time -->
+          <div class="fixed_showTime">
+            <span>{{ fixedShowTime }}</span>
+          </div>
         </div>
+
         <!-- 輸入框 -->
         <div v-if="currentUserId" class="chatRoom__input_container">
           <div id="chatRoom__input_form">
@@ -206,7 +211,8 @@ export default {
       // showUnreadTag: false,
       // throttleTimer: null, // 節流函數計時器
       clearTagTimer: null, // 清除unread Tag
-      lastSelfMsgIndex: 0 // 暫存最後一則訊息index updateHeadShot用
+      lastSelfMsgIndex: 0, // 暫存最後一則訊息index updateHeadShot用
+      fixedShowTime: '' // 滾動時顯示的時間段
     }
   },
   computed: {
@@ -283,7 +289,10 @@ export default {
           vm.readMsg(msg.from._id, vm.adminId)
           // 更新對方訊息頭像顯示
           vm.updateHeadShot()
+          return false
         }
+        // unreadMsgCount寫入vuex
+        vm.$store.commit('chat/addMsgCount')
       }, 1000)
     })
 
@@ -319,7 +328,7 @@ export default {
     this.clearTagTimer = null
   },
   methods: {
-    openChat(userId) {
+    openChat(userId, unread) {
       this.$refs.chatArea.classList.add('open')
       this.currentUserId = userId
       // 顯示laoding
@@ -332,8 +341,11 @@ export default {
       if (this.currentUserId !== '' && window.innerWidth < 815) {
         html.style.height = '100%'
         body.style.height = '100%'
+        html.style.overflow = 'hidden'
         body.style.overflow = 'hidden'
-        body.style.overflow = 'hidden'
+      } else {
+        html.style.overflow = 'auto'
+        body.style.overflow = 'auto'
       }
 
       const currentFriend = this.friendList.find(friend => friend.userId === userId)
@@ -359,9 +371,11 @@ export default {
 
         if (unread > 0) {
           this.updateHeadShot()
-          this.$messageHandler._scrollToUnread(this, this.currentUserId)
+          this.$messageHandler._scrollToUnread(this, 'admin')
           // 更新所有對方訊息為已讀
           this.readMsg(userId, this.adminId)
+          // 更新vuex unreadMsgCount
+          this.$store.commit('chat/substractMsgCount', unread)
         } else {
           this.$messageHandler._scrollToBottom(this)
         }
@@ -468,6 +482,9 @@ export default {
             }
           }
 
+          // 第一則訊息顯示時間
+          loopMsg[0].isTime = true
+
           const lastOtherMsg = otherMsg[otherMsg.length - 1]
           lastOtherMsg.isHeadShot = true
           lastOtherMsg.isSend = true
@@ -522,6 +539,12 @@ export default {
       ) {
         currentUserMsg[lastMsgIndex].isHeadShot = true
         currentUserMsg[lastMsgIndex].isSend = true
+      }
+
+      // groupby msg
+      const groupByTime = _groupBy(currentUserMsg, 'groupByTime')
+      for (const day in groupByTime) {
+        groupByTime[day][0].isTime = true
       }
     },
     async readMsg(from, to) {
@@ -601,6 +624,7 @@ export default {
     },
     // mounted 時更新img icon顯示
     upadteImgIcon() {
+      if (typeof this.currentUserMsg.msgContent === 'undefined') return false
       const msgContent = this.currentUserMsg.msgContent.msg
       // const otherMsg = msgContent.filter(msg => msg.from._id === this.currentUserId)
       const selfMsg = msgContent.filter(msg => msg.from._id === this.adminId)

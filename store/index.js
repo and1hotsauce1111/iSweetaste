@@ -32,5 +32,13 @@ export const actions = {
       'chat/saveAdmin',
       adminStatus === 200 ? { id: admin._id, name: admin.name } : { id: '', name: '' }
     )
+
+    // 取得管理者未讀訊息數
+    const {
+      status: adminUnreadMsgStatus,
+      data: { unreadMsgCount }
+    } = await this.$axios.post('/getUnreadMsgCount', { to: admin._id })
+
+    commit('chat/saveAdminUnreadMsg', adminUnreadMsgStatus === 200 ? unreadMsgCount : 0)
   }
 }

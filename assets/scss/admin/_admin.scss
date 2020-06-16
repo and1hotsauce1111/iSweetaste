@@ -163,6 +163,7 @@
       box-shadow: 0 0 5px 3px $limeGreen;
       border-radius: 10px;
       font-family: $font-title;
+      position: relative;
 
       // Current user
       .chatRoom__userMessage_currentUser {
@@ -221,6 +222,7 @@
         overflow-y: auto;
         padding: 0.5rem;
         overscroll-behavior: contain;
+        position: relative;
 
         .chatRoom__userMessage_content_wrapper {
           .unread {
@@ -256,7 +258,6 @@
           .msg_time {
             width: 100%;
             text-align: center;
-            margin: 0 auto;
 
             span {
               display: inline-block;
@@ -266,6 +267,7 @@
               color: #fff;
               font-size: $font-s;
               border-radius: 5px;
+              margin: 0.5rem 0;
             }
           }
 
@@ -461,6 +463,8 @@
         .chatRoom__userList_list {
           .chatRoom__userList_list_user {
             justify-content: space-evenly;
+            margin: 0 1rem;
+
             .chatRoom__userList_list_user_message,
             .chatRoom__userList_list_user_notify {
               display: block;

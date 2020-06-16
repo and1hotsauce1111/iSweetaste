@@ -36,6 +36,7 @@
           <div
             v-for="(msg, index) in renderMsg"
             :key="index"
+            ref="allMsg"
             class="customer-service-chat-room-messages-wrapper"
           >
             <div
@@ -46,7 +47,7 @@
               <div v-if="msg.isTime" class="msg_time">
                 <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
               </div>
-              <div v-if="msg.showUnreadTag" ref="unread" class="unread">
+              <div v-if="msg.showUnreadTag" id="unread" ref="unread" class="unread">
                 <fa :icon="['fas', 'tag']" />&nbsp;
                 <span>以下為尚未閱讀的訊息</span>
               </div>
@@ -182,9 +183,6 @@ export default {
   mounted() {
     window.addEventListener('resize', this.resizeHandler)
 
-    // 獲取未讀訊息小紅點
-    this.$messageHandler._getUserUnreadMsgCount(this, this.adminId, this.currentUserId)
-
     socket.on('getAllUser', users => {
       this.allUsers = users
     })
@@ -230,7 +228,9 @@ export default {
 
     // socket重新連結
     socket.on('reconnect', () => {
-      this.userJoin()
+      if (this.currentUserId !== this.adminId) {
+        this.userJoin()
+      }
     })
   },
   beforeDestroy() {
@@ -251,7 +251,7 @@ export default {
       if (this.isOpenChat && window.innerWidth < 815) {
         html.style.height = '100%'
         body.style.height = '100%'
-        body.style.overflow = 'hidden'
+        html.style.overflow = 'hidden'
         body.style.overflow = 'hidden'
       } else {
         body.style.overflow = 'auto'
@@ -261,7 +261,6 @@ export default {
       if (this.unreadMsgCount > 0) {
         this.readMsg()
         this.updateImgIcon()
-
         this.$messageHandler._scrollToUnread(this)
       } else {
         this.updateImgIcon()
@@ -525,6 +524,7 @@ export default {
     },
     // 顯示 隱藏img icon
     updateImgIcon() {
+      if (typeof this.allMsg[0] === 'undefined') return false
       const allMsg = this.allMsg[0].msg
       // 別人的訊息
       const otherMsg = allMsg.filter(msg => msg.from._id === this.adminId)
@@ -658,6 +658,13 @@ export default {
       if (lastMsg && lastMsg.from._id === this.adminId) {
         lastMsg.isHeadShot = true
         lastMsg.isSend = true
+      }
+
+      // groupby msg
+      const groupByTime = _groupBy(allMsg, 'groupByTime')
+
+      for (const day in groupByTime) {
+        groupByTime[day][0].isTime = true
       }
     }
   }

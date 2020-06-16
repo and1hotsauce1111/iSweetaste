@@ -242,27 +242,16 @@ router.post('/sendMsgStatus', async (req, res) => {
 
 // 獲取未讀訊息小紅點
 router.post('/getUnreadMsgCount', async (req, res) => {
-  const { from, to } = req.body
+  const { to } = req.body
 
-  if (from && to) {
+  if (to) {
     try {
-      // const allMessages = await Messages.find()
-      //   .or([
-      //     { $and: [{ from: from }, { to: to }, { unread: '0' }] },
-      //     { $and: [{ from: to }, { to: from }, { unread: '0' }] }
-      //   ])
-      //   .populate('from to')
-      //   .sort([['createAt', 1]])
-
       const allMessages = await Messages.find({
-        from: mongoose.Types.ObjectId(from),
         to: mongoose.Types.ObjectId(to),
         unread: '0'
       })
         .populate('from to')
         .sort([['createAt', 1]])
-
-      // console.log(allMessages)
 
       if (allMessages.length !== 0) {
         const unreadAdminMessageCount = allMessages.length
@@ -277,6 +266,7 @@ router.post('/getUnreadMsgCount', async (req, res) => {
         })
       }
       return res.send({
+        unreadMsgCount: 0,
         msg: '查無歷史訊息',
         retCode: -1
       })

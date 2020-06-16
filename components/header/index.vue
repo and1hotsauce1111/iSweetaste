@@ -25,8 +25,14 @@
               <fa :icon="['far', 'comment-dots']" />
             </div>
             <span>線上客服</span>&emsp;
-            <span v-if="msgCount && msgCount <= 99" class="msg_count">{{ msgCount }}</span>
-            <span v-if="msgCount && msgCount > 99" class="msg_count_large">{{ msgCount }}</span>
+            <span
+              v-if="adminUnreadCount && adminUnreadCount <= 99"
+              class="msg_count"
+            >{{ adminUnreadCount }}</span>
+            <span
+              v-if="adminUnreadCount && adminUnreadCount > 99"
+              class="msg_count_large"
+            >{{ adminUnreadCount }}</span>
           </a>
         </div>
       </div>
@@ -111,16 +117,21 @@ export default {
         { name: '商家分佈', route: '/shop', icon: 'store' }
       ],
       preventBodyScroll: false,
-      showUserPanel: false,
-      msgCount: 10
+      showUserPanel: false
     }
   },
   computed: {
     loginUser() {
       return decodeURIComponent(this.$store.state.user.user.name)
     },
+    adminId() {
+      return this.$store.state.chat.admin.id
+    },
     currentCity() {
       return this.$store.state.geo.position.city
+    },
+    adminUnreadCount() {
+      return this.$store.state.chat.adminUnreadMsg
     }
   },
   mounted() {
@@ -164,7 +175,6 @@ export default {
     toggleUserPanel() {
       this.showUserPanel = !this.showUserPanel
     },
-    async login() {},
     async logout() {
       const {
         status,

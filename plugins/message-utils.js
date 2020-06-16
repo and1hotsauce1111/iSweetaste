@@ -24,6 +24,8 @@ Vue.prototype.$messageHandler = {
         this._outPutMessage(vm, vm.currentUserId, msgInfo)
         // 存一份到localstorage
         window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
+        // 清空輸入框
+        vm.sendMsg = ''
         // 存進DB
         this._debounceSengMsg(vm, this._saveMessage, 1000)(
           vm,
@@ -32,8 +34,6 @@ Vue.prototype.$messageHandler = {
           type
         )
 
-        // 清空輸入框
-        vm.sendMsg = ''
         this._scrollToBottom(vm)
         if (type === 'admin') {
           // 更新使用者列表
@@ -47,13 +47,14 @@ Vue.prototype.$messageHandler = {
         vm.tempMsg.push(msgInfo)
         this._outPutMessage(vm, vm.currentUserId, msgInfo)
         window.localStorage.setItem(msgInfo.from._id, vm.tempMsg)
+        vm.sendMsg = ''
+
         this._debounceSengMsg(vm, this._saveMessage, 1000)(
           vm,
           msgInfo.from._id,
           msgInfo.to._id,
           type
         )
-        vm.sendMsg = ''
         this._scrollToBottom(vm)
         if (type === 'admin') {
           // 更新使用者列表
@@ -257,7 +258,6 @@ Vue.prototype.$messageHandler = {
         unreadMsg[0].showUnreadTag = true
       }
 
-      this._scrollToUnread(vm, selfId)
       return false
     }
 
@@ -369,64 +369,23 @@ Vue.prototype.$messageHandler = {
     })
   },
   // 開啟對話框後移至未讀區域
-  _scrollToUnread(vm, from) {
+  _scrollToUnread(vm, type) {
     vm.$nextTick(() => {
+      // const unreadTag = document.getElementById('unread')
       const unreadTag = vm.$refs.unread
       const chatMessageWrapper = vm.$refs.msgContent
 
-      if (unreadTag && chatMessageWrapper) {
-        let moveY = 0
-        let userMsg = []
-        let unreadMsgIndex = 0
-        let otherMsgDOM = []
-        let selfMsgDOM = []
-
-        // 區分來源是管理者或使用者
-        if (vm.currentUserMsg) {
-          userMsg = vm.allMsg.find(msg => msg.userId === vm.currentUserId).msg
-          unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)
-          otherMsgDOM = vm.$refs.otherMsg
-          selfMsgDOM = vm.$refs.selfMsg
-
-          if (otherMsgDOM.length !== 0) {
-            for (let i = 0; i < otherMsgDOM.length; i++) {
-              if (i < unreadMsgIndex) {
-                moveY += otherMsgDOM[i].offsetHeight
-              }
-            }
-          }
-          if (selfMsgDOM.length !== 0) {
-            for (let i = 0; i < selfMsgDOM.length; i++) {
-              if (i < unreadMsgIndex) {
-                moveY += selfMsgDOM[i].offsetHeight
-              }
-            }
-          }
-        } else {
-          userMsg = vm.allMsg[0].msg
-          unreadMsgIndex = userMsg.findIndex(msg => msg.showUnreadTag)
-          otherMsgDOM = vm.$refs.otherMsg
-          selfMsgDOM = vm.$refs.selfMsg
-
-          if (otherMsgDOM.length !== 0) {
-            for (let i = 0; i < otherMsgDOM.length; i++) {
-              if (i < unreadMsgIndex) {
-                moveY += otherMsgDOM[i].offsetHeight
-              }
-            }
-          }
-
-          if (selfMsgDOM.length !== 0) {
-            for (let i = 0; i < selfMsgDOM.length; i++) {
-              if (i < unreadMsgIndex) {
-                moveY += selfMsgDOM[i].offsetHeight
-              }
-            }
-          }
-        }
-
-        chatMessageWrapper.scrollTo(0, moveY + 30)
+      // 非position:fixed的狀況
+      if (type === 'admin' && unreadTag) {
+        unreadTag[0].scrollIntoView({ behavior: 'auto', block: 'center' })
+        return false
       }
+
+      // position:fixed的狀況
+      chatMessageWrapper.scrollTo(
+        0,
+        unreadTag[0].offsetTop - chatMessageWrapper.offsetHeight
+      )
     })
   },
   _debounceSengMsg(vm, fn, wait) {
@@ -440,5 +399,100 @@ Vue.prototype.$messageHandler = {
         fn.apply(ctx, args)
       }, wait)
     }
+  },
+  // 隨滾動顯示訊息時間段
+  _showTimeSection(vm) {
+    // console.log(vm.$refs.timeSection[0].getBoundingClientRect().top)
+    const timeSection = document.getElementsByClassName('msg_time')
+
+    const parent = vm.$refs.msgContent
+
+    parent.addEventListener('scroll', e => {
+      console.log(e.target.scrollTop)
+      const scrollTop = e.target.scrollTop
+
+      const corArray = [] // 紀錄每個unreadTag 相對座標
+
+      const timeSectionArray = Array.apply(null, timeSection) // nodelist to array
+      timeSectionArray.forEach(time =>
+        corArray.push(this._absolutePosition(time).y - 205)
+      )
+
+      const abstractCorArray = [] // unreadTag之間相差的距離
+      const resultArray = [] // 最後計算結果
+
+      for (let i = 0; i < corArray.length; i++) {
+        if (corArray[i + 1]) {
+          abstractCorArray.push(corArray[i + 1] - corArray[i])
+        }
+      }
+
+      for (let i = 0; i < abstractCorArray.length; i++) {
+        if (i === 0) {
+          resultArray.push({
+            showTime: timeSection[0].children[0].textContent.split(' ')[0],
+            timeSection: [0, abstractCorArray[i]]
+          })
+        }
+
+        if (abstractCorArray[i + 1]) {
+          if (timeSection[i + 1]) {
+            resultArray.push({
+              showTime: timeSection[i + 1].children[0].textContent.split(' ')[0],
+              timeSection: [abstractCorArray[i], abstractCorArray[i + 1]]
+            })
+          }
+        }
+      }
+
+      let showTime = ''
+      for (let i = 0; i < resultArray.length; i++) {
+        if (
+          scrollTop > resultArray[i].timeSection[0] &&
+          scrollTop < resultArray[i].timeSection[1]
+        ) {
+          showTime = resultArray[i].showTime
+          break
+        }
+      }
+
+      // const lastTagScrollTop = abstractCorArray.reduce((a, b) => a + b) + 400
+      const lastTagScrollTop =
+        this._absolutePosition(timeSection[timeSection.length - 1]).y - 205
+
+      if (scrollTop > lastTagScrollTop) {
+        const last = timeSection.length - 1
+        showTime = timeSection[last].children[0].textContent.split(' ')[0]
+      }
+      // 計算最後一個tag與上一個tag的差值
+      if (
+        scrollTop < lastTagScrollTop &&
+        scrollTop > this._absolutePosition(timeSection[timeSection.length - 2]).y - 205
+      ) {
+        const last = timeSection.length - 2
+        showTime = timeSection[last].children[0].textContent.split(' ')[0]
+      }
+      // 小於第一個tag
+      if (scrollTop < abstractCorArray[0]) {
+        showTime = timeSection[0].children[0].textContent.split(' ')[0]
+      }
+
+      vm.fixedShowTime = showTime
+
+      console.log(showTime)
+    })
+  },
+  _absolutePosition(element) {
+    let x = 0
+    let y = 0
+    // 搭配上面的示意圖可比較輕鬆理解為何要這麼計算
+    while (element) {
+      x += element.offsetLeft - element.scrollLeft + element.clientLeft
+      y += element.offsetTop - element.scrollLeft + element.clientTop
+      // 這邊有個重點，當父元素被下了 position 屬性之後他就會變成 offsetParent，所以這邊我們用迴圈不斷往上累加。
+      element = element.offsetParent
+    }
+
+    return { x, y }
   }
 }

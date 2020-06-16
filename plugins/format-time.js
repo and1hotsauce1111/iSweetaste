@@ -14,7 +14,8 @@ Vue.filter('formatTime', (value, moment, type) => {
   const calendarTime = moment(parseIntValue).calendar({
     sameDay: '[今天]',
     lastDay: '[昨天]',
-    sameElse: 'lll'
+    lastWeek: 'l ah:mm',
+    sameElse: 'l ah:mm'
   })
 
   if (type === 'calendar') {
@@ -41,12 +42,6 @@ Vue.filter('formatTime', (value, moment, type) => {
   }
 
   if (type === 'msg') {
-    // 昨天
-    if (calendarTime === '昨天') {
-      return moment(parseIntValue)
-        .tz('Asia/Taipei')
-        .format('lll')
-    }
     // 今天
     if (calendarTime === '今天') {
       const a = moment(parseIntValue).format('a')
@@ -63,6 +58,10 @@ Vue.filter('formatTime', (value, moment, type) => {
       const formatTime = formatA + moment(parseIntValue).format('hh:mm')
 
       return formatTime
+    } else {
+      return moment(parseIntValue)
+        .tz('Asia/Taipei')
+        .format('lll')
     }
   }
 })
