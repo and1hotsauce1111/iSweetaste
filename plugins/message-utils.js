@@ -74,6 +74,7 @@ Vue.prototype.$messageHandler = {
     const loadingInstance = Loading.service({
       target: '.customer-service-chat-room-messages'
     })
+
     const self = vm
     if (self.adminInfo.length === 0) return false
     const {
@@ -84,7 +85,10 @@ Vue.prototype.$messageHandler = {
       to: self.currentUserId
     })
     // 查無歷史訊息
-    if (status === 200 && allMsg.length === 0 && retCode === -1) return false
+    if (status === 200 && allMsg.length === 0 && retCode === -1) {
+      loadingInstance.close()
+      return false
+    }
 
     if (status === 200 && allMsg.length !== 0 && retCode === 0) {
       // 整理訊息格式
@@ -110,7 +114,9 @@ Vue.prototype.$messageHandler = {
         // self.readMsg()
         loadingInstance.close()
       }
+      return false
     }
+    loadingInstance.close()
   },
   // admin取得歷史訊息
   async _getAllHistoryMessage(vm, adminId) {
@@ -134,7 +140,10 @@ Vue.prototype.$messageHandler = {
     })
 
     // 查無歷史訊息
-    if (getMsgStatus === 200 && hasHistoryMsg === 0 && retCode1 === -1) return false
+    if (getMsgStatus === 200 && hasHistoryMsg === 0 && retCode1 === -1) {
+      loadingInstance.close()
+      return false
+    }
     if (getMsgStatus === 200 && hasHistoryMsg > 0 && retCode1 === 0) {
       self.allMsg = allMsg
       self.hasHistoryMsg = true
@@ -142,6 +151,7 @@ Vue.prototype.$messageHandler = {
       self.allMsg.forEach(msg => {
         this._findLastMessage(vm, vm.loginId, msg.userId)
       })
+      loadingInstance.close()
     }
 
     // 預設顯示上次互動的使用者
@@ -171,6 +181,7 @@ Vue.prototype.$messageHandler = {
       loadingInstance.close()
     } else if (getLastStatus === 200 && retCode2 === -1) {
       self.currentUserMsg.msgContent = {}
+      loadingInstance.close()
     }
   },
   // 格式化送出訊息
