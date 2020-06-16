@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import _orderby from 'lodash.orderby'
+import { Loading } from 'element-ui'
 
 Vue.prototype.$messageHandler = {
   // this 指向$messageHandler
@@ -69,6 +70,10 @@ Vue.prototype.$messageHandler = {
   },
   // user取得歷史訊息
   async _getHistoryMessage(vm) {
+    // 顯示laoding
+    const loadingInstance = Loading.service({
+      target: '.customer-service-chat-room-messages'
+    })
     const self = vm
     if (self.adminInfo.length === 0) return false
     const {
@@ -103,11 +108,16 @@ Vue.prototype.$messageHandler = {
         self.updateImgIcon()
         this._findLastMessage(vm, self.currentUserId, self.adminInfo[0]._id)
         // self.readMsg()
+        loadingInstance.close()
       }
     }
   },
   // admin取得歷史訊息
   async _getAllHistoryMessage(vm, adminId) {
+    // 顯示laoding
+    const loadingInstance = Loading.service({
+      target: '.chatRoom__container'
+    })
     const self = vm
     const {
       status: getMsgStatus,
@@ -158,6 +168,7 @@ Vue.prototype.$messageHandler = {
       self.upadteImgIcon()
       this._sortUserList(vm)
       this._scrollToBottom(vm)
+      loadingInstance.close()
     } else if (getLastStatus === 200 && retCode2 === -1) {
       self.currentUserMsg.msgContent = {}
     }

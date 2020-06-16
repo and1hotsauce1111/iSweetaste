@@ -245,19 +245,6 @@ export default {
       this.isJoin = true
       this.isOpenChat = !this.isOpenChat
 
-      // 手機介面時停止body滾動
-      const html = document.querySelector('html')
-      const body = document.querySelector('body')
-      if (this.isOpenChat && window.innerWidth < 815) {
-        html.style.height = '100%'
-        body.style.height = '100%'
-        html.style.overflow = 'hidden'
-        body.style.overflow = 'hidden'
-      } else {
-        body.style.overflow = 'auto'
-        html.style.overflow = 'auto'
-      }
-
       if (this.unreadMsgCount > 0) {
         this.readMsg()
         this.updateImgIcon()
@@ -288,10 +275,6 @@ export default {
         // 手機
         this.$refs.msgContent.style.height = '81%'
       }
-      const html = document.querySelector('html')
-      const body = document.querySelector('body')
-      body.style.overflow = 'auto'
-      html.style.overflow = 'auto'
     },
     async userJoin() {
       if (this.loginUser === '') return false

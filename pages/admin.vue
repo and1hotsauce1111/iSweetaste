@@ -336,18 +336,6 @@ export default {
         target: '.chatRoom__userMessage_container'
       })
 
-      const html = document.querySelector('html')
-      const body = document.querySelector('body')
-      if (this.currentUserId !== '' && window.innerWidth < 815) {
-        html.style.height = '100%'
-        body.style.height = '100%'
-        html.style.overflow = 'hidden'
-        body.style.overflow = 'hidden'
-      } else {
-        html.style.overflow = 'auto'
-        body.style.overflow = 'auto'
-      }
-
       const currentFriend = this.friendList.find(friend => friend.userId === userId)
       const currentMsg = this.allMsg.find(msg => msg.userId === userId)
 
@@ -394,22 +382,15 @@ export default {
       this.currentUserId = ''
       this.currentUserMsg.titleArea = {}
       this.currentUserMsg.msgContent = []
-      // 恢復body滾動
-      const html = document.querySelector('html')
-      const body = document.querySelector('body')
-      body.style.overflow = 'auto'
-      html.style.overflow = 'auto'
     },
     resizeHandler() {
-      if (window.innerHeight > 319) {
-        this.$refs.chatArea.style.height = '100%'
-        return false
+      if (this.$refs.chatArea) {
+        if (window.innerHeight > 319) {
+          this.$refs.chatArea.style.height = '100%'
+          return false
+        }
+        this.$refs.chatArea.style.height = window.innerHeight / 2 + 'px'
       }
-      this.$refs.chatArea.style.height = window.innerHeight / 2 + 'px'
-      const html = document.querySelector('html')
-      const body = document.querySelector('body')
-      body.style.overflow = 'auto'
-      html.style.overflow = 'auto'
     },
     scrollHandler() {
       if (this.currentUserId !== '') {

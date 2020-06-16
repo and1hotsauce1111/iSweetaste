@@ -29,7 +29,9 @@ const server = http.createServer(app)
 console.log(server)
 
 // socket init
-const io = require('socket.io')(server)
+const io = require('socket.io')(server, {
+  pingTimeout: 60000
+})
 const { socketInit } = require('./interface/utils/socket-init')
 socketInit(io)
 
