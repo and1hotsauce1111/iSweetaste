@@ -415,6 +415,8 @@ export default {
         isTime: false
       }
       this.$messageHandler._sendMessage(this, socket, msgInfo, 'user')
+      // 更新vuex數據
+      this.$store.commit('chat/addMsgCount')
     },
     async readMsg() {
       // 小紅點歸0
