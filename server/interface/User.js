@@ -1,6 +1,7 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
+const fs = require('fs')
 const url = require('url')
 const router = require('express').Router()
 const Redis = require('redis')
@@ -8,12 +9,15 @@ const nodeMailer = require('nodemailer')
 const passport = require('passport')
 const Email = require('../db/config')
 const bcrypt = require('bcryptjs')
+const multer = require('multer')
+const sharp = require('sharp')
 
 // load user model
 const User = require('../db/models/User')
 
 // load Auth
 const { isLogin } = require('./utils/auth')
+const mongoose = require('mongoose')
 
 // 建立redis
 // sesseion config
@@ -29,6 +33,19 @@ if (process.env.REDIS_URL) {
   RedisStore = Redis.createClient()
 }
 
+// init multer
+const upload = multer({
+  limits: {
+    fileSize: 1000000
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpeg|png)$/)) {
+      cb(new Error('請上傳正確格式的圖片！'))
+    }
+    cb(null, true)
+  }
+})
+
 // register router
 router.post('/users/register', (req, res) => {
   // 取得前端傳過來的值
@@ -42,7 +59,8 @@ router.post('/users/register', (req, res) => {
     const new_user = new User({
       name: username,
       email,
-      password: hashPwd
+      password: hashPwd,
+      avatar: null
     })
 
     try {
@@ -206,6 +224,7 @@ router.get('/users/getAdmin', async (req, res) => {
     if (admin.length !== 0) {
       return res.send({ admin: admin[0], msg: '獲得管理者', retCode: 0 })
     }
+    return res.send({ admin: '', msg: '尚未建立管理者', retCode: -1 })
   } catch (e) {
     console.log(e)
   }
@@ -217,6 +236,54 @@ router.get('/users/logout', (req, res, next) => {
   req.logout()
   req.session.destroy()
   return res.send({ msg: '已成功登出', retCode: 0 })
+})
+
+// upload avatar
+router.post(
+  '/users/:id/avatar',
+  upload.single('avatar'),
+  async (req, res) => {
+    const id = req.params.id
+    const user = await User.find({ _id: mongoose.Types.ObjectId(id) })
+    const buffer = await sharp(req.file.buffer)
+      .resize({ width: 100, height: 100 })
+      .png()
+      .toBuffer()
+
+    try {
+      if (user.length !== 0) {
+        // update avatar
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: mongoose.Types.ObjectId(id) },
+          { avatar: buffer }
+        )
+        return res.send({ updatedUser, msg: '成功更新大頭貼', ret_code: 0 })
+      } else {
+        // no user find
+        return res.send({ msg: '找不到使用者', ret_code: -1 })
+      }
+    } catch (e) {
+      console.log(e)
+      return res.send({ msg: '上傳大頭貼失敗！', ret_code: -1 })
+    }
+  },
+  (err, req, res, next) => {
+    res.status(400).send({ error: err.message })
+  }
+)
+
+router.get('/users/:id/avatar', async (req, res) => {
+  try {
+    const id = req.params.id
+    const user = await User.findById(id)
+
+    if (!user || !user.avatar) throw new Error()
+
+    res.set('Content-Type', 'image/png')
+    res.send(user.avatar)
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 // 已登入的攔截 防止登入後訪問登入頁面

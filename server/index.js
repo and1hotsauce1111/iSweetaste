@@ -26,7 +26,6 @@ config.dev = process.env.NODE_ENV !== 'production'
 
 // setting server
 const server = http.createServer(app)
-console.log(server)
 
 // socket init
 const io = require('socket.io')(server, {

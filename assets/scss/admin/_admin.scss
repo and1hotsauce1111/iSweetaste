@@ -47,6 +47,13 @@
         }
       }
 
+      .no_user {
+        font-family: $font-title;
+        color: #ccc;
+        text-align: center;
+        margin-top: 1rem;
+      }
+
       .chatRoom__userList_list {
         margin-top: 1rem;
         font-family: $font-title;

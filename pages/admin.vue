@@ -17,6 +17,7 @@
             />
           </span>
         </div>
+        <div v-if="allUsers.length === 0" class="no_user">——— 尚無任何使用者 ———</div>
         <div v-if="friendList.length !== 0" class="chatRoom__userList_list">
           <ul>
             <li v-for="friend in friendList" :key="friend.userId">
@@ -34,20 +35,27 @@
                   <img src="~assets/img/icons/user.png" alt />
                 </div>
                 <div class="chatRoom__userList_list_user_message">
-                  <div class="chatRoom__userList_list_user_message_name">{{ friend.username }}</div>
+                  <div class="chatRoom__userList_list_user_message_name">
+                    {{ friend.username }}
+                  </div>
                   <div class="chatRoom__userList_list_user_message_content">
-                    <p
-                      v-if="friend.lastestMsg !== ''"
-                      class="msg"
-                    >{{ friend.lastMsgFrom !== adminId ? friend.lastestMsg : `你 : ${friend.lastestMsg}` }}</p>
+                    <p v-if="friend.lastestMsg !== ''" class="msg">
+                      {{
+                        friend.lastMsgFrom !== adminId
+                          ? friend.lastestMsg
+                          : `你 : ${friend.lastestMsg}`
+                      }}
+                    </p>
                     <span v-if="friend.lastestMsg !== ''" class="dot">·</span>
-                    <span
-                      v-if="friend.lastestMsg !== ''"
-                      class="time"
-                    >{{ friend.lastMsgTime | formatTime($moment, 'title') }}</span>
+                    <span v-if="friend.lastestMsg !== ''" class="time">{{
+                      friend.lastMsgTime | formatTime($moment, 'title')
+                    }}</span>
                   </div>
                 </div>
-                <span v-if="friend.unread > 0" class="chatRoom__userList_list_user_notify"></span>
+                <span
+                  v-if="friend.unread > 0"
+                  class="chatRoom__userList_list_user_notify"
+                ></span>
                 <div
                   v-if="friend.unread === 0 && friend.userId === adminId"
                   class="chatRoom__userList_list_user_notify_img"
@@ -59,7 +67,11 @@
           </ul>
         </div>
       </div>
-      <div v-if="allMsg.length !== 0" ref="chatArea" class="chatRoom__userMessage_container">
+      <div
+        v-if="allMsg.length !== 0"
+        ref="chatArea"
+        class="chatRoom__userMessage_container"
+      >
         <!-- 現在對話的對象標頭 -->
         <div v-if="currentUserId" class="chatRoom__userMessage_currentUser">
           <div class="chatRoom__userMessage_currentUser_back" @click="backToUserList">
@@ -73,12 +85,18 @@
             <span
               v-if="showLastLoginTime"
               class="chatRoom__userMessage_currentUser_userInfo_lastOnline"
-            >{{ lastLoginTime }}上線</span>
-            <span v-else class="chatRoom__userMessage_currentUser_userInfo_lastOnline">上線中</span>
+            >
+              {{ lastLoginTime }}上線
+            </span>
+            <span v-else class="chatRoom__userMessage_currentUser_userInfo_lastOnline">
+              上線中
+            </span>
           </div>
         </div>
 
-        <div v-if="!currentUserId" class="chatRoom__userMessage_noChat">———尚未選擇聊天室———</div>
+        <div v-if="!currentUserId" class="chatRoom__userMessage_noChat">
+          ———尚未選擇聊天室———
+        </div>
 
         <!-- 訊息主體 -->
         <div ref="msgContent" class="chatRoom__userMessage_content">

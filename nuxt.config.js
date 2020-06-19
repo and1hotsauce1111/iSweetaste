@@ -99,16 +99,16 @@ module.exports = {
   axios: {
     proxy: true
   },
-  proxy: {
-    '/users': {
-      target: 'https://jameslin-isweetaste.herokuapp.com/',
-      changeOrigin: true
-    },
-    '/geo': {
-      target: 'https://jameslin-isweetaste.herokuapp.com/',
-      changeOrigin: true
-    }
-  },
+  // proxy: {
+  //   '/users': {
+  //     target: 'https://jameslin-isweetaste.herokuapp.com/',
+  //     changeOrigin: true
+  //   },
+  //   '/geo': {
+  //     target: 'https://jameslin-isweetaste.herokuapp.com/',
+  //     changeOrigin: true
+  //   }
+  // },
   /*
    ** Build configuration
    */

@@ -130,14 +130,14 @@ Vue.prototype.$messageHandler = {
       data: { allMsg, retCode: retCode1 }
     } = await self.$axios.post('/allHistoryMessage', { adminId })
 
+    if (!allMsg) {
+      loadingInstance.close()
+      return false
+    }
+
     self.allMsg = allMsg
 
     let hasHistoryMsg = 0
-    allMsg.forEach(msg => {
-      if (msg.msg.length !== 0) {
-        hasHistoryMsg++
-      }
-    })
 
     // 查無歷史訊息
     if (getMsgStatus === 200 && hasHistoryMsg === 0 && retCode1 === -1) {
@@ -150,6 +150,11 @@ Vue.prototype.$messageHandler = {
       // 顯示未讀訊息tag
       self.allMsg.forEach(msg => {
         this._findLastMessage(vm, vm.loginId, msg.userId)
+      })
+      allMsg.forEach(msg => {
+        if (msg.msg.length !== 0) {
+          hasHistoryMsg++
+        }
       })
       loadingInstance.close()
     }

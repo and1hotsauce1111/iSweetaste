@@ -25,14 +25,25 @@
               <fa :icon="['far', 'comment-dots']" />
             </div>
             <span>線上客服</span>&emsp;
-            <span
-              v-if="adminUnreadCount && adminUnreadCount <= 99"
-              class="msg_count"
-            >{{ adminUnreadCount }}</span>
+            <span v-if="adminUnreadCount && adminUnreadCount <= 99" class="msg_count">{{
+              adminUnreadCount
+            }}</span>
             <span
               v-if="adminUnreadCount && adminUnreadCount > 99"
               class="msg_count_large"
-            >{{ adminUnreadCount }}</span>
+            >
+              {{ adminUnreadCount }}
+            </span>
+          </a>
+        </div>
+      </div>
+      <div v-if="loginUser !== 'admin'" class="header__menu__Login_userInfo_panel">
+        <div class="header__menu__Login_userInfo_panel_container">
+          <a class="header__menu__Login_userInfo_panel_item" href="/profile">
+            <div class="header__menu__Login_userInfo_panel_item_icon">
+              <fa :icon="['fas', 'edit']" />
+            </div>
+            <span>個人檔案</span>&emsp;
           </a>
         </div>
       </div>
@@ -51,7 +62,11 @@
     <div ref="mobileClipMenu" class="mobile__clip_menu">
       <div class="mobile__clip_menu_userSection">
         <div v-if="loginUser" class="mobile__clip_menu_userInfo">
-          <img class="mobile__clip_menu_userInfo_img" src="~assets/img/icons/user.png" alt />
+          <img
+            class="mobile__clip_menu_userInfo_img"
+            src="~assets/img/icons/user.png"
+            alt
+          />
           <div class="mobile__clip_menu_userInfo_username">{{ loginUser }}</div>
         </div>
         <div class="mobile__clip_menu_location">
