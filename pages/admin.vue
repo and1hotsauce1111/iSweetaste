@@ -17,7 +17,7 @@
             />
           </span>
         </div>
-        <div v-if="allUsers.length === 0" class="no_user">——— 尚無任何使用者 ———</div>
+        <div v-if="friendList.length === 0" class="no_user">——— 尚無任何使用者 ———</div>
         <div v-if="friendList.length !== 0" class="chatRoom__userList_list">
           <ul>
             <li v-for="friend in friendList" :key="friend.userId">
@@ -32,11 +32,11 @@
                 @click="openChat(friend.userId, friend.unread)"
               >
                 <div class="chatRoom__userList_list_user_img">
-                  <img src="~assets/img/avatar/user.png" alt />
+                  <img :src="friend.avatar" alt />
                 </div>
                 <div class="chatRoom__userList_list_user_message">
                   <div class="chatRoom__userList_list_user_message_name">
-                    {{ friend.username }}
+                    {{ decodeURIComponent(friend.username) }}
                   </div>
                   <div class="chatRoom__userList_list_user_message_content">
                     <p v-if="friend.lastestMsg !== ''" class="msg">
@@ -78,10 +78,10 @@
             <fa :icon="['fas', 'chevron-left']" />
           </div>
           <div class="chatRoom__userMessage_currentUser_img">
-            <img src="~assets/img/avatar/user.png" alt />
+            <img :src="chatRoomAvatar" alt />
           </div>
           <div class="chatRoom__userMessage_currentUser_userInfo">
-            <h2>{{ currentUserMsg.titleArea.username }}</h2>
+            <h2>{{ decodeURIComponent(currentUserMsg.titleArea.username) }}</h2>
             <span
               v-if="showLastLoginTime"
               class="chatRoom__userMessage_currentUser_userInfo_lastOnline"
@@ -124,7 +124,7 @@
                     { show: msg.isHeadShot }
                   ]"
                 >
-                  <img src="~assets/img/avatar/user.png" alt />
+                  <img :src="chatRoomAvatar" alt />
                 </div>
                 <el-tooltip
                   class="chatRoom__userMessage_content_message content_other"
@@ -139,7 +139,7 @@
                   ref="otherMsgIcon"
                   class="chatRoom__userMessage_content_userReadImg"
                 >
-                  <img src="~assets/img/avatar/user.png" alt />
+                  <img :src="chatRoomAvatar" alt />
                 </div>
               </div>
             </div>
@@ -174,7 +174,7 @@
                 ref="selfMsgIcon"
                 class="chatRoom__userMessage_content_otheruserReadImg"
               >
-                <img src="~assets/img/avatar/user.png" alt />
+                <img :src="chatRoomAvatar" alt />
               </div>
             </div>
           </div>
@@ -265,6 +265,19 @@ export default {
         friend.loginTime = this.dynamicUser.loginTime
       }
       return false
+    },
+    // 顯示對話框大頭貼
+    chatRoomAvatar() {
+      const currentUser = this.friendList.find(
+        friend => friend.userId === this.currentUserId
+      )
+      return currentUser.avatar
+    },
+    // 顯示管理者頭像
+    adminAvatar() {
+      const haveAvatar = this.$store.state.chat.admin.adminHaveAvatar
+      if (haveAvatar) return `/users/${this.adminId}/avatar`
+      return `${require('@/assets/img/avatar/user.png')}`
     }
   },
   mounted() {
@@ -292,6 +305,7 @@ export default {
 
     // 獲取所有在線的使用者
     socket.on('getAllUser', (users, user) => {
+      console.log('getAllUsers', users)
       this.dynamicUser = user
       this.allUsers = users.filter(user => user.username !== 'admin')
     })
@@ -461,11 +475,16 @@ export default {
       this.$messageHandler._sortUserList(this)
     },
     updateHeadShot() {
-      const currentUserMsg = this.currentUserMsg.msgContent.msg
+      const currentUserMsg =
+        this.currentUserMsg.msgContent.msg ||
+        this.allMsg.find(msg => msg.userId === this.currentUserId).msg
+
       // 自己的訊息
       const selfMsg = currentUserMsg.filter(msg => msg.from._id === this.adminId)
       // 別人的訊息
       const otherMsg = currentUserMsg.filter(msg => msg.from._id === this.currentUserId)
+
+      console.log('otherMsg', otherMsg)
 
       // 尚無自己的訊息
 
@@ -474,15 +493,17 @@ export default {
           // 顯示 隱藏headshot isSend
           // 從 isSend isHeadShot都為true的開始往下找
           const startIndex = otherMsg.findIndex(msg => msg.isHeadShot && msg.isSend)
+          console.log('startIndex', startIndex)
 
           // 需要迴圈判斷的msg
-          const loopMsg = otherMsg.slice(startIndex, otherMsg.length - 1)
+          const loopMsg = otherMsg.slice(startIndex)
 
-          if (loopMsg.length !== 0) {
-            for (let i = 0; i < loopMsg.length; i++) {
-              loopMsg[i].isHeadShot = false
-              loopMsg[i].isSend = false
-            }
+          console.log('loopMsg', loopMsg)
+          if (loopMsg.length === 0) return false
+
+          for (let i = 0; i < loopMsg.length; i++) {
+            loopMsg[i].isHeadShot = false
+            loopMsg[i].isSend = false
           }
 
           // 第一則訊息顯示時間

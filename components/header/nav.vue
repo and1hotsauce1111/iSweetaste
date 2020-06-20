@@ -40,6 +40,16 @@
 
 <script>
 export default {
+  props: {
+    avatarUrl: {
+      type: String,
+      default: `${require('@/assets/img/avatar/user.png')}`
+    },
+    changeAvatar: {
+      type: String,
+      default: `${require('@/assets/img/avatar/user.png')}`
+    }
+  },
   data() {
     return {
       menuList: [
@@ -64,16 +74,6 @@ export default {
     },
     userId() {
       return this.$store.state.user.user.id
-    },
-    avatarUrl() {
-      const haveAvatar = this.$store.state.user.user.haveAvatar
-      if (haveAvatar) {
-        return `/users/${this.userId}/avatar`
-      }
-      return `${require('@/assets/img/avatar/user.png')}`
-    },
-    changeAvatar() {
-      return this.$store.state.user.avatar
     }
   },
   methods: {

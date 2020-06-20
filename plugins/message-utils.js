@@ -130,6 +130,8 @@ Vue.prototype.$messageHandler = {
       data: { allMsg, retCode: retCode1 }
     } = await self.$axios.post('/allHistoryMessage', { adminId })
 
+    console.log('allMsg', allMsg)
+
     if (!allMsg) {
       loadingInstance.close()
       return false
@@ -169,14 +171,18 @@ Vue.prototype.$messageHandler = {
       // 判斷最後一則訊息是否已讀
       // 若為他人訊息且未讀則return 避免直接已讀
       if (lastestMsg.from !== vm.adminId && lastestMsg.unread === '0') {
+        console.log('lastestMsg', lastestMsg)
         // 整理使用者列表格式
         this._sortUserList(vm)
+        loadingInstance.close()
         return false
       }
 
       // 預設顯示最後一次對話使用者的訊息
       const filter = lastestMsg.from === vm.adminId ? lastestMsg.to : lastestMsg.from
       const lastMsgContent = allMsg.find(msg => msg.userId === filter)
+
+      console.log('lastMsgContent', lastMsgContent)
 
       self.currentUserMsg.msgContent = lastMsgContent || {}
       // 更新img icon顯示
@@ -239,6 +245,7 @@ Vue.prototype.$messageHandler = {
   },
   // 找出最後一則訊息
   _findLastMessage(vm, selfId, otherId) {
+    console.log('findlastmsg')
     // 第一種： 在線即時訊息
     // 第二種： 歷史訊息
     const findUserMsg =
@@ -311,12 +318,18 @@ Vue.prototype.$messageHandler = {
       data: { friends, retCode: retCode1 }
     } = await self.$axios.get('/allFriends')
 
+    console.log(friends)
+
     if (allFriendsStatus === 200 && retCode1 === 0) {
       const friendList = friends.map(friend => {
         return {
           username: friend.friendId.name,
           userId: friend.friendId._id,
           socketId: '',
+          avatar:
+            friend.friendId.avatar !== null
+              ? `/users/${friend.friendId._id}/avatar`
+              : `${require('@/assets/img/avatar/user.png')}`,
           loginTime: friend.loginTime,
           lastestMsg: '',
           lastMsgTime: '',

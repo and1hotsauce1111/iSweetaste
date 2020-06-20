@@ -13,7 +13,11 @@
       <div class="header__logo_container">
         <nuxt-link id="header__logo" to="/"></nuxt-link>
       </div>
-      <my-nav @showPanel="toggleUserPanel"></my-nav>
+      <my-nav
+        :avatar-url="avatarUrl"
+        :change-avatar="changeAvatar"
+        @showPanel="toggleUserPanel"
+      ></my-nav>
     </div>
 
     <!-- user panel -->
@@ -64,7 +68,7 @@
         <div v-if="loginUser" class="mobile__clip_menu_userInfo">
           <img
             class="mobile__clip_menu_userInfo_img"
-            src="~assets/img/avatar/user.png"
+            :src="changeAvatar !== '' ? changeAvatar : avatarUrl"
             alt
           />
           <div class="mobile__clip_menu_userInfo_username">{{ loginUser }}</div>
@@ -139,6 +143,9 @@ export default {
     loginUser() {
       return decodeURIComponent(this.$store.state.user.user.name)
     },
+    loginUserId() {
+      return this.$store.state.user.user.id
+    },
     adminId() {
       return this.$store.state.chat.admin.id
     },
@@ -147,6 +154,16 @@ export default {
     },
     adminUnreadCount() {
       return this.$store.state.chat.adminUnreadMsg
+    },
+    avatarUrl() {
+      const haveAvatar = this.$store.state.user.user.haveAvatar
+      if (haveAvatar) {
+        return `/users/${this.loginUserId}/avatar`
+      }
+      return `${require('@/assets/img/avatar/user.png')}`
+    },
+    changeAvatar() {
+      return this.$store.state.user.avatar
     }
   },
   mounted() {

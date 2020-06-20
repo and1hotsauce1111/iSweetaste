@@ -227,7 +227,9 @@ router.get('/users/getAdmin', async (req, res) => {
   try {
     const admin = await User.find({ name: 'admin' })
     if (admin.length !== 0) {
-      return res.send({ admin: admin[0], msg: '獲得管理者', retCode: 0 })
+      let haveAvatar = false
+      if (admin[0].avatar !== null) haveAvatar = true
+      return res.send({ admin: admin[0], haveAvatar, msg: '獲得管理者', retCode: 0 })
     }
     return res.send({ admin: '', msg: '尚未建立管理者', retCode: -1 })
   } catch (e) {
@@ -303,9 +305,11 @@ router.get('/users/:id/avatar', async (req, res) => {
 router.post('/users/:id/changeUserName', async (req, res) => {
   const id = req.params.id
   const { changeName } = req.body
+
   const user = await User.findById(id)
   if (!user) return res.send({ msg: '找不到使用者！', ret_code: -1 })
-  const existName = await User.find({ name: decodeURIComponent(changeName) })
+  const existName = await User.find({ name: changeName })
+
   if (existName.length !== 0) return res.send({ msg: '該暱稱已被使用！', ret_code: -1 })
   try {
     user.name = changeName

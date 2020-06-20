@@ -1,13 +1,20 @@
 <template>
   <div v-if="loginUser !== 'admin' && currentUserId !== ''">
     <div class="customer-service" @click="toggleChat">
-      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">{{ unreadMsgCount }}</span>
+      <span v-if="unreadMsgCount > 0" class="customer-service-message-count">{{
+        unreadMsgCount
+      }}</span>
     </div>
     <div class="customer-sevice-container">
       <div ref="chatContainer" class="customer-service-chat-room">
         <div class="customer-service-chat-room-header">
           <div class="customer-service-chat-room-header-title">
-            <img src="~assets/img/logo/desktop/logo-light.svg" alt width="26" height="26" />&nbsp; Sweetaste
+            <img
+              src="~assets/img/logo/desktop/logo-light.svg"
+              alt
+              width="26"
+              height="26"
+            />&nbsp; Sweetaste
           </div>
           <div class="customer-service-chat-room-header-close" @click="toggleChat">
             <svg height="26px" width="26px" viewBox="-4 -4 24 24">
@@ -53,9 +60,12 @@
               </div>
               <div class="customer-service-chat-room-messages-other">
                 <div
-                  :class="['customer-service-chat-room-messages-other_userImg', {'show' : msg.isHeadShot}]"
+                  :class="[
+                    'customer-service-chat-room-messages-other_userImg',
+                    { show: msg.isHeadShot }
+                  ]"
                 >
-                  <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
+                  <img :src="adminAvatar" alt />
                 </div>
                 <el-tooltip
                   class="customer-service-chat-room-messages-other_msg"
@@ -70,11 +80,15 @@
                   ref="otherMsgIcon"
                   class="customer-service-chat-room-messages-other_userReadImg"
                 >
-                  <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
+                  <img :src="adminAvatar" alt />
                 </div>
               </div>
             </div>
-            <div v-else ref="selfMsg" class="customer-service-chat-room-messages-self-container">
+            <div
+              v-else
+              ref="selfMsg"
+              class="customer-service-chat-room-messages-self-container"
+            >
               <div v-if="msg.isTime" class="msg_time">
                 <span>{{ msg.createAt | formatTime($moment, 'calendar') }}</span>
               </div>
@@ -98,7 +112,7 @@
                 :icon="['fas', 'check-circle']"
               />
               <div v-if="msg.isRead" ref="selfMsgIcon" class="user_imgIcon">
-                <img src="~assets/img/logo/desktop/logo-dark.svg" alt />
+                <img :src="adminAvatar" alt />
               </div>
             </div>
           </div>
@@ -166,6 +180,17 @@ export default {
         }
       }
       return []
+    },
+    // 顯示管理者頭像
+    adminAvatar() {
+      const haveAvatar = this.$store.state.chat.admin.adminHaveAvatar
+      if (haveAvatar) return `/users/${this.adminId}/avatar`
+      return `${require('@/assets/img/avatar/user.png')}`
+    },
+    selfAvatar() {
+      const haveAvatar = this.$store.state.user.user.haveAvatar
+      if (haveAvatar) return `/users/${this.currentUserId}/avatar`
+      return `${require('@/assets/img/avatar/user.png')}`
     }
   },
   watch: {
@@ -290,6 +315,8 @@ export default {
         status: findFriendStatus,
         data: { friend: oldFriend, admin, retCode: findFriendRetcode }
       } = await self.$axios.post('/oneFriend', { friendId: self.currentUserId })
+
+      console.log(oldFriend)
 
       // 查無使用者 第一次登入
       // 新增使用者

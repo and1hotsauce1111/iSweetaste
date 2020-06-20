@@ -46,7 +46,7 @@
           </div>
           <div class="avatar-uplaoder_limit">
             <p>檔案大小:最大1MB</p>
-            <p>檔案限制:.JPEG, .PNG</p>
+            <p>檔案限制: .jpeg, .jpg, .png</p>
           </div>
         </div>
       </div>
@@ -65,7 +65,11 @@ export default {
     if (data.msg && data.ret_code === -1) {
       return {
         styleObject: {
-          background: `url(${require('@/assets/img/avatar/user.png')})`
+          background: `url(${require('@/assets/img/avatar/user.png')})`,
+          borderRadius: '50%',
+          backgroundPosition: '50% 50%',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat'
         }
       }
     }
@@ -73,7 +77,11 @@ export default {
     if (status === 200 && data) {
       return {
         styleObject: {
-          background: `url(/users/${userId}/avatar)`
+          background: `url(/users/${userId}/avatar)`,
+          borderRadius: '50%',
+          backgroundPosition: '50% 50%',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat'
         }
       }
     }
