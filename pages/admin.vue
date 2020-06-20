@@ -32,7 +32,7 @@
                 @click="openChat(friend.userId, friend.unread)"
               >
                 <div class="chatRoom__userList_list_user_img">
-                  <img src="~assets/img/icons/user.png" alt />
+                  <img src="~assets/img/avatar/user.png" alt />
                 </div>
                 <div class="chatRoom__userList_list_user_message">
                   <div class="chatRoom__userList_list_user_message_name">
@@ -60,7 +60,7 @@
                   v-if="friend.unread === 0 && friend.userId === adminId"
                   class="chatRoom__userList_list_user_notify_img"
                 >
-                  <img src="~assets/img/icons/user.png" alt />
+                  <img src="~assets/img/avatar/user.png" alt />
                 </div>
               </div>
             </li>
@@ -78,7 +78,7 @@
             <fa :icon="['fas', 'chevron-left']" />
           </div>
           <div class="chatRoom__userMessage_currentUser_img">
-            <img src="~assets/img/icons/user.png" alt />
+            <img src="~assets/img/avatar/user.png" alt />
           </div>
           <div class="chatRoom__userMessage_currentUser_userInfo">
             <h2>{{ currentUserMsg.titleArea.username }}</h2>
@@ -124,7 +124,7 @@
                     { show: msg.isHeadShot }
                   ]"
                 >
-                  <img src="~assets/img/icons/user.png" alt />
+                  <img src="~assets/img/avatar/user.png" alt />
                 </div>
                 <el-tooltip
                   class="chatRoom__userMessage_content_message content_other"
@@ -139,7 +139,7 @@
                   ref="otherMsgIcon"
                   class="chatRoom__userMessage_content_userReadImg"
                 >
-                  <img src="~assets/img/icons/user.png" alt />
+                  <img src="~assets/img/avatar/user.png" alt />
                 </div>
               </div>
             </div>
@@ -174,7 +174,7 @@
                 ref="selfMsgIcon"
                 class="chatRoom__userMessage_content_otheruserReadImg"
               >
-                <img src="~assets/img/icons/user.png" alt />
+                <img src="~assets/img/avatar/user.png" alt />
               </div>
             </div>
           </div>

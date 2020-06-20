@@ -7,13 +7,13 @@ export const actions = {
     // 取得登入使用者訊息
     const {
       status: loginStatus,
-      data: { id, loginUser, email, retCode }
-    } = await app.$axios.get('/users/getuser')
+      data: { id, loginUser, email, haveAvatar, retCode }
+    } = await app.$axios.get('/users/getUser')
     commit(
       'user/getUser',
       loginStatus === 200 && retCode === 0
-        ? { id, name: loginUser, email }
-        : { id: '', name: '', email: '' }
+        ? { id, name: loginUser, email, haveAvatar }
+        : { id: '', name: '', email: '', haveAvatar }
     )
 
     // 取得使用者所在城市

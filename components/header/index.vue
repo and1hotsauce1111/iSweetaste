@@ -1,7 +1,7 @@
 <template>
   <div class="header__section">
     <div class="header__container">
-      <Geo />
+      <geo />
       <div class="mobile__header_hamburger" @click="toggleMobileMenu">
         <!-- <fa :icon="['fas', 'bars']" /> -->
         <div ref="mobileHamburger" class="mobile__header_hamburger_line_container">
@@ -13,7 +13,7 @@
       <div class="header__logo_container">
         <nuxt-link id="header__logo" to="/"></nuxt-link>
       </div>
-      <Nav @showPanel="toggleUserPanel" />
+      <my-nav @showPanel="toggleUserPanel"></my-nav>
     </div>
 
     <!-- user panel -->
@@ -37,7 +37,7 @@
           </a>
         </div>
       </div>
-      <div v-if="loginUser !== 'admin'" class="header__menu__Login_userInfo_panel">
+      <div class="header__menu__Login_userInfo_panel">
         <div class="header__menu__Login_userInfo_panel_container">
           <a class="header__menu__Login_userInfo_panel_item" href="/profile">
             <div class="header__menu__Login_userInfo_panel_item_icon">
@@ -64,7 +64,7 @@
         <div v-if="loginUser" class="mobile__clip_menu_userInfo">
           <img
             class="mobile__clip_menu_userInfo_img"
-            src="~assets/img/icons/user.png"
+            src="~assets/img/avatar/user.png"
             alt
           />
           <div class="mobile__clip_menu_userInfo_username">{{ loginUser }}</div>
@@ -116,12 +116,12 @@
 
 <script>
 import Geo from '@/components/header/geo'
-import Nav from '@/components/header/nav'
+import MyNav from '@/components/header/nav'
 
 export default {
   components: {
     Geo,
-    Nav
+    MyNav
   },
   data() {
     return {

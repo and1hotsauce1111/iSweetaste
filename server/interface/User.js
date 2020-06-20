@@ -34,12 +34,13 @@ if (process.env.REDIS_URL) {
 }
 
 // init multer
+const MAX_FILE_SIZE = 1000000
 const upload = multer({
   limits: {
-    fileSize: 1000000
+    fileSize: MAX_FILE_SIZE
   },
   fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(jpeg|png)$/)) {
+    if (!file.originalname.match(/\.(jpeg|png|jpg|svg)$/)) {
       cb(new Error('請上傳正確格式的圖片！'))
     }
     cb(null, true)
@@ -210,11 +211,15 @@ router.post('/users/login', (req, res, next) => {
 // 取得已登入使用者
 router.get('/users/getUser', (req, res, next) => {
   // req.isAuthenticated() express 原生的方法
+  let haveAvatar = false
   if (req.isAuthenticated()) {
     const { id, name, email } = req.user
-    return res.send({ id, loginUser: name, email, retCode: 0 })
+    if (req.user.avatar !== null) {
+      haveAvatar = true
+    }
+    return res.send({ id, loginUser: name, email, haveAvatar, retCode: 0 })
   }
-  return res.send({ id: '', user: '', email: '', retCode: -1 })
+  return res.send({ id: '', user: '', email: '', haveAvatar, retCode: -1 })
 })
 
 // 取得管理者
@@ -268,19 +273,44 @@ router.post(
     }
   },
   (err, req, res, next) => {
-    res.status(400).send({ error: err.message })
+    console.log(err)
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.send({ msg: '檔案超過大小限制！' })
+    }
+    return res.send({ msg: err.message })
   }
 )
 
+// 取得大頭貼
 router.get('/users/:id/avatar', async (req, res) => {
   try {
     const id = req.params.id
     const user = await User.findById(id)
 
-    if (!user || !user.avatar) throw new Error()
+    if (!user || !user.avatar) {
+      return res.send({ msg: '找不到使用者或大頭貼未上傳', ret_code: -1 })
+    }
 
     res.set('Content-Type', 'image/png')
-    res.send(user.avatar)
+    return res.send(user.avatar)
+  } catch (e) {
+    console.log(e)
+    return res.send({ msg: '獲取大頭貼失敗！', ret_code: -1 })
+  }
+})
+
+// 更新使用者名稱
+router.post('/users/:id/changeUserName', async (req, res) => {
+  const id = req.params.id
+  const { changeName } = req.body
+  const user = await User.findById(id)
+  if (!user) return res.send({ msg: '找不到使用者！', ret_code: -1 })
+  const existName = await User.find({ name: decodeURIComponent(changeName) })
+  if (existName.length !== 0) return res.send({ msg: '該暱稱已被使用！', ret_code: -1 })
+  try {
+    user.name = changeName
+    user.save()
+    return res.send({ msg: '成功更新使用者名稱！', ret_code: 0 })
   } catch (e) {
     console.log(e)
   }

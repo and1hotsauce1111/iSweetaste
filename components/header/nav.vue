@@ -16,7 +16,11 @@
       </li>
       <li class="header__menu__Login_userInfo">
         <div class="header__menu__Login_userInfo_container" @click.stop="showPanel">
-          <img class="header__menu__Login_userInfo_img" src="~assets/img/icons/user.png" alt />
+          <img
+            class="header__menu__Login_userInfo_img"
+            :src="changeAvatar !== '' ? changeAvatar : avatarUrl"
+            alt
+          />
           <div class="header__menu__Login_userInfo_username">{{ loginUser }}</div>
         </div>
       </li>
@@ -50,12 +54,26 @@ export default {
         { name: '甜點', route: '/product' },
         { name: '註冊', route: '/register' },
         { name: '商家分佈', route: '/shop' }
-      ]
+      ],
+      newAvatar: ''
     }
   },
   computed: {
     loginUser() {
       return decodeURIComponent(this.$store.state.user.user.name)
+    },
+    userId() {
+      return this.$store.state.user.user.id
+    },
+    avatarUrl() {
+      const haveAvatar = this.$store.state.user.user.haveAvatar
+      if (haveAvatar) {
+        return `/users/${this.userId}/avatar`
+      }
+      return `${require('@/assets/img/avatar/user.png')}`
+    },
+    changeAvatar() {
+      return this.$store.state.user.avatar
     }
   },
   methods: {
@@ -111,6 +129,7 @@ export default {
           width: 1.87rem;
           height: 1.87rem;
           margin-right: 1.2rem;
+          border-radius: 50%;
         }
 
         .header__menu__Login_userInfo_username {

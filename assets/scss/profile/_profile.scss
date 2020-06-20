@@ -96,6 +96,11 @@
           width: 6.25rem;
           height: 6.25rem;
           margin: 2rem auto;
+          border-radius: 50%;
+          background-position: 50% 50%;
+          background-size: cover;
+          background-repeat: no-repeat;
+          cursor: pointer;
         }
         .avatar-uploader_submitBtn {
           margin-bottom: 1rem;
