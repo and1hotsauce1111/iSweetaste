@@ -9,7 +9,7 @@ module.exports = {
       { charset: 'utf-8' },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
+        content: 'width=device-width, initial-scale=1'
       },
       {
         hid: 'description',
@@ -23,7 +23,8 @@ module.exports = {
         rel: 'stylesheet',
         href: 'https://unpkg.com/leaflet@1.6.0/dist/leaflet.css'
       }
-    ]
+    ],
+    script: [{ src: '/js/dom.js' }]
   },
   /*
    ** Customize the progress-bar color
