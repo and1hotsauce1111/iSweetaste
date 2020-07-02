@@ -9,7 +9,8 @@ module.exports = {
       { charset: 'utf-8' },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1'
+        content:
+          'width=device-width,initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'
       },
       {
         hid: 'description',
@@ -103,16 +104,16 @@ module.exports = {
   axios: {
     proxy: true
   },
-  // proxy: {
-  //   '/users': {
-  //     target: 'https://jameslin-isweetaste.herokuapp.com/',
-  //     changeOrigin: true
-  //   },
-  //   '/geo': {
-  //     target: 'https://jameslin-isweetaste.herokuapp.com/',
-  //     changeOrigin: true
-  //   }
-  // },
+  proxy: {
+    '/users': {
+      target: 'https://jameslin-isweetaste.herokuapp.com/',
+      changeOrigin: true
+    },
+    '/geo': {
+      target: 'https://jameslin-isweetaste.herokuapp.com/',
+      changeOrigin: true
+    }
+  },
   /*
    ** Build configuration
    */
@@ -121,8 +122,8 @@ module.exports = {
      ** You can extend webpack config here
      */
     // analyze: true,
-    // extractCSS: true,
-    // optimizeCSS: true,
+    extractCSS: true,
+    optimizeCSS: true,
     vendor: ['element-ui'],
     babel: {
       plugins: [
