@@ -65,7 +65,7 @@
 
     <div ref="mobileClipMenu" class="mobile__clip_menu">
       <div class="mobile__clip_menu_userSection">
-        <div v-if="loginUser" class="mobile__clip_menu_userInfo">
+        <div v-if="loginUser" class="mobile__clip_menu_userInfo" @click="toEditUserPage">
           <img
             class="mobile__clip_menu_userInfo_img"
             :src="changeAvatar !== '' ? changeAvatar : avatarUrl"
@@ -173,6 +173,12 @@ export default {
     window.addEventListener('click', closeUserPanel)
   },
   methods: {
+    toEditUserPage() {
+      this.toggleMobileMenu()
+      this.$router.push({
+        path: '/profile'
+      })
+    },
     toggleMobileMenu() {
       const mobileClipMenu = this.$refs.mobileClipMenu
       const mobileClipMenuList = this.$refs.mobileMenuList.children
